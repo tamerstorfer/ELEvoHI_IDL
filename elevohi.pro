@@ -8,9 +8,11 @@
 ; Calling sequence: elevohi, save_results=save_results, statistics=statistics, silent=silent
 ;
 ; Parameters (input): 
-;             ELEvoHI reads in the .txt file named input.txt stored in the ELEvoHI/ directory.
+;             ELEvoHI reads a config-file (ELEvoHI_config.dat), in which several directories are defined.
+;             This file should be checked at first to make sure everything is in its place.
+;             Next, the input file (input.txt) is read in.
 ;			  The input.txt file needs to be modified for the event of interest.
-;			  Parameters required by input.txt file:
+;			  Parameters required by input.txt file (please see readme-file for clear instructions):
 ;							eventdate......'YYYYMMDD' first measurement in HI
 ;							sc.............HI observer ['A' or 'B']
 ;							source.........'helcats' ['other']
@@ -20,24 +22,17 @@
 ;							insitu.........['Earth', 'A', 'B'] most likely position at 1 AU for the CME to be detected
 ;										   important for background solar wind conditions
 ;
-;						  keywords passed to elevohi call (optional):
-;							save_results...set TRUE to produce an IDL save file containing the model parameters and the prediction
-;							statistics.....set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
-;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
 ;
 ;		     (output):
 ;			  prediction....IDL structure containing model prediction results (information on the structure: IDL> help, pred, /str)
 ;						    The prediction results are additionally displayed in the terminal; if set, also the validation is displayed.					        
 ;
-; Keywords:   all keywords have to be set in the input file
+; Keywords: 	
+;							save_results...set TRUE to produce an IDL save file containing the model parameters and the prediction
+;							statistics.....set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
+;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
 ;
-; Required functions and procedures:  	elcon.pro
-;                                       dbmfit.pro
-;										elevo_input.pro
-;										elevo.pro
-;											- ssc_plot_where_elevo.pro
-;											- elevo_analytics_beta.pro
-;											- tvellipse_elevo.pro
+; Required functions and procedures:  	see readme
 ;
 ; Data needed:		HI time-elongation tracks derived in the EU/FP7 HELCATS project are part of this package as a single IDL .sav-file.
 ;					In situ data are needed for background solar wind conditions and also have been prepared by the HELCATS team.
@@ -46,6 +41,7 @@
 ;
 ;
 ; History:    2018: ELEvoHI
+;             2019/01: uploaded to github
 ; 
 ; Authors:    Tanja Amerstorfer & Christian Mšstl & JŸrgen Hinterreiter
 ;             Space Research Institute, Austrian Academy of Sciences
