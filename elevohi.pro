@@ -31,10 +31,10 @@
 ;
 ; Keywords:   all keywords have to be set in the input file
 ;
-; Required functions and procedures:  	elcon_V1.pro
-;                                       dbmfit_V1.pro
-;										elevo_input_V1.pro
-;										elevo_V1.pro
+; Required functions and procedures:  	elcon.pro
+;                                       dbmfit.pro
+;										elevo_input.pro
+;										elevo.pro
 ;											- ssc_plot_where_elevo.pro
 ;											- elevo_analytics_beta.pro
 ;											- tvellipse_elevo.pro
@@ -53,7 +53,7 @@
 ;
 ;(c) 2018 T. Amerstorfer, The software is provided "as is", without warranty of any kind.
 ;         When using ELEvoHI for a publication, please cite Rollett et al. (2016, ApJ) and Amerstorfer et al. (2018, Space Weather).
-;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi).
+;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi, github-link).
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 PRO elevohi, save_results=save_results, statistics=statistics, silent=silent
