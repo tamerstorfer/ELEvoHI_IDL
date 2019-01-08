@@ -1,0 +1,20 @@
+;ELEvoHI config file
+
+;Directory of the EAGEL tool
+EAGEL_DIR=/nas/helio/EAGEL/
+
+;Path to data 
+:Structure has to be:
+;	Data_DIR/lasco
+;	Data_DIR/stereo/secchi
+DATA_DIR=/nas/helio/data/
+
+;Directory of LASCO background data
+LASCO_BG_DIR=/software/LIBS/SolarSoftWare/database/soho/lasco/monthly/
+
+;Directory of STEREO background data 
+;	(Leave blank if SSWDB is installed, check if LASCO and STEREO background data are available)
+STEREO_BG_DIR=
+
+;Directory of NRL_LIB
+NRL_LIB=/software/LIBS/SolarSoftWare/soho/lasco/
