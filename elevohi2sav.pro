@@ -185,10 +185,10 @@ for w=0, j-1 do begin
 	sw=eELEvoHI.bg_sw_speed
 
     ;check if directory already exists
-    filetest = FILE_TEST(dir+'results/'+arr[0,w]+'/', /dir) 
+    ;filetest = FILE_TEST(dir+'results/'+arr[0,w]+'/', /dir) 
 
     ;make directory for analyzed event
-    if filetest eq 0 then file_mkdir, dir+'results/'+arr[0,w]+'/'
+    ;if filetest eq 0 then file_mkdir, dir+'results/'+arr[0,w]+'/'
 
 	save, rinit, rinit1, rinit2, rinit3, rinit4, rinit5, rinit6, rinit7, rinit8, filename=dir+'results/'+arr[0,w]+'/rinit.sav'
 	save, vinit, vinit1, vinit2, vinit3, vinit4, vinit5, vinit6, vinit7, vinit8,  filename=dir+'results/'+arr[0,w]+'/vinit.sav'
@@ -324,8 +324,9 @@ for w=0, j-1 do begin
 	 endif else begin
 	   save, arrplotmedian, arrplotmean, arrerr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endelse
+
  
-	 spawn, 'cp '+dir+'results/'+arr[0,w]+'/* '+path+'/PredictedEvents/current/'
+	 spawn, 'cp -R '+dir+'results/* '+path+'/PredictedEvents/current/'
   
  endif else print, '=========================='
 
