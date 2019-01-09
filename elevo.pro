@@ -71,7 +71,7 @@ stap=get_stereo_lonlat(suntime, 'STEREO-A', system='HEE')
 stbp=get_stereo_lonlat(suntime, 'STEREO-B', system='HEE')
 vexp=get_stereo_lonlat(suntime, 'Venus', system='HEE')
 
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('20120401T00:00:00') then begin
+if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 	;messtime='2010-Nov-05T11:46:00'
 	utc = anytim2utc(suntime, /ccsds)
 
@@ -126,7 +126,7 @@ if direction gt vexp[1]/!dtor then delta_V=direction-vexp[1]/!dtor
 delta_E=direction                     ;...Earth
 
 
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('20120401T00:00:00') then begin
+if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 	;MESSENGER
 	delta_MES=direction-mesp[1]/!dtor
 	if direction gt mesp[1]/!dtor then delta_MES=abs(mesp[1]/!dtor)+direction
@@ -254,7 +254,7 @@ pos_earth=get_stereo_lonlat(t_plot[0], 'Earth', system='HEE')
 pos_vex=get_stereo_lonlat(t_plot[0], 'Venus', system='HEE')
 pos_mars=get_stereo_lonlat(t_plot[0], 'Mars', system='HEE')
 
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('20120401T00:00:00') then begin
+if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 
 ;messtime='2010-Nov-05T11:46:00'
 	utc = anytim2utc(suntime, /ccsds)
@@ -301,7 +301,7 @@ stereob_angle=pos_stb[1]/!dtor
 stereob_dist=pos_stb[0]/AU
 
 ;Messenger in HEE   ;*** take positions from variables above
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('20120401T00:00:00') then begin
+if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 	mes_angle=pos_mes[1]/!dtor
 	mes_dist=pos_mes[0]/AU
 endif
@@ -434,7 +434,7 @@ for i=0,s[1]-1  do begin
   
   
   ;get distance and speed of point along delta of MESSENGER:
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('20120401T00:00:00') then begin
+if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
   		dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_MES)
   
   		if finite(dvalue) then begin
@@ -475,7 +475,7 @@ tars=anytim(tdrag)-anytim(tdrag[0])
 
 ;calculate all distances of the ellipse in direction of MESSENGER
 
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('20120401T00:00:00') then begin
+if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 
   d_MES=elevo_analytic(rdrag, aspectratio, halfwidth, delta_MES)
 
