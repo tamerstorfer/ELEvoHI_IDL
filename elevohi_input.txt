@@ -5,10 +5,10 @@ HI observer (A or B)
 B
 ________________
 first observed by HI1
-20101104
+20100403/GCS
 ________________
 source of HI-tracks (helcats or other)
-other/5/16
+helcats
 
 ________________
 inverse ellipse aspect ratio, f (b/a), ensemble: (f_min/f_max/d_f)
@@ -16,14 +16,14 @@ inverse ellipse aspect ratio, f (b/a), ensemble: (f_min/f_max/d_f)
 ________________
 direction of motion of CME apex, phi, ensemble: (phi_min/phi_max/d_phi)
 (angle between HI-observer and CME apex)
-2/14/2
+ 64/ 84/2
 ________________
 angular half width, lambda, ensemble: (lambda_min/lambda_max/d_lambda)
-55/85/5
+30/50/5
 ________________
 most likely in situ detection at 1 AU (Earth or A or B)
-B
+Earth
 ________________
 in situ arrival s/c and times (MES, VEX, Earth, A, B)
-B
-2010-Nov-7 19:05
+Earth
+2010-Apr-5 06:35
