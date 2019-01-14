@@ -9,6 +9,9 @@ eELEvoHI=read_ascii(dir+'eELEvoHI_results.txt', template=temp)
 nanmes=where(eELEvoHI.arrtime_mes eq 'NaN', countmes)
 if countmes gt 0 then eELEvoHI.arrtime_mes[nanmes]=!VALUES.F_NAN
 
+;empty output folder for current run (serves as download directory for Python visualization)
+spawn, 'rm -Rf current/*'
+
 ;read in ELEvoHI input file
 fnam=path+'Code/elevohi_input.txt'
 
@@ -326,7 +329,7 @@ for w=0, j-1 do begin
 	 endelse
 
  
-	 spawn, 'cp -R '+dir+'results/* '+path+'/PredictedEvents/current/'
+	 spawn, 'cp -R '+dir+'results/'+arr[0,w]+'/ '+path+'/PredictedEvents/current/'+arr[0,w]+'/'
   
  endif else print, '=========================='
 
