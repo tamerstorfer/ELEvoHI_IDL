@@ -219,6 +219,7 @@ if str[27] ne '' and str[29] ne '' and str[31] ne '' then arr=[[str[27], str[28]
 
 ;initialize counting variable for non-converging DBMfits
 nofit=0
+nofit_para=[0,0,0]
 ;initialize counting variable for converging DBMfits
 fitworks=0
 
@@ -457,13 +458,10 @@ print, drag_parameter
 ;count and save number of converging and non-converging fits
 
 a=[phi, f, lambda]
-nofit_para=[0,0,0]
 
 if tinit eq 0 then begin
     if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
     nofit=nofit+1
-    ;if phi eq phiend then break
-    ;if fstart eq fend then break
   continue
 endif else begin
   fitworks=fitworks+1
