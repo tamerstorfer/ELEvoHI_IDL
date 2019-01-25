@@ -6,8 +6,8 @@ PRO elevohi2sav, dir, path=path
 restore, path+'Code/ASCII_template.sav'
 eELEvoHI=read_ascii(dir+'eELEvoHI_results.txt', template=temp)
 
-nanmes=where(eELEvoHI.arrtime_mes eq 'NaN', countmes)
-if countmes gt 0 then eELEvoHI.arrtime_mes[nanmes]=!VALUES.F_NAN
+;nanmes=where(eELEvoHI.arrtime_mes eq 'NaN', countmes)
+;if countmes gt 0 then eELEvoHI.arrtime_mes[nanmes]=!VALUES.F_NAN
 
 ;empty output folder for current run (serves as download directory for Python visualization)
 spawn, 'rm -Rf current/*'
@@ -58,8 +58,7 @@ for w=0, j-1 do begin
       case arr[0,w] of
         'MES': begin
                   mnan = where(finite(eELEvoHI.arrtime_mes), mcount)
-                  tt = (anytim(eELEvoHI.arrtime_mes) - anytim(eELEvoHI.tinit))/3600.
-                  
+                  tt = (anytim(eELEvoHI.arrtime_mes) - anytim(eELEvoHI.tinit))/3600.                  
                end
         'VEX': tt = (anytim(eELEvoHI.arrtime_vex) - anytim(eELEvoHI.tinit))/3600.
         'Earth': tt = (anytim(eELEvoHI.arrtime_earth) - anytim(eELEvoHI.tinit))/3600.
@@ -293,7 +292,8 @@ for w=0, j-1 do begin
         else: print, 'In situ spacecraft name not valid.'
       endcase
 
- if finite(arrtime_mean) and finite(arrtime_median) then begin
+ if isa(arrtime_mean) and isa(arrtime_median) then begin
+   if isa(arrtime_mean) and finite(arrtime_mean) and isa(arrtime_median) and finite(arrtime_median) then begin
  
 	 print, 'Ensemble mean:'
 	 print, arrtime_mean, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F4.2,1X,A5)'
@@ -327,12 +327,13 @@ for w=0, j-1 do begin
 	 endif else begin
 	   save, arrplotmedian, arrplotmean, arrerr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endelse
+  endif
 
- 
-	 spawn, 'cp -R '+dir+'results/'+arr[0,w]+'/ '+path+'/PredictedEvents/current/'+arr[0,w]+'/'
   
  endif else print, '=========================='
 
+ 
+ spawn, 'cp -R '+dir+'results/'+arr[0,w]+'/ '+path+'/PredictedEvents/current/'
  
 endfor
 

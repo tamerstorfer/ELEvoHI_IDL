@@ -71,6 +71,8 @@ stap=get_stereo_lonlat(suntime, 'STEREO-A', system='HEE')
 stbp=get_stereo_lonlat(suntime, 'STEREO-B', system='HEE')
 vexp=get_stereo_lonlat(suntime, 'Venus', system='HEE')
 
+
+
 if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 	;messtime='2010-Nov-05T11:46:00'
 	utc = anytim2utc(suntime, /ccsds)
@@ -97,14 +99,16 @@ if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anyti
     xx = mess[1]
     yy = mess[0]
 
-cspice_reclat, mess[0:2], radius, longitude, latitude
+    cspice_reclat, mess[0:2], radius, longitude, latitude
 
-mesp=fltarr(3)
-mesp[0]=radius*au
-mesp[1]=longitude
-mesp[2]=latitude
+    mesp=fltarr(3)
+    mesp[0]=radius*au
+    mesp[1]=longitude
+    mesp[2]=latitude
 
-endif
+endif else begin
+    mesp=get_stereo_lonlat(suntime, 'Mercury', system='HEE')
+endelse
 
 
 ;ellipse parameters
@@ -121,24 +125,19 @@ if direction gt stbp[1]/!dtor then delta_B=abs(stbp[1]/!dtor)+direction
 if direction lt stbp[1]/!dtor then delta_B=direction-stbp[1]/!dtor
 if direction lt vexp[1]/!dtor then delta_V=abs(direction)+vexp[1]/!dtor
 if direction gt vexp[1]/!dtor then delta_V=direction-vexp[1]/!dtor
+if direction lt mesp[1]/!dtor then delta_MES=abs(direction)+mesp[1]/!dtor
+if direction gt mesp[1]/!dtor then delta_MES=direction-mesp[1]/!dtor
 
 ;delta_B=direction-(360+stbp[1]/!dtor) ;...STEREO-B
 delta_E=direction                     ;...Earth
 
-
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
-	;MESSENGER
-	delta_MES=direction-mesp[1]/!dtor
-	if direction gt mesp[1]/!dtor then delta_MES=abs(mesp[1]/!dtor)+direction
-	if direction lt mesp[1]/!dtor then delta_MES=direction-mesp[1]/!dtor
-endif
 
 print, '------------------------------------'
 print, 'Spacecraft separation from CME apex:'
 print, 'STEREO-A:', delta_A, format='(A, 2x, F6.1)'
 print, 'STEREO-B:', delta_B, format='(A, 2x, F6.1)'
 print, 'Wind:', delta_E, format='(A, 5x, F6.1)'
-if keyword_set(messenger) then print, 'MESSENGER: ', delta_MES, format='(A, 2x, F6.1)' 
+print, 'MESSENGER: ', delta_MES, format='(A, 2x, F6.1)' 
 print, 'Venus', delta_V, format='(A, 5x, F6.1)'
 print, '------------------------------------'
 
@@ -254,6 +253,8 @@ pos_earth=get_stereo_lonlat(t_plot[0], 'Earth', system='HEE')
 pos_vex=get_stereo_lonlat(t_plot[0], 'Venus', system='HEE')
 pos_mars=get_stereo_lonlat(t_plot[0], 'Mars', system='HEE')
 
+pos_mes=fltarr(3)
+
 if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 
 ;messtime='2010-Nov-05T11:46:00'
@@ -282,14 +283,15 @@ if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anyti
     xx = mess[1]
     yy = mess[0]
 
-cspice_reclat, mess[0:2], radius, longitude, latitude
+  cspice_reclat, mess[0:2], radius, longitude, latitude
+ 
+  pos_mes[0]=radius*au
+  pos_mes[1]=longitude
+  pos_mes[2]=latitude
 
-pos_mes=fltarr(3)
-pos_mes[0]=radius*au
-pos_mes[1]=longitude
-pos_mes[2]=latitude
-
-endif
+endif else begin
+  pos_mes = get_stereo_lonlat(t_plot[0], 'Mercury', system='HEE')
+endelse
 
 
 
@@ -300,11 +302,9 @@ stereoa_dist=pos_sta[0]/AU
 stereob_angle=pos_stb[1]/!dtor
 stereob_dist=pos_stb[0]/AU
 
-;Messenger in HEE   ;*** take positions from variables above
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
-	mes_angle=pos_mes[1]/!dtor
-	mes_dist=pos_mes[0]/AU
-endif
+mes_angle=pos_mes[1]/!dtor
+mes_dist=pos_mes[0]/AU
+
 
 ;Mars in HEE   ;*** take positions from variables above
 mars_angle=pos_mars[1]/!dtor
@@ -434,13 +434,13 @@ for i=0,s[1]-1  do begin
   
   
   ;get distance and speed of point along delta of MESSENGER:
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
+;if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
   		dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_MES)
   
   		if finite(dvalue) then begin
 			deltaspeed_MES=dvalue/R_plot[i]*V_plot[i]
   		endif
-  	endif
+ ; 	endif
   ;stop
   ;get distance and speed of point along delta of Earth:
   dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_E)
@@ -475,7 +475,8 @@ tars=anytim(tdrag)-anytim(tdrag[0])
 
 ;calculate all distances of the ellipse in direction of MESSENGER
 
-if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
+;if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
+
 
   d_MES=elevo_analytic(rdrag, aspectratio, halfwidth, delta_MES)
 
@@ -486,18 +487,20 @@ if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anyti
   ;take first value of these indices = arrival time at STEREO-A within drag time resolution (10 minutes)
   arrival_MES=anytim(tdrag[index_hit_MES[0]], /ccsds)
   arrival_speed_MES=v_MES[index_hit_MES[0]]
+  
+  if finite(d_MES[0]) then begin
 
-  print, '---------------------------------------------'
-  print, 'Arrival at MESSENGER [UT]: ', anytim(arrival_MES, /vms), format='(A, 4x, A17)'
-  print, 'Arrival speed at MESSENGER [km/s]: ', arrival_speed_MES, format='(A, 1x, I4)'
-  print, '---------------------------------------------'
-endif else begin
-  print, '---------------------------------------------'
-  print, 'MESSENGER: No hit!'
-  print, '---------------------------------------------'
-  arrival_MES=!Values.F_nan
-  arrival_speed_MES=!Values.F_nan
-endelse
+	  print, '---------------------------------------------'
+	  print, 'Arrival at MESSENGER [UT]: ', anytim(arrival_MES, /vms), format='(A, 4x, A17)'
+	  print, 'Arrival speed at MESSENGER [km/s]: ', arrival_speed_MES, format='(A, 1x, I4)'
+	  print, '---------------------------------------------'
+  endif else begin
+	  print, '---------------------------------------------'
+	  print, 'MESSENGER: No hit!'
+	  print, '---------------------------------------------'
+	  arrival_MES=!Values.F_nan
+	  arrival_speed_MES=!Values.F_nan
+  endelse
 
 ;stop
 

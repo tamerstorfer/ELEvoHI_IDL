@@ -57,8 +57,8 @@ if (white_bg eq 1) and (!p.background eq 0) then begin
     !p.color = background_save
     !p.background = color_save
 endif else begin
-     !p.background = 0
-     !p.color = long(16777215)
+    !p.background = 0
+    !p.color = long(16777215)
 endelse
 
 
@@ -77,6 +77,7 @@ window, 1
   
   ;Find closest data point:
   c=where(r_apex_sun lt rin, count)
+  
   if count ne 0 then begin
     cnear=rin-r_apex_sun[c[n_elements(c)-1]]
   endif else begin
@@ -85,6 +86,7 @@ window, 1
   endelse
   
   c1=where(r_apex_sun gt rin, count1)
+  
   if count1 ne 0 then begin
     c1near=r_apex_sun[c1[0]]-rin 
   endif else begin
@@ -224,7 +226,8 @@ print, 'stddev:', bg_speed_std
 print, 'min:', min_bg_speed
 print, 'max:', max_bg_speed 
 
-
+;print, 'STOP 1'
+;stop
 ;calculate fit for a range of background solar wind speeds
 
 winds=fltarr(5)
@@ -239,178 +242,181 @@ fitspeedall=fltarr(n_elements(winds),n_elements(y))
 
 for i=0, n_elements(winds)-1 do begin
 
-sw_speed=float(fix(winds[i]))
+	resi=NaN
 
-print, '------------------------------------'
-print, 'Background solar wind speed [km/s]: ', winds[i], format='(A,1x, I3)'
+	sw_speed=float(fix(winds[i]))
 
-;chose right sign for gamma parameter
-if v_init ge sw_speed then begin
-gasi=1
-print, 'Initial speed larger then background solar wind speed!'
-endif
-if v_init lt sw_speed then begin
-gasi=-1
-print, 'Initial speed smaller then background solar wind speed!'
-endif
+	print, '------------------------------------'
+	print, 'Background solar wind speed [km/s]: ', winds[i], format='(A,1x, I3)'
 
+	;chose right sign for gamma parameter
+	if v_init ge sw_speed then begin
+		gasi=1
+		print, 'Initial speed larger then background solar wind speed!'
+	endif
+	if v_init lt sw_speed then begin
+		gasi=-1
+		print, 'Initial speed smaller then background solar wind speed!'
+	endif
 
+	;print, 'STOP 2'
+	;stop
 
-A=[gasi*1.0e-07]
+	A=[gasi*1.0e-07]
 
-;do the fitting
+	;do the fitting
 
-;if gasi gt 0 then begin
-  RES = 0
-  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-9,1e-9])
+	;if gasi gt 0 then begin
+	  RES = 0
+	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-9,1e-9])
   
-  ;print, 'gamma sign positive!'
-;endif
+	  ;print, 'gamma sign positive!'
+	;endif
 
-;if gasi lt 0 then begin
-;  RES = 0
-;  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbmneg',FUNCTION_VALUE=values,P0=-A,scale=[100,0])
-;  print, 'gamma sign negative!'
-;endif
-
-
-
-fitres=fltarr(2)
-fitres[0]=res[0]
-fitres[1]=sw_speed
-
-;if n_elements(res) eq 1 then begin
-;  print, 'DBM fit failed to converge'
-;  continue
-;endif
-;
-;if gasi eq 1 and res[0] lt 0 then begin
-;  print, 'Fit not valid: drag-parameter has wrong sign!'
-;  continue
-;endif
-
-
-;calculate function values
-;if gasi gt 0 then begin
-fit = (1/fitres[0])*alog(1 + fitres[0]*(v_init - fitres[1])*X) + fitres[1]*X + r_init
-;endif else begin
- ; fit = (-1/fitres[0])*alog(1 - fitres[0]*(v_init - fitres[1])*X) + fitres[1]*X + r_init
-;endelse
-
-fitauall[i,*]=fit/au
-
-;if gasi lt 0 and signum(fitres[0]) lt 0 then begin
-;  print, 'check DBM-fit procedure!'
-;  return
-;endif
-
-;mean residual per curve
-resi=mean(abs(y-fit))
+	;if gasi lt 0 then begin
+	;  RES = 0
+	;  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbmneg',FUNCTION_VALUE=values,P0=-A,scale=[100,0])
+	;  print, 'gamma sign negative!'
+	;endif
 
 
 
-if i eq 0 then fitpara=fltarr(n_elements(winds),3)
+	fitres=fltarr(2)
+	fitres[0]=res[0]
+	fitres[1]=sw_speed
 
-fitpara[i,0]=res
-fitpara[i,1]=sw_speed
-fitpara[i,2]=resi/r_sun
+	;if n_elements(res) eq 1 then begin
+	;  print, 'DBM fit failed to converge'
+	;  continue
+	;endif
+	;
+	;if gasi eq 1 and res[0] lt 0 then begin
+	;  print, 'Fit not valid: drag-parameter has wrong sign!'
+	;  continue
+	;endif
 
-;calculate fitspeed
-fitspeed = DERIV(X, fit)
-fitspeedall[i,*]=fitspeed
 
-fit_au=fit/au
+	;calculate function values
+	;if gasi gt 0 then begin
+	fit = (1/fitres[0])*alog(1 + fitres[0]*(v_init - fitres[1])*X) + fitres[1]*X + r_init
+	;endif else begin
+	 ; fit = (-1/fitres[0])*alog(1 - fitres[0]*(v_init - fitres[1])*X) + fitres[1]*X + r_init
+	;endelse
 
+	fitauall[i,*]=fit/au
 
+	;if gasi lt 0 and signum(fitres[0]) lt 0 then begin
+	;  print, 'check DBM-fit procedure!'
+	;  return
+	;endif
 
-if keyword_set(silent) ne 1 then begin
-
-loadct, 0
-
-if !p.background eq 0 then begin
-    background_save = !p.background
-    color_save = !p.color
-    !p.color = background_save
-    !p.background = color_save
-endif else begin
-     !p.background = 0
-     !p.color = long(16777215)
-endelse
-
-window, 2
-
-!P.MULTI=[0,1,2]
-
-utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]]
-uterrplot, time, r_apex_sun+r_error*au/r_sun, r_apex_sun-r_error*au/r_sun
-outplot, time[cut:*], fit_au*au/r_sun
-
-utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]]
-uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
-outplot, time[cut:*], fitspeed
-
-cleanplot, /silent
-
-endif
+	;mean residual per curve
+	;if fit is not converging (e.g. because of improper bg solar wind speed) resi should be NaN.
+	
+	resi=mean(abs(y-fit))
 
 
 
-!P.MULTI=0
+	if i eq 0 then fitpara=fltarr(n_elements(winds),3)
 
-print, 'Drag parameter [1/km]: ', fitpara[i,0], format='(A,11x,E12.3)'
-print, 'Mean residual [solar radii]: ', fitpara[i,2], format='(A,8x,F4.2)'
+	fitpara[i,0]=res
+	fitpara[i,1]=sw_speed
+	fitpara[i,2]=resi/r_sun
 
-print, '------------------------------------'
+	;calculate fitspeed
+	fitspeed = DERIV(X, fit)
+	fitspeedall[i,*]=fitspeed
 
-;plot outcome 
-if res ne -1 then begin
+	fit_au=fit/au
 
-!P.MULTI=[0,1,2]
+	;print, 'STOP 3'
+	;stop
 
-num=strmid(string(i),5,3)
+	if keyword_set(silent) ne 1 then begin
 
-drag=0
-if gasi eq -1 then begin
-drag=strmid(string(fitpara[i,0]),1,4)
-endif else begin
-drag=strmid(string(fitpara[i,0]),2,3)
-endelse
+		loadct, 0
 
-dragexp=strmid(string(fitpara[i,0]),10,3)
-bgspeed=strmid(string(fitpara[i,1]),6,3)
-meanresi=strmid(string(fitpara[i,2]),5,4)
+		if !p.background eq 0 then begin
+			background_save = !p.background
+			color_save = !p.color
+			!p.color = background_save
+			!p.background = color_save
+		endif else begin
+			!p.background = 0
+			!p.color = long(16777215)
+	    endelse
 
-;sw=strtrim(string(fix(sw_speed)),2)
+		window, 2
+
+		!P.MULTI=[0,1,2]
+
+		utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]]
+		uterrplot, time, r_apex_sun+r_error*au/r_sun, r_apex_sun-r_error*au/r_sun
+		outplot, time[cut:*], fit_au*au/r_sun
+
+		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]]
+		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
+		outplot, time[cut:*], fitspeed
+
+		cleanplot, /silent
+
+	endif
+
+	;print, 'STOP 4'
+	;stop
+
+	!P.MULTI=0
+
+	print, 'Drag parameter [1/km]: ', fitpara[i,0], format='(A,11x,E12.3)'
+	print, 'Mean residual [solar radii]: ', fitpara[i,2], format='(A,8x,F4.2)'
+
+	print, '------------------------------------'
+
+	;plot outcome 
+	if res ne -1 then begin
+
+		!P.MULTI=[0,1,2]
+
+		num=strmid(string(i),5,3)
+
+		drag=0
+		if gasi eq -1 then begin
+			drag=strmid(string(fitpara[i,0]),1,4)
+		endif else begin
+			drag=strmid(string(fitpara[i,0]),2,3)
+		endelse
+
+		dragexp=strmid(string(fitpara[i,0]),10,3)
+		bgspeed=strmid(string(fitpara[i,1]),6,3)
+		meanresi=strmid(string(fitpara[i,2]),5,4)
+
+		;sw=strtrim(string(fix(sw_speed)),2)
 
 
-c=strtrim(string(cut),2)
+		c=strtrim(string(cut),2)
 
-set_plot, 'ps'
-device, filename=dir+'dbmfit_'+strtrim(string(i), 2)+'.eps', /encapsulated, /color, XSIZE=30, YSIZE=20, BITS_PER_PIXEL=16
+		set_plot, 'ps'
+		device, filename=dir+'dbmfit_'+strtrim(string(i), 2)+'.eps', /encapsulated, /color, XSIZE=30, YSIZE=20, BITS_PER_PIXEL=16
 
-utplot, time, r_apex_sun, psym=1, charsize=1.4, thick=2, symsize=2, ytit='Heliocentric Distance [R!D!9n!N!X]'
-uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
-outplot, time[cut:*], fit_au*au/r_sun, thick=2
-xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
-xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
-xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
-
-
-utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], timerange=[time[0],time[n_elements(time)-1]], psym=1, yr=[0,yrmax], charsize=1.4, thick=2, symsize=2, ytit='CME Apex Speed [km s!E-1!N]'
-uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2], skip=2
-outplot, time[cut:*], fitspeed, thick=2
+		utplot, time, r_apex_sun, psym=1, charsize=1.4, thick=2, symsize=2, ytit='Heliocentric Distance [R!D!9n!N!X]'
+		uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
+		outplot, time[cut:*], fit_au*au/r_sun, thick=2
+		xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
+		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
+		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
 
 
-DEVICE, /CLOSE
-SET_PLOT, 'X'
-
-!P.MULTI=0
-
+		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], timerange=[time[0],time[n_elements(time)-1]], psym=1, yr=[0,yrmax], charsize=1.4, thick=2, symsize=2, ytit='CME Apex Speed [km s!E-1!N]'
+		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2], skip=2
+		outplot, time[cut:*], fitspeed, thick=2
 
 
-endif
+		DEVICE, /CLOSE
+		SET_PLOT, 'X'
 
+		!P.MULTI=0
 
+	endif
 
 endfor
 
@@ -468,70 +474,69 @@ if fitpara[index,0] lt -6.9d-8 or abs(fitpara[index,0]) gt 4d-7 then begin
 endif
 
 
-
 counti=fix(counti)
 
 
 if counti ne 0 then begin
-print, '------------best result:------------'
-print, '------------------------------------'
-print, 'Background solar wind speed [km/s]: ', fix(fitpara[index,1]), format='(A,1x, I3)'
-print, 'Drag parameter [1/km]: ', fitpara[index,0], format='(A,11x,E12.3)'
-print, 'Mean residual [solar radii]: ', fitpara[index,2], format='(A,8x,F4.2)'
-print, '------------------------------------'
-print, '------------------------------------'
+	print, '------------best result:------------'
+	print, '------------------------------------'
+	print, 'Background solar wind speed [km/s]: ', fix(fitpara[index,1]), format='(A,1x, I3)'
+	print, 'Drag parameter [1/km]: ', fitpara[index,0], format='(A,11x,E12.3)'
+	print, 'Mean residual [solar radii]: ', fitpara[index,2], format='(A,8x,F4.2)'
+	print, '------------------------------------'
+	print, '------------------------------------'
 
 
 
-tinit=time[cut]
+	tinit=time[cut]
 
-gamma_=fitpara[index,0]
-drag_parameter=gamma_[0]
+	gamma_=fitpara[index,0]
+	drag_parameter=gamma_[0]
 
-sw_sp=fix(fitpara[index,1])
-solarwind_speed=sw_sp[0]
-swspeed=solarwind_speed
+	sw_sp=fix(fitpara[index,1])
+	solarwind_speed=sw_sp[0]
+	swspeed=solarwind_speed
 
-mean_res_=fitpara[index,2]
-mean_residual=mean_res_[0]
+	mean_res_=fitpara[index,2]
+	mean_residual=mean_res_[0]
 
-rinit=r_init/r_sun
-vinit=v_init
+	rinit=r_init/r_sun
+	vinit=v_init
 
-dbmfile=dir+'dbmfit_results.sav'
-save, tinit, rinit, vinit, drag_parameter, solarwind_speed, mean_residual, cut, ecut, filename=dbmfile
-print, 'Best result saved under ', dir, 'dbmfit_results.sav'
+	dbmfile=dir+'dbmfit_results.sav'
+	save, tinit, rinit, vinit, drag_parameter, solarwind_speed, mean_residual, cut, ecut, filename=dbmfile
+	print, 'Best result saved under ', dir, 'dbmfit_results.sav'
 
-;plot result
+	;plot result
 
-loadct, 0
+	loadct, 0
 
-;white_bg=1
-;if (white_bg eq 1) and (!p.background eq 0) then begin
-if !p.background eq 0 then begin
-    background_save = !p.background
-    color_save = !p.color
-    !p.color = background_save
-    !p.background = color_save
-endif else begin
-     !p.background = 0
-     !p.color = long(16777215)
-endelse
+	;white_bg=1
+	;if (white_bg eq 1) and (!p.background eq 0) then begin
+	if !p.background eq 0 then begin
+		background_save = !p.background
+		color_save = !p.color
+		!p.color = background_save
+		!p.background = color_save
+	endif else begin
+		 !p.background = 0
+		 !p.color = long(16777215)
+	endelse
 
-!P.MULTI=[0,1,2]
+	!P.MULTI=[0,1,2]
 
-utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]], ytit='Heliocentric Distance [R!D!9n!N!X]', charsize=1.4
-uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
-outplot, time[cut:*], fitauall[index,*]*au/r_sun
-xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
-xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
-xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
+	utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]], ytit='Heliocentric Distance [R!D!9n!N!X]', charsize=1.4
+	uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
+	outplot, time[cut:*], fitauall[index,*]*au/r_sun
+	xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
+	xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
+	xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
 
-utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]], ytit='CME Apex Speed [km s!E-1!N]', charsize=1.4
-uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
-outplot, time[cut:*], fitspeedall[index,*]
+	utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]], ytit='CME Apex Speed [km s!E-1!N]', charsize=1.4
+	uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
+	outplot, time[cut:*], fitspeedall[index,*]
 
-!P.MULTI=0
+	!P.MULTI=0
 
 endif
 

@@ -350,6 +350,7 @@ endif else begin
 endelse
 
 
+
 if n_elements(fstr) eq 3 then begin
  
   fstart=float(fstr[0])
