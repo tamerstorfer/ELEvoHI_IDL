@@ -136,19 +136,19 @@ endfor
 
 ;add results
 
+restore, path+'PredictedEvents/'+eventdate+'/helcatsHI_track.sav'
 
-
-if str[10] eq 'helcats' then begin
-	read_hi, eventdate, sc, time, ymean, ystdd, filen, /silent
-	restore, filen, /verb
+;if str[10] eq 'helcats' then begin
+;	read_hi, eventdate, sc, time, ymean, ystdd, filen, /silent
+;	restore, filen, /verb
 	elon=ymean
 	res=stereo_rsun(time[0],sc,distance=distance)
-	;d=distance[0]/au ; Sun-s/c distance in AU
+;	;d=distance[0]/au ; Sun-s/c distance in AU
 	elon_err=ystdd
-endif else begin
-    restore, data+'STEREO/HItracks/'+eventdate+'.sav'
-    ;elon=track.track_y
-endelse
+;endif else begin
+;    restore, data+'STEREO/HItracks/'+eventdate+'.sav'
+;    ;elon=track.track_y
+;endelse
 
 
 restore, dir+'elcon_results.sav'
