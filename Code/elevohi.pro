@@ -65,6 +65,8 @@ gcs_path=getenv('EAGEL_DIR')
 au=149597870.
 r_sun=695700.
 
+; Test merging
+
 set_plot, 'x'
 
 duration_start=systime(/seconds)
