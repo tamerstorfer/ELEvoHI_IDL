@@ -10,7 +10,7 @@ eELEvoHI=read_ascii(dir+'eELEvoHI_results.txt', template=temp)
 ;if countmes gt 0 then eELEvoHI.arrtime_mes[nanmes]=!VALUES.F_NAN
 
 ;empty output folder for current run (serves as download directory for Python visualization)
-spawn, 'rm -Rf current/*'
+spawn, 'rm -Rf '+path+'PredictedEvents/current/*'
 
 ;read in ELEvoHI input file
 fnam=path+'Code/elevohi_input.txt'
@@ -27,12 +27,13 @@ OPENR, 10, fnam
 CLOSE, 10
 
 sc=str[4]
-eventdate=str[7]
+eventdate=strmid(str[7], 0, 8)
 source=str[10]
 insitu=str[24]
 f_in=str[14]
 phi_in=str[18]
 lambda_in=str[21]
+arr=['','']
 if str[27] ne '' and str[29] eq '' then arr=[[str[27], str[28]]]
 if str[27] ne '' and str[29] ne '' and str[31] eq '' then arr=[[str[27], str[28]],[str[29], str[30]]]
 if str[27] ne '' and str[29] ne '' and str[31] ne '' then arr=[[str[27], str[28]],[str[29], str[30]], [str[31], str[32]]]
@@ -45,7 +46,14 @@ print, '==========================='
 print, 'ELEvoHI Ensemble Prediction'
 print, '---------------------------'
 
-j=n_elements(arr[0,*])
+if arr[0] ne '' then begin
+	j=n_elements(arr[0,*])
+endif else begin
+	print, "Target must be defined in input file!"
+	return
+	END
+	
+
 
 for w=0, j-1 do begin
 
@@ -323,9 +331,9 @@ for w=0, j-1 do begin
 	   cutstring12=strmid(anytim(arr[1,w], /ccsds), 0, 10)
 	   cutstring22=strmid(anytim(arr[1,w], /ccsds), 11, 5)
 	   insituarr=cutstring12+' '+cutstring22   
-	   save, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
+	   save, eventdate, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endif else begin
-	   save, arrplotmedian, arrplotmean, arrerr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
+	   save, eventdate, arrplotmedian, arrplotmean, arrerr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endelse
   endif
 

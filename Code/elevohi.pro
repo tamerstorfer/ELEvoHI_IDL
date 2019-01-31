@@ -243,17 +243,17 @@ d=distance[0]/au ; Sun-s/c distance in AU
 
 case insitu of
 	'Earth': begin
-			 insitu_file=data+'HELCATS/WIND_2007to2015_HEEQ.sav'
+			 insitu_file=data+'DATACAT/WIND_2007to2018_HEEQ.sav'
 			 restore, insitu_file, /verb
 			 sw=wind
 	end
 	'A':     begin
-			 insitu_file=data+'HELCATS/STA_2007to2015_SCEQ.sav'
+			 insitu_file=data+'DATACAT/STA_2007to2015_SCEQ.sav'
 			 restore, insitu_file, /verb
 			 sw=sta
 	end
 	'B':     begin
-			 insitu_file=data+'HELCATS/STB_2007to2014_SCEQ.sav'	
+			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'	
 			 restore, insitu_file, /verb
 			 sw=stb
 	end
@@ -487,7 +487,6 @@ for k=0, n_phi-1 do begin
 	  print, '*****************************************************'  
 
 	  j=n_elements(arr[0,*])
-	  check=0
 
 		for i=0, j-1 do begin
 
@@ -499,7 +498,6 @@ for k=0, n_phi-1 do begin
 						print, '**********MESSENGER***********'
 						print, '*', round(da_mes*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'
-						check=1
 					 endif else print, 'No arrival predicted at MESSENGER!'
 			end	
 			'VEX': begin
@@ -509,7 +507,6 @@ for k=0, n_phi-1 do begin
 						print, '*********Venus Express********'
 						print, '*', round(da_vex*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'
-						check=1
 					 endif else print, 'No arrival predicted at Venus Express!'
 			end	
 			'Earth': begin
@@ -519,7 +516,6 @@ for k=0, n_phi-1 do begin
 						print, '************Earth*************'
 						print, '*', round(da_earth*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'  
-						check=1
 					   endif else print, 'No arrival predicted at Wind!' 
 			end      			       
 			'A': begin 
@@ -529,7 +525,6 @@ for k=0, n_phi-1 do begin
 						print, '***********STEREO-A***********'
 						print, '*', round(da_sta*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'
-						check=1
 					 endif else print, 'No arrival predicted at STEREO-A!'
 			end	        
 			'B': begin 
@@ -539,11 +534,10 @@ for k=0, n_phi-1 do begin
 						print, '***********STEREO-B***********'
 						print, '*', round(da_stb*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'   
-						check=1
 				   endif else print, 'No arrival predicted at STEREO-B!'
 			end     
 			else: begin
-					  if check ne 1 then print, 'Check in situ s/c in input file!'
+					  print, 'Check in situ s/c in input file!'
 			end
 		  endcase
 	  
