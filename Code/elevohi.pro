@@ -61,6 +61,7 @@ data=getenv('DATA_DIR')
 gcs_path=getenv('EAGEL_DIR')
 
 
+;JŸrgen ist lustig!
 
 au=149597870.
 r_sun=695700.
