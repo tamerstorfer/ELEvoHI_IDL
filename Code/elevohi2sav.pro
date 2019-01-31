@@ -10,7 +10,7 @@ eELEvoHI=read_ascii(dir+'eELEvoHI_results.txt', template=temp)
 ;if countmes gt 0 then eELEvoHI.arrtime_mes[nanmes]=!VALUES.F_NAN
 
 ;empty output folder for current run (serves as download directory for Python visualization)
-spawn, 'rm -Rf current/*'
+spawn, 'rm -Rf '+path+'PredictedEvents/current/*'
 
 ;read in ELEvoHI input file
 fnam=path+'Code/elevohi_input.txt'
