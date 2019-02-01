@@ -14,13 +14,17 @@
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
 ;
+; History: 
+;			20190201: added keyword nightly to avoid plotting of DBMfit (JŸrgen Hinterreiter)
+;
+;
 ;(c) 2018 T. Amerstorfer, The software is provided "as is", without warranty of any kind.
 ;         When using ELEvoHI for a publication, please cite Rollett et al. (2016, ApJ) and Amerstorfer et al. (2018, Space Weather).
 ;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi).
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 
-PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, startcut=startcut, endcut=endcut, silent=silent
+PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
 
 au=149597870.
 r_sun=695700.
@@ -509,35 +513,36 @@ if counti ne 0 then begin
 
 	;plot result
 
-	loadct, 0
+	if keyword_set(nightly) ne 1 then begin
+		loadct, 0
 
-	;white_bg=1
-	;if (white_bg eq 1) and (!p.background eq 0) then begin
-	if !p.background eq 0 then begin
-		background_save = !p.background
-		color_save = !p.color
-		!p.color = background_save
-		!p.background = color_save
-	endif else begin
-		 !p.background = 0
-		 !p.color = long(16777215)
-	endelse
+		;white_bg=1
+		;if (white_bg eq 1) and (!p.background eq 0) then begin
+		if !p.background eq 0 then begin
+			background_save = !p.background
+			color_save = !p.color
+			!p.color = background_save
+			!p.background = color_save
+		endif else begin
+			 !p.background = 0
+			 !p.color = long(16777215)
+		endelse
 
-	!P.MULTI=[0,1,2]
+		!P.MULTI=[0,1,2]
 
-	utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]], ytit='Heliocentric Distance [R!D!9n!N!X]', charsize=1.4
-	uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
-	outplot, time[cut:*], fitauall[index,*]*au/r_sun
-	xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
-	xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
-	xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
+		utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]], ytit='Heliocentric Distance [R!D!9n!N!X]', charsize=1.4
+		uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
+		outplot, time[cut:*], fitauall[index,*]*au/r_sun
+		xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
+		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
+		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
 
-	utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]], ytit='CME Apex Speed [km s!E-1!N]', charsize=1.4
-	uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
-	outplot, time[cut:*], fitspeedall[index,*]
+		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]], ytit='CME Apex Speed [km s!E-1!N]', charsize=1.4
+		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
+		outplot, time[cut:*], fitspeedall[index,*]
 
-	!P.MULTI=0
-
+		!P.MULTI=0
+	endif
 endif
 
 startcut=cut

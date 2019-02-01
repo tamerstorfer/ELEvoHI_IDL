@@ -31,6 +31,7 @@
 ;							save_results...set TRUE to produce an IDL save file containing the model parameters and the prediction
 ;							statistics.....set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
 ;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
+;							nightly........set TRUE to avoid plotting of the DBMfit
 ;
 ; Required functions and procedures:  	see readme
 ;
@@ -42,6 +43,7 @@
 ;
 ; History:    2018: ELEvoHI
 ;             2019/01: uploaded to github
+;			  2019/02: keyword 'nightly' added (JŸrgen Hinterreiter)
 ; 
 ; Authors:    Tanja Amerstorfer & Christian Mšstl & JŸrgen Hinterreiter
 ;             Space Research Institute, Austrian Academy of Sciences
@@ -52,7 +54,7 @@
 ;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi, github-link).
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
-PRO elevohi, save_results=save_results, statistics=statistics, silent=silent
+PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly
 
 read_config_file
 
@@ -124,14 +126,32 @@ if GCS eq 1 then begin
       gsdone=1
       print, 'Initializing GCS fitting tool...'
       EAGEL, eventdate, datetime=datetime
-      parafile=gcsresdir+'EAGEL_results_'+eventdate+'*.sav'
+	  parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+	  if n_elements(parafile) gt 1 then begin
+			for p=0, n_elements(parafile)-1 do begin
+				print, p+1, ': ', parafile[p]
+			endfor
+			
+			fnum=''
+			read, fnum
+			parafile = parafile[fnum-1]
+	   endif
   endelse
   
   if filetest eq 1 and nfiles eq 0 then begin
       gsdone=1
       print, 'Initializing GCS fitting tool...'
       EAGEL, eventdate, datetime=datetime
-      parafile=gcsresdir+'EAGEL_results_'+eventdate+'*.sav'
+      parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+	  if n_elements(parafile) gt 1 then begin
+			for p=0, n_elements(parafile)-1 do begin
+				print, p+1, ': ', parafile[p]
+			endfor
+			
+			fnum=''
+			read, fnum
+			parafile = parafile[fnum-1]
+	   endif
   endif      
   
   if GCSFiles[0] ne '' then begin
@@ -147,7 +167,17 @@ if GCS eq 1 then begin
         gcsdone=1
         print, 'Initializing GCS fitting tool...'
         EAGEL, eventdate, datetime=datetime
-        parafile=gcsresdir+'EAGEL_results_'+eventdate+'*.sav'
+        parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+        stop
+		if n_elements(parafile) gt 1 then begin
+			for p=0, n_elements(parafile)-1 do begin
+				print, p+1, ': ', parafile[p]
+			endfor
+			
+			fnum=''
+			read, fnum
+			parafile = parafile[fnum-1]
+		endif
      endif else begin
         parafile=GCSFiles[fnum-1]
         gcsdone=1
@@ -182,7 +212,16 @@ if GCS eq 0 then begin
 		    gcsdone=1
 			print, 'Initializing GCS fitting tool...'
 			EAGEL, eventdate, datetime=datetime
-			parafile=gcsresdir+'EAGEL_results_'+eventdate+'*.sav'
+			parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+	 		if n_elements(parafile) gt 1 then begin
+				for p=0, n_elements(parafile)-1 do begin
+					print, p+1, ': ', parafile[p]
+				endfor
+			
+				fnum=''
+				read, fnum
+				parafile = parafile[fnum-1]
+		    endif
 		 endif else begin
 			parafile=GCSFiles[fnum-1]
 			gcsdone=1
@@ -196,7 +235,16 @@ if GCS eq 0 then begin
 		     gcsdone=1
 			 print, 'Initializing GCS fitting tool...'
 			 EAGEL, eventdate, datetime=datetime
-			 parafile=gcsresdir+'EAGEL_results_'+eventdate+'*.sav'      
+			 parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+	  		 if n_elements(parafile) gt 1 then begin
+				for p=0, n_elements(parafile)-1 do begin
+					print, p+1, ': ', parafile[p]
+				endfor
+			
+				fnum=''
+				read, fnum
+				parafile = parafile[fnum-1]
+	   		 endif     
 		  endif else print, 'Aborting ELEvoHI...'
 	   endelse
 	endif
@@ -454,7 +502,7 @@ for k=0, n_phi-1 do begin
 
 	;next step is fitting the time-distance profile using the DBM
 
-	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, startcut=startcut, endcut=endcut, silent=silent
+	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
 
 	print, 'Gamma after fitting:'
 	print, drag_parameter
@@ -632,7 +680,6 @@ endif
 
 
 
-
-stop
+if keyword_set(nightly) ne 1 then stop
 
 end
