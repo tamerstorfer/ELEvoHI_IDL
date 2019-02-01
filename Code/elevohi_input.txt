@@ -4,11 +4,11 @@ ________________
 HI observer (A or B)
 A
 ________________
-first observed by HI1
+first observed by HI1/[GCS]
 20100403/GCS
 ________________
-source of HI-tracks (helcats or other)
-helcats
+source of HI-tracks (helcats or other)/[startcut/endcut for dbmfit]
+helcats/2/7
 
 ________________
 inverse ellipse aspect ratio, f (b/a), ensemble: (f_min/f_max/d_f)

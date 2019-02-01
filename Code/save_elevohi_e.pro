@@ -46,7 +46,8 @@ endif else begin
 endelse
 
 
-source=str[10]
+sourcestring=strsplit(str[10], '/', /extract)
+source=sourcestring[0]
 insitu=str[24]
 f_in=str[14]
 phi_in=str[18]
@@ -138,7 +139,7 @@ endfor
 
 
 
-if str[10] eq 'helcats' then begin
+if source eq 'helcats' then begin
     restore, path+'PredictedEvents/'+eventdate+'/helcatsHI_track.sav'
 	elon=ymean
 	res=stereo_rsun(time[0],sc,distance=distance)

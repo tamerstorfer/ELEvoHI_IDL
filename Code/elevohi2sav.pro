@@ -331,17 +331,20 @@ for w=0, j-1 do begin
 	   cutstring12=strmid(anytim(arr[1,w], /ccsds), 0, 10)
 	   cutstring22=strmid(anytim(arr[1,w], /ccsds), 11, 5)
 	   insituarr=cutstring12+' '+cutstring22   
-	   save, eventdate, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
+	   save, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endif else begin
-	   save, eventdate, arrplotmedian, arrplotmean, arrerr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
+	   insituarr=['']
+	   save, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endelse
   endif
 
   
  endif else print, '=========================='
 
+
+ file_mkdir, path+'/PredictedEvents/current/'+eventdate
  
- spawn, 'cp -R '+dir+'results/'+arr[0,w]+'/ '+path+'/PredictedEvents/current/'
+ spawn, 'cp -R '+dir+'results/'+arr[0,w]+'/ '+path+'/PredictedEvents/current/'+eventdate
  
 endfor
 
