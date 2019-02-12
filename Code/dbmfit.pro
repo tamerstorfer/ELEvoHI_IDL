@@ -52,19 +52,20 @@ speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
   
 yrmax=max(s+speed_errhi)
 
-loadct, 0
+if keyword_set(nightly) ne 1 then begin
+	loadct, 0
 
-white_bg=1
-if (white_bg eq 1) and (!p.background eq 0) then begin
-    background_save = !p.background
-    color_save = !p.color
-    !p.color = background_save
-    !p.background = color_save
-endif else begin
-    !p.background = 0
-    !p.color = long(16777215)
-endelse
-
+	white_bg=1
+	if (white_bg eq 1) and (!p.background eq 0) then begin
+		background_save = !p.background
+		color_save = !p.color
+		!p.color = background_save
+		!p.background = color_save
+	endif else begin
+		!p.background = 0
+		!p.color = long(16777215)
+	endelse
+endif
 
 
 !P.MULTI=0
