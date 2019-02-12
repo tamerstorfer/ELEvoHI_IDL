@@ -255,15 +255,15 @@ for i=0, n_elements(winds)-1 do begin
 
 	;chose right sign for gamma parameter
 	if v_init ge sw_speed then begin
-		gasi=1
-		print, 'Initial speed larger then background solar wind speed!'
-	endif
-	if v_init lt sw_speed then begin
-		gasi=-1
-		print, 'Initial speed smaller then background solar wind speed!'
-	endif
+	   gasi=1
+	   print, 'Initial speed larger then background solar wind speed!'
+    endif
+    if v_init lt sw_speed then begin
+	   gasi=-1
+	   print, 'Initial speed smaller then background solar wind speed!'
+    endif
 
-	;print, 'STOP 2'
+;	print, 'STOP 2'
 	;stop
 
 	A=[gasi*1.0e-07]
@@ -273,16 +273,19 @@ for i=0, n_elements(winds)-1 do begin
 	;if gasi gt 0 then begin
 	  RES = 0
 	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-9,1e-9])
+	  
+	  
   
 	  ;print, 'gamma sign positive!'
 	;endif
 
 	;if gasi lt 0 then begin
 	;  RES = 0
-	;  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbmneg',FUNCTION_VALUE=values,P0=-A,scale=[100,0])
+	;  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbmneg',FUNCTION_VALUE=values,P0=A,scale=[0,1e-9])
 	;  print, 'gamma sign negative!'
 	;endif
 
+;stop
 
 
 	fitres=fltarr(2)
@@ -293,12 +296,18 @@ for i=0, n_elements(winds)-1 do begin
 	;  print, 'DBM fit failed to converge'
 	;  continue
 	;endif
-	;
-	;if gasi eq 1 and res[0] lt 0 then begin
-	;  print, 'Fit not valid: drag-parameter has wrong sign!'
-	;  continue
-	;endif
+	
+	undefine, fitpara
 
+	if signum(gasi) ne signum(res[0]) then begin
+	  print, 'Fit not valid: drag-parameter has wrong sign!'
+	  print, 'i: ', i
+	  continue
+	endif else begin
+	  fitpara=fltarr(n_elements(winds),3)
+	endelse
+
+    
 
 	;calculate function values
 	;if gasi gt 0 then begin
@@ -321,7 +330,9 @@ for i=0, n_elements(winds)-1 do begin
 
 
 
-	if i eq 0 then fitpara=fltarr(n_elements(winds),3)
+	;if i eq 0 then fitpara=fltarr(n_elements(winds),3)
+	
+	
 
 	fitpara[i,0]=res
 	fitpara[i,1]=sw_speed
@@ -423,6 +434,8 @@ for i=0, n_elements(winds)-1 do begin
 	endif
 
 endfor
+
+
 
 if isa(fitpara) eq 0 then begin
  print,  '****************************************************'
