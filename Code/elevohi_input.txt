@@ -2,13 +2,13 @@ ELEvoHI source file
 
 ________________
 HI observer (A or B)
-A
+B
 ________________
 first observed by HI1/[GCS]
-20100403/GCS
+20100203
 ________________
 source of HI-tracks (helcats or other)/[startcut/endcut for dbmfit]
-helcats/2/7
+helcats/ 3/12
 
 ________________
 inverse ellipse aspect ratio, f (b/a), ensemble: (f_min/f_max/d_f)
@@ -16,7 +16,7 @@ inverse ellipse aspect ratio, f (b/a), ensemble: (f_min/f_max/d_f)
 ________________
 direction of motion of CME apex, phi, ensemble: (phi_min/phi_max/d_phi)
 (angle between HI-observer and CME apex)
- 51/ 71/2
+ 57/ 77/2
 ________________
 angular half width, lambda, ensemble: (lambda_min/lambda_max/d_lambda)
 30/50/5
@@ -26,3 +26,4 @@ Earth
 ________________
 in situ arrival s/c and times (MES, VEX, Earth, A, B)
 Earth
+2010-Feb-07 18:04

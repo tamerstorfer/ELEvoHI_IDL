@@ -193,6 +193,9 @@ endfor
 ;Note that the sign in the dbm equation is derived from fitting - not from comparing vinit to solar wind speed.
 ;It is possible that the sign in the equation is negative although vinit > sw_speed because all data points are taken into account - not only the initial speed.
 accsign=1
+
+;if vinit lt background_wind then accsign=-1 else accsign=1
+
 tinitnum=anytim(tinit)
 
 
@@ -205,9 +208,13 @@ for i=0, n_elements(tdrag)-1 do begin
   rdrag[i]=rdrag[i]/AU;
   ;speed in km/s
   vdrag[i]=(vinit-background_wind)/(1+(accsign*(gammaparam*1e-7)*((vinit-background_wind)*(tdrag[i]-tinitnum))))+background_wind
+  
+  if finite(rdrag[i]) eq 0 then stop
 endfor
 
 ;portrait=1,
+
+;stop
 
 !P.MULTI=0
 
