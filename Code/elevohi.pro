@@ -514,7 +514,7 @@ for k=0, n_phi-1 do begin
 	if tinit eq 0 then begin
 		if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
 		nofit=nofit+1
-	   continue
+	    continue
 	endif else begin
 	   fitworks=fitworks+1
 	endelse

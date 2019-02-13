@@ -245,6 +245,8 @@ winds[4] = max_bg_speed
 fitauall=fltarr(n_elements(winds),n_elements(y))
 fitspeedall=fltarr(n_elements(winds),n_elements(y))
 
+fitpara=fltarr(n_elements(winds),3)
+
 for i=0, n_elements(winds)-1 do begin
 
 	resi=NaN
@@ -275,7 +277,7 @@ for i=0, n_elements(winds)-1 do begin
 	  RES = 0
 	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-9,1e-9])
 	  
-	  
+	  ;stop
   
 	  ;print, 'gamma sign positive!'
 	;endif
@@ -286,7 +288,7 @@ for i=0, n_elements(winds)-1 do begin
 	;  print, 'gamma sign negative!'
 	;endif
 
-;stop
+
 
 
 	fitres=fltarr(2)
@@ -298,15 +300,15 @@ for i=0, n_elements(winds)-1 do begin
 	;  continue
 	;endif
 	
-	undefine, fitpara
+	;undefine, fitpara
 
 	if signum(gasi) ne signum(res[0]) then begin
 	  print, 'Fit not valid: drag-parameter has wrong sign!'
 	  print, 'i: ', i
 	  continue
-	endif else begin
-	  fitpara=fltarr(n_elements(winds),3)
-	endelse
+	endif ;else begin
+	  ;fitpara=fltarr(n_elements(winds),3)
+	;endelse
 
     
 
@@ -338,6 +340,8 @@ for i=0, n_elements(winds)-1 do begin
 	fitpara[i,0]=res
 	fitpara[i,1]=sw_speed
 	fitpara[i,2]=resi/r_sun
+	
+	
 
 	;calculate fitspeed
 	fitspeed = DERIV(X, fit)
@@ -461,22 +465,23 @@ if count gt 0 then fitpara[cu]=NaN
 
 index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
+dragrangepos=2d-7 ;allows the drag parameter to be valid within a range of -2d-7 and 2d-7 1/km
+dragrangeneg=-1.5d-7
 
-
-if fitpara[index,0] lt -6.9d-8 or abs(fitpara[index,0]) gt 4d-7 then begin
+if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
   inxex = sort(fitpara[*,2])
   index = inxex[1]
   print, 'Minimum residual has no valid drag-parameter: '
   print, '...looking at next value.'
-  if fitpara[index,0] lt -6.9d-8 or abs(fitpara[index,0]) gt 4d-7 then begin
+  if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
     index = inxex[2]
     print, 'Second smallest residual has no valid drag-parameter: '
     print, '...looking at next value.'
-    if fitpara[index,0] lt -6.9d-8 or abs(fitpara[index,0]) gt 4d-7 then begin
+    if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
       index = inxex[3]
       print, 'Third smallest residual has no valid drag-parameter: '
       print, '...looking at next value.'
-      if fitpara[index,0] lt -6.9d-8 or abs(fitpara[index,0]) gt 4d-7 then begin
+      if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
         index = inxex[4]
         print, 'Fourth smallest residual has no valid drag-parameter: '
         print, 'No DBM fit possible!'
@@ -504,7 +509,7 @@ if counti ne 0 then begin
 	print, '------------------------------------'
 	print, '------------------------------------'
 
-
+;stop
 
 	tinit=time[cut]
 
@@ -529,6 +534,17 @@ if counti ne 0 then begin
 
 	if keyword_set(nightly) ne 1 then begin
 		loadct, 0
+		
+				drag=0
+		if gasi eq -1 then begin
+			drag=strmid(string(fitpara[index,0]),1,4)
+		endif else begin
+			drag=strmid(string(fitpara[index,0]),2,3)
+		endelse
+
+		dragexp=strmid(string(fitpara[index,0]),10,3)
+		bgspeed=strmid(string(fitpara[index,1]),6,3)
+		meanresi=strmid(string(fitpara[index,2]),5,4)
 
 		;white_bg=1
 		;if (white_bg eq 1) and (!p.background eq 0) then begin
@@ -562,7 +578,9 @@ endif
 startcut=cut
 endcut=ecut
 
-
-
+print, '======='
+print, 'fitpara'
+print, fitpara
+print, '======='
 
 end

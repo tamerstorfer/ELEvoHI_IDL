@@ -209,7 +209,10 @@ for i=0, n_elements(tdrag)-1 do begin
   ;speed in km/s
   vdrag[i]=(vinit-background_wind)/(1+(accsign*(gammaparam*1e-7)*((vinit-background_wind)*(tdrag[i]-tinitnum))))+background_wind
   
-  if finite(rdrag[i]) eq 0 then stop
+  if finite(rdrag[i]) eq 0 then begin
+    print, 'Sign of gamma does not fit to vinit and w! Check dbmfit.pro!'
+    stop
+  endif
 endfor
 
 ;portrait=1,
