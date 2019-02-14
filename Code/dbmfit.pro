@@ -275,7 +275,7 @@ for i=0, n_elements(winds)-1 do begin
 
 	;if gasi gt 0 then begin
 	  RES = 0
-	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-9,1e-9])
+	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-8,1e-8])
 	  
 	  ;stop
   
@@ -305,7 +305,8 @@ for i=0, n_elements(winds)-1 do begin
 	if signum(gasi) ne signum(res[0]) then begin
 	  print, 'Fit not valid: drag-parameter has wrong sign!'
 	  print, 'i: ', i
-	  continue
+	  drag_parameter=NaN
+	  if i lt n_elements(winds)-1 then continue else return
 	endif ;else begin
 	  ;fitpara=fltarr(n_elements(winds),3)
 	;endelse
@@ -465,8 +466,10 @@ if count gt 0 then fitpara[cu]=NaN
 
 index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
-dragrangepos=2d-7 ;allows the drag parameter to be valid within a range of -2d-7 and 2d-7 1/km
-dragrangeneg=-1.5d-7
+dragrangepos=2d-7 
+dragrangeneg=-1.5d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
+
+;if finite(res[0]) eq 0 then begin
 
 if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
   inxex = sort(fitpara[*,2])
@@ -485,17 +488,18 @@ if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos the
         index = inxex[4]
         print, 'Fourth smallest residual has no valid drag-parameter: '
         print, 'No DBM fit possible!'
-         tinit=0
-         rinit=0
-         vinit=0
-         swspeed=0
-         drag_parameter=0
+         tinit=NaN
+         rinit=NaN
+         vinit=NaN
+         swspeed=NaN
+         drag_parameter=NaN
         return
       endif
     endif
   endif
 endif
 
+;endif
 
 counti=fix(counti)
 
@@ -509,7 +513,7 @@ if counti ne 0 then begin
 	print, '------------------------------------'
 	print, '------------------------------------'
 
-;stop
+
 
 	tinit=time[cut]
 

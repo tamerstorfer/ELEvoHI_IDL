@@ -506,12 +506,13 @@ for k=0, n_phi-1 do begin
 
 	print, 'Gamma after fitting:'
 	print, drag_parameter
+	
 
 	;count and save number of converging and non-converging fits
 
 	a=[phi, f, lambda]
 
-	if tinit eq 0 then begin
+	if drag_parameter eq 0 or finite(drag_parameter) eq 0 then begin
 		if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
 		nofit=nofit+1
 	    continue
@@ -519,7 +520,7 @@ for k=0, n_phi-1 do begin
 	   fitworks=fitworks+1
 	endelse
 
-
+    
 
 	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
 
@@ -593,6 +594,8 @@ for k=0, n_phi-1 do begin
 		endfor
   
 	endif  
+	
+	
 
 	if not isa(da_mes) then da_mes=!VALUES.F_NAN
 	if not isa(da_vex) then da_vex=!VALUES.F_NAN
