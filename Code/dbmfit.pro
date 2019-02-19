@@ -242,6 +242,8 @@ winds[2] = bg_speed
 winds[3] = bg_speed+(max_bg_speed-bg_speed)/2
 winds[4] = max_bg_speed
 
+;winds = findgen(19)*25+250
+
 fitauall=fltarr(n_elements(winds),n_elements(y))
 fitspeedall=fltarr(n_elements(winds),n_elements(y))
 
@@ -302,14 +304,15 @@ for i=0, n_elements(winds)-1 do begin
 	
 	;undefine, fitpara
 
-	if signum(gasi) ne signum(res[0]) then begin
-	  print, 'Fit not valid: drag-parameter has wrong sign!'
-	  print, 'i: ', i
-	  drag_parameter=NaN
-	  if i lt n_elements(winds)-1 then continue else return
-	endif ;else begin
-	  ;fitpara=fltarr(n_elements(winds),3)
-	;endelse
+;	if signum(gasi) ne signum(res[0]) then begin
+;	  print, 'Fit not valid: drag-parameter has wrong sign!'
+;	  print, 'i: ', i
+;	  drag_parameter=NaN
+;	  ;stop
+;	  ;if i lt n_elements(winds)-1 then continue else return
+;	endif ;else begin
+;	  ;fitpara=fltarr(n_elements(winds),3)
+;	;endelse
 
     
 
@@ -335,12 +338,21 @@ for i=0, n_elements(winds)-1 do begin
 
 
 	;if i eq 0 then fitpara=fltarr(n_elements(winds),3)
-	
+	if signum(gasi) ne signum(res[0]) then begin
+	  print, 'Fit not valid: drag-parameter has wrong sign!'
+	  print, 'i: ', i
+	  drag_parameter=NaN
+	  fitpara[i,0]=NaN
+	  fitpara[i,1]=sw_speed
+	  fitpara[i,2]=resi/r_sun
+	endif else begin
+	  fitpara[i,0]=res
+	  fitpara[i,1]=sw_speed
+	  fitpara[i,2]=resi/r_sun
+	endelse
 	
 
-	fitpara[i,0]=res
-	fitpara[i,1]=sw_speed
-	fitpara[i,2]=resi/r_sun
+
 	
 	
 
@@ -501,6 +513,8 @@ endif
 
 ;endif
 
+;stop
+
 counti=fix(counti)
 
 
@@ -535,6 +549,7 @@ if counti ne 0 then begin
 	print, 'Best result saved under ', dir, 'dbmfit_results.sav'
 
 	;plot result
+	if finite(fitpara[index, 0]) then begin
 
 	if keyword_set(nightly) ne 1 then begin
 		loadct, 0
@@ -576,6 +591,8 @@ if counti ne 0 then begin
 		outplot, time[cut:*], fitspeedall[index,*]
 
 		!P.MULTI=0
+	endif
+	
 	endif
 endif
 
