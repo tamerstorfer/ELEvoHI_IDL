@@ -517,7 +517,7 @@ bestIndex = -1
 smallestResidual = 100.
 for i = 0, n_elements(winds)-1 do begin
 	if (fitpara[i,2] lt smallestResidual) and (fitpara[i,0] ge dragrangeneg and fitpara[i,0] le dragrangepos) then begin
-		smallestResiudal = fitpara[i,2]
+		smallestResidual = fitpara[i,2]
 		bestIndex = i
 	endif
 endfor
