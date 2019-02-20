@@ -478,42 +478,63 @@ if count gt 0 then fitpara[cu]=NaN
 
 index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
-dragrangepos=2d-7 
-dragrangeneg=-1.5d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
+dragrangepos=3d-7 
+dragrangeneg=-2d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
 
 ;if finite(res[0]) eq 0 then begin
 
-if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-  inxex = sort(fitpara[*,2])
-  index = inxex[1]
-  print, 'Minimum residual has no valid drag-parameter: '
-  print, '...looking at next value.'
-  if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-    index = inxex[2]
-    print, 'Second smallest residual has no valid drag-parameter: '
-    print, '...looking at next value.'
-    if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-      index = inxex[3]
-      print, 'Third smallest residual has no valid drag-parameter: '
-      print, '...looking at next value.'
-      if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-        index = inxex[4]
-        print, 'Fourth smallest residual has no valid drag-parameter: '
-        print, 'No DBM fit possible!'
-         tinit=NaN
-         rinit=NaN
-         vinit=NaN
-         swspeed=NaN
-         drag_parameter=NaN
-        return
-      endif
-    endif
-  endif
-endif
+;if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
+;  inxex = sort(fitpara[*,2])
+;  index = inxex[1]
+;  print, 'Minimum residual has no valid drag-parameter: '
+;  print, '...looking at next value.'
+;  if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
+;    index = inxex[2]
+;    print, 'Second smallest residual has no valid drag-parameter: '
+;    print, '...looking at next value.'
+;    if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
+;      index = inxex[3]
+;      print, 'Third smallest residual has no valid drag-parameter: '
+;      print, '...looking at next value.'
+;      if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
+;        index = inxex[4]
+;        print, 'Fourth smallest residual has no valid drag-parameter: '
+;        print, 'No DBM fit possible!'
+;         tinit=NaN
+;         rinit=NaN
+;         vinit=NaN
+;         swspeed=NaN
+;         drag_parameter=NaN
+;        return
+;      endif
+;    endif
+;  endif
+;endif
 
 ;endif
 
-;stop
+bestIndex = -1
+smallestResidual = 100.
+for i = 0, n_elements(winds)-1 do begin
+	if (fitpara[i,2] lt smallestResidual) and (fitpara[i,0] ge dragrangeneg and fitpara[i,0] le dragrangepos) then begin
+		smallestResiudal = fitpara[i,2]
+		bestIndex = i
+	endif
+endfor
+
+index = bestIndex
+
+if index eq -1 then begin
+	print, 'No DBM fit possible!'
+	tinit=NaN
+	rinit=NaN
+	vinit=NaN
+	swspeed=NaN
+	drag_parameter=NaN
+	return
+endif
+
+
 
 counti=fix(counti)
 
