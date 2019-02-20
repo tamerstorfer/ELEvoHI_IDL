@@ -304,9 +304,9 @@ for w=0, j-1 do begin
    if isa(arrtime_mean) and finite(arrtime_mean) and isa(arrtime_median) and finite(arrtime_median) then begin
  
 	 print, 'Ensemble mean:'
-	 print, arrtime_mean, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F4.2,1X,A5)'
+	 print, arrtime_mean, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'
 	 print, 'Ensemble median:'
-	 print, arrtime_median, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F4.2,1X,A5)'  
+	 print, arrtime_median, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'  
 	 print, '=========================='
  
  
@@ -325,7 +325,7 @@ for w=0, j-1 do begin
  
 	 arrplotmean=cutstring11+' '+cutstring21
  
-	 arrerr=string((round(arrstdd*100.)/100.), format='(F4.2)')
+	 arrerr=string((round(arrstdd*100.)/100.), format='(F5.1)')
  
 	 if anytim(arr[1,w]) ne 0 then begin
 	   cutstring12=strmid(anytim(arr[1,w], /ccsds), 0, 10)

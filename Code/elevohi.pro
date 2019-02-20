@@ -624,7 +624,11 @@ endfor
 
 ;iteration of runs end here
 
-
+if fitworks eq 0 then begin
+   print, 'For this CME with the chosen parameters no prediction is possible.'
+   journal
+   if keyword_set(nightly) ne 1 then stop   
+endif
 
 if ensemble eq 1 and keyword_set(save_results) then begin
   print, 'Ensemble results saved at '+dir+'eELEvoHI_results.txt'  
