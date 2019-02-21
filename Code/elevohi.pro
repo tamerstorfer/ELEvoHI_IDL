@@ -437,35 +437,53 @@ endelse
 
 
 ;iterating runs starts here
-  
-for k=0, n_phi-1 do begin 
-  
-  if n_elements(phi_arr) ne 1 then begin
-    phi=phi_arr[k]
-    print, phi
-  endif else phi=phistart
 
+phiCenter = (phistart+phiend)/2
+lambdaCenter = (lambdastart+lambdaend)/2
+; fCenter fixed set
+fCenter = 0.7
+
+for k=0, n_phi-1 do begin 
     for l=0, n_f-1 do begin
-  
-      if n_elements(f_arr) ne 1 then begin
-        f=f_arr[l]
-        print, f
-      endif else f=fstart
-      
             for m=0, n_lambda-1 do begin
             
+            	if n_elements(phi_arr) ne 1 then begin
+	            	phi=phi_arr[k]
+					;print, phi
+				endif else phi=phistart
+					
+				if n_elements(f_arr) ne 1 then begin
+		        	f=f_arr[l]
+					;print, f
+				endif else f=fstart
   
-              if n_elements(lambda_arr) ne 1 then begin
-                lambda=lambda_arr[m]
-                print, lambda
-              endif else lambda=lambdastart
-  
-	print, '*****'
-	print, 'f=', f
-	print, 'phi=', phi
-	print, 'lambda=', lambda
-	print, '*****'
+				if n_elements(lambda_arr) ne 1 then begin
+                	lambda=lambda_arr[m]
+                	;print, lambda
+				endif else lambda=lambdastart
+              
+              
+              	; use for the first iteration the values in the middle of the parameter range
+              	; change the values from the first run with those from the "middle" run
+              	if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
+              		f = fstart
+              		phi = phistart
+              		lambda = lambdaStart
+              	endif
+              
+				if k eq 0 and l eq 0 and m eq 0 then begin
+					f = fCenter
+					phi = phiCenter
+					lambda = lambdaCenter
+				endif
 
+ 
+ 
+				print, '*****'
+				print, 'f=', f
+				print, 'phi=', phi
+				print, 'lambda=', lambda
+				print, '*****'
 
 	elon_err=fltarr(n_elements(elon))
 
