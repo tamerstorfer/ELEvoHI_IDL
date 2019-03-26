@@ -308,7 +308,16 @@ for w=0, j-1 do begin
 	 print, 'Ensemble median:'
 	 print, arrtime_median, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'  
 	 print, '=========================='
- 
+     
+     if str[28] ne '' then begin
+       print, 'In situ arrival time (observed): ', str[28]+' UT', format='(A32,1X,A20)'
+       print, '--------------------------'
+       print, 'Difference between observation and prediction:'
+       print, 'dt (mean): ', round((anytim(arrtime_mean)-anytim(str[28]))/360.)/10., 'h', format='(A11,F5.1,1X,A1)'
+       print, 'dt (median): ', round((anytim(arrtime_median)-anytim(str[28]))/360.)/10., 'h', format='(A13,F5.1,1X,A1)'
+       print, '=========================='
+     endif
+     
  
 	 shadelimlow=anytim(anytim(arrtime_median)-arrstdd*3600., /ccsds)
 	 shadelimhigh=anytim(anytim(arrtime_median)+arrstdd*3600., /ccsds)

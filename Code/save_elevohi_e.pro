@@ -139,15 +139,32 @@ endfor
 
 
 
-if source eq 'helcats' then begin
-    restore, path+'PredictedEvents/'+eventdate+'/helcatsHI_track.sav'
-	elon=ymean
-	res=stereo_rsun(time[0],sc,distance=distance)
-	elon_err=ystdd
-endif else begin
-    restore, data+'STEREO/HItracks/'+eventdate+'.sav'
-    ;elon=track.track_y
-endelse
+;if source eq 'helcats' then begin
+;    restore, path+'PredictedEvents/'+eventdate+'/helcatsHI_track.sav'
+;	elon=ymean
+;	res=stereo_rsun(time[0],sc,distance=distance)
+;	elon_err=ystdd
+;endif else begin
+;    restore, data+'STEREO/HItracks/'+eventdate+'.sav'
+;    ;elon=track.track_y
+;endelse
+
+case source of
+   'helcats': begin
+				  print, 'Source file from HELCATS'
+				  read_hi, eventdate, sc, time, elon, elon_err, filen, /silent
+				  restore, filen, /verb
+			  end			  
+   'user-defined': begin
+					   print, 'User-defined HI input file'
+					   restore, str[11], /verb
+					   time=track.track_date
+					   elon=track.elon
+					   elon_err=track.elon_stdd
+					   sc=track.sc
+                   end
+    else: print, 'Define HI input file!'   
+endcase
 
 
 restore, dir+'elcon_results.sav'

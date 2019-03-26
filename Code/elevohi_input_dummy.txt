@@ -7,8 +7,9 @@ ________________
 first observed by HI1/[GCS]
 20101104
 ________________
-source of HI-tracks/[startcut/endcut for dbmfit]
+source of HI-tracks (helcats or user-defined)/[startcut/endcut for dbmfit]
 helcats
+
 ________________
 inverse ellipse aspect ratio, f (b/a)
 0.7/1/0.2

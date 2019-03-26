@@ -41,7 +41,9 @@
 ;					The HELCATS packages can be accessed at https://www.helcats-fp7.eu.
 ;
 ;
-; History:    2018: ELEvoHI
+; History:    2016: ELEvoHI 1.0 - single-run (Rollett et al., 2016)
+;			  2018: ELEvoHI 1.1 - ensemble-mode (Amerstorfer et al., 2018)
+;             2018/10: ELEvoHI 1.2 - GCS ecliptic cut implemented (by J. Hinterreiter)
 ;             2019/01: uploaded to github
 ;			  2019/02: keyword 'nightly' added (JŸrgen Hinterreiter)
 ; 
@@ -273,16 +275,33 @@ fitworks=0
 
 journal, path+'logfile.log'
 
+case source of
+   'helcats': begin
+				  print, 'Source file from HELCATS'
+				  read_hi, eventdate, sc, time, elon, elon_err, filen, /silent
+				  restore, filen, /verb
+			  end			  
+   'user-defined': begin
+					   print, 'User-defined HI input file'
+					   restore, str[11], /verb
+					   time=track.track_date
+					   elon=track.elon
+					   elon_err=track.elon_stdd
+					   sc=track.sc
+                   end
+    else: print, 'Define HI input file!'   
+endcase
+                
 
-if source eq 'helcats' then begin
-	print, 'Source file from HELCATS'
-	read_hi, eventdate, sc, time, ymean, ystdd, filen, /silent
-	restore, filen, /verb
-	elon=ymean
-	elon_err=ystdd
-endif else begin
-    restore, data+'STEREO/HItracks/'+eventdate+'.sav', /verb
-endelse
+;if source eq 'helcats' then begin
+;	print, 'Source file from HELCATS'
+;	read_hi, eventdate, sc, time, ymean, ystdd, filen, /silent
+;	restore, filen, /verb
+;	elon=ymean
+;	elon_err=ystdd
+;endif else begin
+;    restore, data+'STEREO/HItracks/'+eventdate+'.sav', /verb
+;endelse
 
 res=stereo_rsun(time[0],sc,distance=distance)
 d=distance[0]/au ; Sun-s/c distance in AU
