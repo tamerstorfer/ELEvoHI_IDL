@@ -95,14 +95,15 @@ evstr=strsplit(str[7], '/', /extract)
 
 if n_elements(evstr) eq 2 then begin
     GCS=1
-    eventdate=evstr[0]
 endif else begin
     GCS=0
-    eventdate=evstr[0]
 endelse
+eventdate=evstr[0]
+eventdateSC = eventdate+'_'+sc
+
 
 ;produce name for event directory
-dir=path+'PredictedEvents/'+eventdate+'/'
+dir=path+'PredictedEvents/'+eventdateSC+'/'
 
 resdir=dir+'results/'
 filetest = FILE_TEST(resdir, /dir)
@@ -118,7 +119,7 @@ nfiles=0
 
 if GCS eq 1 then begin
   ;check if directory already exists
-  gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdate+'/'
+  gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdateSC+'/'
   filetest = FILE_TEST(gcsresdir, /dir)
   GCSFiles=['']   
   if filetest eq 1 then begin
@@ -127,7 +128,7 @@ if GCS eq 1 then begin
       spawn, 'mkdir '+gcsresdir
       gsdone=1
       print, 'Initializing GCS fitting tool...'
-      EAGEL, eventdate, datetime=datetime
+      EAGEL, eventdateSC, datetime=datetime
 	  parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
 	  if n_elements(parafile) gt 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
@@ -143,7 +144,7 @@ if GCS eq 1 then begin
   if filetest eq 1 and nfiles eq 0 then begin
       gsdone=1
       print, 'Initializing GCS fitting tool...'
-      EAGEL, eventdate, datetime=datetime
+      EAGEL, eventdatesc, datetime=datetime
       parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
 	  if n_elements(parafile) gt 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
@@ -168,7 +169,7 @@ if GCS eq 1 then begin
      if fnum eq 'n' then begin
         gcsdone=1
         print, 'Initializing GCS fitting tool...'
-        EAGEL, eventdate, datetime=datetime
+        EAGEL, eventdatesc, datetime=datetime
         parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
         stop
 		if n_elements(parafile) gt 1 then begin
@@ -192,7 +193,7 @@ if GCS eq 0 then begin
       print, 'CME front shape parameters not properly set.'
       
       ;check if GCSCut-directory already exists
-      gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdate+'/'
+      gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdatesc+'/'
       filetest = FILE_TEST(gcsresdir, /dir)
       GCSFiles=['']   
       if filetest eq 1 then begin
@@ -213,7 +214,7 @@ if GCS eq 0 then begin
 		 if fnum eq 'n' then begin
 		    gcsdone=1
 			print, 'Initializing GCS fitting tool...'
-			EAGEL, eventdate, datetime=datetime
+			EAGEL, eventdatesc, datetime=datetime
 			parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
 	 		if n_elements(parafile) gt 1 then begin
 				for p=0, n_elements(parafile)-1 do begin
@@ -236,7 +237,7 @@ if GCS eq 0 then begin
 		  if b eq 'y' then begin
 		     gcsdone=1
 			 print, 'Initializing GCS fitting tool...'
-			 EAGEL, eventdate, datetime=datetime
+			 EAGEL, eventdatesc, datetime=datetime
 			 parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
 	  		 if n_elements(parafile) gt 1 then begin
 				for p=0, n_elements(parafile)-1 do begin
