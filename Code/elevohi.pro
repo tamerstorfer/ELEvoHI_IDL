@@ -279,7 +279,7 @@ journal, path+'logfile.log'
 case source of
    'helcats': begin
 				  print, 'Source file from HELCATS'
-				  read_hi, eventdate, sc, time, elon, elon_err, filen, /silent
+				  read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
 				  restore, filen, /verb
 			  end			  
    'user-defined': begin

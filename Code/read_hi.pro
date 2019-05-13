@@ -162,18 +162,21 @@ if keyword_set(silent) eq 0 then begin
 endif
 
 ;filename to save mean track:
-time=anytim(new_time, /ccsds)
 
-if n_elements(result) eq 1 then u=strtrim(string(1),2) else u=n
+if keyword_set(save_file) then begin
 
-fil=strmid(time[0],0,10)+'_0'+u
-filen=path+'PredictedEvents/'+eventdate+'_'+sc+'/helcatsHI_track.sav'
+	time=anytim(new_time, /ccsds)
 
-save, time, ymean, ystdd, filename=filen
-print, 'track saved under...'
-print, filen
+	if n_elements(result) eq 1 then u=strtrim(string(1),2) else u=n
 
+	fil=strmid(time[0],0,10)+'_0'+u
+	filen=path+'PredictedEvents/'+eventdate+'_'+sc+'/helcatsHI_track.sav'
 
+	save, time, ymean, ystdd, filename=filen
+	print, 'track saved under...'
+	print, filen
+
+endif
 
 
 
