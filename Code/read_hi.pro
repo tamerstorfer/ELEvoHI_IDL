@@ -1,7 +1,7 @@
 
 ;readin HELCATS hi tracks
 
-PRO read_hi, eventdate, sc, time, ymean, ystdd, filen, _EXTRA = ex, silent=silent
+PRO read_hi, eventdate, sc, time, ymean, ystdd, filen, save_file=save_file, _EXTRA = ex, silent=silent
 
 path=getenv('ELEvoHI_DIR')
 data=getenv('DATA_DIR')
