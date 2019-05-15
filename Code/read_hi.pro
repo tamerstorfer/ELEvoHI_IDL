@@ -163,9 +163,11 @@ endif
 
 ;filename to save mean track:
 
-if keyword_set(save_file) then begin
+
 
 	time=anytim(new_time, /ccsds)
+
+if keyword_set(save_file) then begin
 
 	if n_elements(result) eq 1 then u=strtrim(string(1),2) else u=n
 
