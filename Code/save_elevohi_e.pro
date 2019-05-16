@@ -152,8 +152,11 @@ endfor
 case source of
    'helcats': begin
 				  print, 'Source file from HELCATS'
-				  read_hi, eventdate, sc, time, elon, elon_err, filen, /silent
+				  ;read_hi, eventdate, sc, time, elon, elon_err, filen, /silent
+				  filen=path+'PredictedEvents/'+eventdate+'_'+sc+'/helcatsHI_track.sav'
 				  restore, filen, /verb
+				  elon = ymean
+				  elon_err = ystdd
 			  end			  
    'user-defined': begin
 					   print, 'User-defined HI input file'
