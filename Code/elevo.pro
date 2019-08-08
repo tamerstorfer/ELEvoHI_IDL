@@ -1,5 +1,5 @@
 ;+
-; general ellipse evolution model 
+; general ellipse evolution model
 ;
 ; Authors: Christian Moestl, Tanja Amerstorfer
 ; last update 2015 Feb 23
@@ -137,7 +137,7 @@ print, 'Spacecraft separation from CME apex:'
 print, 'STEREO-A:', delta_A, format='(A, 2x, F6.1)'
 print, 'STEREO-B:', delta_B, format='(A, 2x, F6.1)'
 print, 'Wind:', delta_E, format='(A, 5x, F6.1)'
-print, 'MESSENGER: ', delta_MES, format='(A, 2x, F6.1)' 
+print, 'MESSENGER: ', delta_MES, format='(A, 2x, F6.1)'
 print, 'Venus', delta_V, format='(A, 5x, F6.1)'
 print, '------------------------------------'
 
@@ -169,7 +169,7 @@ print, '------------------------------------'
 
 
 
-;create 1-D DBM kinematic for ellipse apex with 
+;create 1-D DBM kinematic for ellipse apex with
 ;constant drag parameter and constant background solar wind speed
 
 ;timegrid=1440  ;number of points for 10 days with 10 min resolution
@@ -201,14 +201,14 @@ tinitnum=anytim(tinit)
 
 
 for i=0, n_elements(tdrag)-1 do begin
-  
+
   ;distance in km
   rdrag[i]=(accsign/(gammaparam*1e-7))*alog(1+(accsign*(gammaparam*1e-7)*((vinit-background_wind)*(tdrag[i]-tinitnum))))+background_wind*(tdrag[i]-tinitnum)+Rinit*r_sun
   ;convert from km to AU
   rdrag[i]=rdrag[i]/AU;
   ;speed in km/s
   vdrag[i]=(vinit-background_wind)/(1+(accsign*(gammaparam*1e-7)*((vinit-background_wind)*(tdrag[i]-tinitnum))))+background_wind
-  
+
   if finite(rdrag[i]) eq 0 then begin
     print, 'Sign of gamma does not fit to vinit and w! Check dbmfit.pro!'
     stop
@@ -294,7 +294,7 @@ if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anyti
     yy = mess[0]
 
   cspice_reclat, mess[0:2], radius, longitude, latitude
- 
+
   pos_mes[0]=radius*au
   pos_mes[1]=longitude
   pos_mes[2]=latitude
@@ -360,7 +360,7 @@ plots, [0, earth_dist[1]], [0, earth_dist[0]],  $
 loadct, 5, /silent
 fpcolor = 120 ;red
 hmcolor = 50  ;blue
-ssecolor= 180 ;green	
+ssecolor= 180 ;green
 
 ;set bounding and central line for ellipse similar to black for all
 loadct, 0, /silent
@@ -392,7 +392,7 @@ loadct, 5, /silent
 
 color1 = 0
 color2 = 50  ;blue
-color3 = 170 ;green	
+color3 = 170 ;green
 color4 = 185 ;yellow
 color5 = 120 ;red
 
@@ -400,12 +400,12 @@ color5 = 120 ;red
 colors=[color1,color2,color3,color4,color5]
 
 for i=0,s[1]-1  do begin
-            
-  ;set ellipse color different for each timestep	
+
+  ;set ellipse color different for each timestep
   elcolor=colors[i]
 
   ;draw ellipse, ;R_plot[i] is apex
-  f=1/aspectratio  ;f=b/a
+  ;f=1/aspectratio  ;f=b/a
   theta=atan(f^2*tan(lambda*!dtor))
   omega=sqrt(cos(theta)^2*(f^2-1)+1)
   ;if this factor is set to other than 1 one can make very wide ellipses around the Sun
@@ -422,7 +422,7 @@ for i=0,s[1]-1  do begin
 
   ;get distance and speed of point along delta of STEREO-A:
   dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_A)
-  
+
   if finite(dvalue) then begin
 		deltaspeed_A=dvalue/R_plot[i]*V_plot[i]
   endif
@@ -430,23 +430,23 @@ for i=0,s[1]-1  do begin
 
   ;get distance and speed of point along delta of STEREO-B:
   dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_B)
-  
+
   if finite(dvalue) then begin
 		deltaspeed_B=dvalue/R_plot[i]*V_plot[i]
   endif
 
   ;get distance and speed of point along delta of Venus:
   dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_V)
-  
+
   if finite(dvalue) then begin
 		deltaspeed_V=dvalue/R_plot[i]*V_plot[i]
-  endif  
-  
-  
+  endif
+
+
   ;get distance and speed of point along delta of MESSENGER:
 ;if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
   		dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_MES)
-  
+
   		if finite(dvalue) then begin
 			deltaspeed_MES=dvalue/R_plot[i]*V_plot[i]
   		endif
@@ -454,16 +454,16 @@ for i=0,s[1]-1  do begin
   ;stop
   ;get distance and speed of point along delta of Earth:
   dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_E)
-  
+
   if finite(dvalue) then begin
 		deltaspeed_E=dvalue/R_plot[i]*V_plot[i]
   endif
-		
+
   ;get apex position minus b for ellipse center
   xangle=sin((earthangle)*!dtor)
   yangle=cos((earthangle)*!dtor)
   ellipse_center=[xangle,yangle]*c ;this is in data coordinates, so in AU
-		
+
   ;draw this particular ellipse
 
   ;the sun is at data = 0,0 coordinates..
@@ -493,11 +493,11 @@ tars=anytim(tdrag)-anytim(tdrag[0])
   v_MES=deriv(tars, d_MES*au)
 
   ;check where the heliocentric distance of STEREO-A is less than the ellipse distance
-  index_hit_MES=where(mesp[0]/AU lt d_MES) 
+  index_hit_MES=where(mesp[0]/AU lt d_MES)
   ;take first value of these indices = arrival time at STEREO-A within drag time resolution (10 minutes)
   arrival_MES=anytim(tdrag[index_hit_MES[0]], /ccsds)
   arrival_speed_MES=v_MES[index_hit_MES[0]]
-  
+
   if finite(d_MES[0]) then begin
 
 	  print, '---------------------------------------------'
@@ -521,11 +521,11 @@ tars=anytim(tdrag)-anytim(tdrag[0])
   v_VEX=deriv(tars, d_VEX*au)
 
   ;check where the heliocentric distance of VEX is less than the ellipse distance
-  index_hit_VEX=where(vexp[0]/AU lt d_VEX) 
+  index_hit_VEX=where(vexp[0]/AU lt d_VEX)
   ;take first value of these indices = arrival time at VEX within drag time resolution (10 minutes)
   arrival_VEX=anytim(tdrag[index_hit_VEX[0]], /ccsds)
   arrival_speed_VEX=v_VEX[index_hit_VEX[0]]
-  
+
   if finite(d_VEX[0]) then begin
 
   print, '---------------------------------------------'
@@ -548,7 +548,7 @@ if finite(d_A[0]) then begin
   v_A=deriv(tars, d_A*au)
 
   ;check where the heliocentric distance of STEREO-A is less than the ellipse distance
-  index_hit_A=where(stap[0]/AU lt d_A) 
+  index_hit_A=where(stap[0]/AU lt d_A)
   ;take first value of these indices = arrival time at STEREO-A within drag time resolution (10 minutes)
   arrival_A=anytim(tdrag[index_hit_A[0]], /ccsds)
   arrival_speed_A=v_A[index_hit_A[0]]
@@ -573,7 +573,7 @@ if finite(d_B[0]) then begin
   v_B=deriv(tars, d_B*au)
 
   ;check where the heliocentric distance of STEREO-A is less than the ellipse distance
-  index_hit_B=where(stbp[0]/AU lt d_B) 
+  index_hit_B=where(stbp[0]/AU lt d_B)
   ;take first value of these indices = arrival time at STEREO-A within drag time resolution (10 minutes)
   arrival_B=anytim(tdrag[index_hit_B[0]], /ccsds)
   arrival_speed_B=v_B[index_hit_B[0]]
@@ -600,7 +600,7 @@ if finite(d_W[0]) then begin
 
   ;check where the heliocentric distance of Wind is less than the ellipse distance
   ;correct for L1
-  index_hit_W=where(ep[0]/AU-1.5*1e6/AU lt d_W) 
+  index_hit_W=where(ep[0]/AU-1.5*1e6/AU lt d_W)
   ;take first value of these indices = arrival time at Earth within drag time resolution (10 minutes)
   arrival_W=anytim(tdrag[index_hit_W[0]], /ccsds)
   arrival_speed_W=v_W[index_hit_W[0]]
@@ -629,14 +629,21 @@ dragx=0.7
 XYOUTS, !y.crange[1]+2.4, 1, [strmid(t_plot[0],0,11)+'  '+strmid(t_plot[0],12,5)], /data, $
 	charsize=3, charthick=2, alignment=0, font=1, color=colors[0]
 
+XYOUTS, !y.crange[1]+2.4, 1.15, [strmid(t_plot[1],0,11)+'  '+strmid(t_plot[1],12,5)], /data, $
+  charsize=3, charthick=2, alignment=0, font=1, color=colors[1]
 
+XYOUTS, !y.crange[1]+2.4, 1.30, [strmid(t_plot[2],0,11)+'  '+strmid(t_plot[2],12,5)], /data, $
+  charsize=3, charthick=2, alignment=0, font=1, color=colors[2]
+
+XYOUTS, !y.crange[1]+2.4, 1.45, [strmid(t_plot[3],0,11)+'  '+strmid(t_plot[3],12,5)], /data, $
+  charsize=3, charthick=2, alignment=0, font=1, color=colors[3]
 
 ;last time is at the place with the general ones
-XYOUTS, !y.crange[1]+2.4,1.15, [strmid(t_plot[4],0,11)+'  '+strmid(t_plot[4],12,5)], /data, $
+XYOUTS, !y.crange[1]+2.4,1.60, [strmid(t_plot[4],0,11)+'  '+strmid(t_plot[4],12,5)], /data, $
 	charsize=3, charthick=2, alignment=0, font=1, color=colors[4]
 
 
- 
+
 
 ;DBM parameters upper left
 startx=-1.6
@@ -663,7 +670,7 @@ XYOUTS, startx,starty+0.9, widthtext, /data, charsize=3, charthick=2,alignment=0
 
 aspecttext=['Aspect ratio '+num2str(aspectratio,FORMAT='(F4.2)')]
 XYOUTS, startx,starty+1.05, aspecttext, /data, charsize=3, charthick=2,alignment=0, font=1
- 
+
 
 ;title
 XYOUTS, 0,-1.85, elevo_plot_title, /data, $

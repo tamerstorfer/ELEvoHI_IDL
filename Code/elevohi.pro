@@ -1,13 +1,13 @@
 ;+
-; 
+;
 ; Name:       elevohi
-; 
+;
 ; Purpose:    predicting arrival times and speeds of coronal mass ejections based on heliospheric imager observations;
-;             Detailed information can be found in Rollett et al. (2016) and Amerstorfer et al. (2018)		      
-; 
+;             Detailed information can be found in Rollett et al. (2016) and Amerstorfer et al. (2018)
+;
 ; Calling sequence: elevohi, save_results=save_results, statistics=statistics, silent=silent
 ;
-; Parameters (input): 
+; Parameters (input):
 ;             ELEvoHI reads a config-file (ELEvoHI_config.dat), in which several directories are defined.
 ;             This file should be checked at first to make sure everything is in its place.
 ;             Next, the input file (input.txt) is read in.
@@ -17,7 +17,7 @@
 ;							sc.............HI observer ['A' or 'B']
 ;							source.........'helcats' ['other']
 ;							phi............apex direction from the HI observer in degree
-;							f..............inverse ellipse aspect ratio (b/a) 
+;							f..............inverse ellipse aspect ratio (b/a)
 ;							lambda.........angular half width within ecliptic in degree
 ;							insitu.........['Earth', 'A', 'B'] most likely position at 1 AU for the CME to be detected
 ;										   important for background solar wind conditions
@@ -25,9 +25,9 @@
 ;
 ;		     (output):
 ;			  prediction....IDL structure containing model prediction results (information on the structure: IDL> help, pred, /str)
-;						    The prediction results are additionally displayed in the terminal; if set, also the validation is displayed.					        
+;						    The prediction results are additionally displayed in the terminal; if set, also the validation is displayed.
 ;
-; Keywords: 	
+; Keywords:
 ;							save_results...set TRUE to produce an IDL save file containing the model parameters and the prediction
 ;							statistics.....set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
 ;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
@@ -37,7 +37,7 @@
 ;
 ; Data needed:		HI time-elongation tracks derived in the EU/FP7 HELCATS project are part of this package as a single IDL .sav-file.
 ;					In situ data are needed for background solar wind conditions and also have been prepared by the HELCATS team.
-;					These in situ data are part of this package as well in form of IDL .sav-files for Wind, STEREO-A and STEREO-B. 
+;					These in situ data are part of this package as well in form of IDL .sav-files for Wind, STEREO-A and STEREO-B.
 ;					The HELCATS packages can be accessed at https://www.helcats-fp7.eu.
 ;
 ;
@@ -46,7 +46,7 @@
 ;             2018/10: ELEvoHI 1.2 - GCS ecliptic cut implemented (by J. Hinterreiter)
 ;             2019/01: uploaded to github
 ;			  2019/02: keyword 'nightly' added (JŸrgen Hinterreiter)
-; 
+;
 ; Authors:    Tanja Amerstorfer & Christian Mšstl & JŸrgen Hinterreiter
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
@@ -91,7 +91,7 @@ sc=str[4]
 
 evstr=strsplit(str[7], '/', /extract)
 
-;check if GCS fitting is wanted 
+;check if GCS fitting is wanted
 
 if n_elements(evstr) eq 2 then begin
     GCS=1
@@ -100,7 +100,6 @@ endif else begin
 endelse
 eventdate=evstr[0]
 eventdateSC = eventdate+'_'+sc
-
 
 ;produce name for event directory
 dir=path+'PredictedEvents/'+eventdateSC+'/'
@@ -121,9 +120,9 @@ if GCS eq 1 then begin
   ;check if directory already exists
   gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdateSC+'/'
   filetest = FILE_TEST(gcsresdir, /dir)
-  GCSFiles=['']   
+  GCSFiles=['']
   if filetest eq 1 then begin
-      GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)      
+      GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
   endif else begin
       spawn, 'mkdir '+gcsresdir
       gsdone=1
@@ -134,13 +133,13 @@ if GCS eq 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
 				print, p+1, ': ', parafile[p]
 			endfor
-			
+
 			fnum=''
 			read, fnum
 			parafile = parafile[fnum-1]
 	   endif
   endelse
-  
+
   if filetest eq 1 and nfiles eq 0 then begin
       gsdone=1
       print, 'Initializing GCS fitting tool...'
@@ -150,22 +149,22 @@ if GCS eq 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
 				print, p+1, ': ', parafile[p]
 			endfor
-			
+
 			fnum=''
 			read, fnum
 			parafile = parafile[fnum-1]
 	   endif
-  endif      
-  
+  endif
+
   if GCSFiles[0] ne '' then begin
      print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
      for p=0, nfiles-1 do begin
          print, p+1, ': ', GCSFiles[p]
      endfor
-     
+
      fnum=''
      read, fnum
-     
+
      if fnum eq 'n' then begin
         gcsdone=1
         print, 'Initializing GCS fitting tool...'
@@ -176,7 +175,7 @@ if GCS eq 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
 				print, p+1, ': ', parafile[p]
 			endfor
-			
+
 			fnum=''
 			read, fnum
 			parafile = parafile[fnum-1]
@@ -184,33 +183,33 @@ if GCS eq 1 then begin
      endif else begin
         parafile=GCSFiles[fnum-1]
         gcsdone=1
-     endelse  
+     endelse
   endif
 endif
 
 if GCS eq 0 then begin
    if str[14] eq '' or str[18] eq '' or str[21] eq '' then begin
       print, 'CME front shape parameters not properly set.'
-      
+
       ;check if GCSCut-directory already exists
       gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdatesc+'/'
       filetest = FILE_TEST(gcsresdir, /dir)
-      GCSFiles=['']   
+      GCSFiles=['']
       if filetest eq 1 then begin
-          GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)      
+          GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
       endif else begin
           spawn, 'mkdir '+gcsresdir
       endelse
-      
+
       if GCSFiles[0] ne '' then begin
 		 print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
 		 for p=0, nfiles-1 do begin
 			 print, p+1, ': ', GCSFiles[p]
 		 endfor
-	 
+
 		 fnum=''
 		 read, fnum
-	 
+
 		 if fnum eq 'n' then begin
 		    gcsdone=1
 			print, 'Initializing GCS fitting tool...'
@@ -220,7 +219,7 @@ if GCS eq 0 then begin
 				for p=0, n_elements(parafile)-1 do begin
 					print, p+1, ': ', parafile[p]
 				endfor
-			
+
 				fnum=''
 				read, fnum
 				parafile = parafile[fnum-1]
@@ -228,12 +227,12 @@ if GCS eq 0 then begin
 		 endif else begin
 			parafile=GCSFiles[fnum-1]
 			gcsdone=1
-		 endelse  
-      endif else begin    
+		 endelse
+      endif else begin
 		  print, 'Do you want to do GCS fitting? (y/n)'
 		  b=''
-		  read, b	
-		    
+		  read, b
+
 		  if b eq 'y' then begin
 		     gcsdone=1
 			 print, 'Initializing GCS fitting tool...'
@@ -243,11 +242,11 @@ if GCS eq 0 then begin
 				for p=0, n_elements(parafile)-1 do begin
 					print, p+1, ': ', parafile[p]
 				endfor
-			
+
 				fnum=''
 				read, fnum
 				parafile = parafile[fnum-1]
-	   		 endif     
+	   		 endif
 		  endif else print, 'Aborting ELEvoHI...'
 	   endelse
 	endif
@@ -281,7 +280,7 @@ case source of
 				  print, 'Source file from HELCATS'
 				  read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
 				  restore, filen, /verb
-			  end			  
+			  end
    'user-defined': begin
 					   print, 'User-defined HI input file'
 					   restore, str[11], /verb
@@ -290,9 +289,9 @@ case source of
 					   elon_err=track.elon_stdd
 					   sc=track.sc
                    end
-    else: print, 'Define HI input file!'   
+    else: print, 'Define HI input file!'
 endcase
-                
+
 
 ;if source eq 'helcats' then begin
 ;	print, 'Source file from HELCATS'
@@ -321,7 +320,7 @@ case insitu of
 			 sw=sta
 	end
 	'B':     begin
-			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'	
+			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'
 			 restore, insitu_file, /verb
 			 sw=stb
 	end
@@ -339,36 +338,35 @@ if gcsdone eq 0 then begin
 
 endif else begin
 
-   restore, parafile, /verb   
-   
+   restore, parafile, /verb
+
    ;define parameter ranges
-   
+
    ;halfangle - lambda
    lgcs=round(halfangle/10.)*10
    lstart=string(lgcs-10., format='(I2)')
    lend=string(lgcs+10., format='(I2)')
    lambdastr=[lstart,lend,'5']
-   
+
    insert_line, fnam, 21, lstart+'/'+lend+'/5'
-   
+
    ;phi
    case sc of
      'A': angle=round(apexsta)
      'B': angle=round(apexstb)
    endcase
-   
-   if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')  
+
+   if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')
    angleend=string(angle+10, format='(I3)')
-   phistr=[anglestart,angleend,'2']   
-   
+   phistr=[anglestart,angleend,'2']
+
    insert_line, fnam, 18, anglestart+'/'+angleend+'/2'
-   
+
    ;f - is fixed and not read from GCS ecliptic cut
    fstr=['0.7','1','0.1']
-   
+
    insert_line, fnam, 14, fstr[0]+'/'+fstr[1]+'/'+fstr[2]
-   
-   
+
 endelse
 
 
@@ -380,14 +378,14 @@ if n_elements(fstr) eq 3 or n_elements(phistr) eq 3 or n_elements(lambdastr) eq 
 if keyword_set(save_results) then begin
 
   ;check if directory already exists
-  filetest = FILE_TEST(dir, /dir) 
+  filetest = FILE_TEST(dir, /dir)
 
   ;make directory for analyzed event
   if filetest eq 0 then spawn, 'mkdir '+dir
-  
+
   ;copy elevohi input file in event directory
   spawn, 'cp '+fnam+' '+dir
-  
+
   if ensemble eq 1 then save_elevohi_e, fnam, dir, '0', '0', /new
 
 endif
@@ -400,11 +398,11 @@ if ensemble eq 1 then begin
 endif
 
 if n_elements(phistr) eq 3 then begin
- 
+
   phistart=float(phistr[0])
   phiend=float(phistr[1])
   deltaphi=float(phistr[2])
-  
+
   n_phi=fix((phiend-phistart)/deltaphi+1)
   phi_arr=findgen(n_phi, start=phistart, increment=deltaphi)
 
@@ -420,11 +418,11 @@ endelse
 
 
 if n_elements(fstr) eq 3 then begin
- 
+
   fstart=float(fstr[0])
   fend=float(fstr[1])
   deltaf=float(fstr[2])
-  
+
   n_f=fix((fend-fstart)/deltaf+1)
   f_arr=findgen(n_f, start=fstart, increment=deltaf)
 
@@ -437,12 +435,13 @@ endif else begin
 
 endelse
 
+
 if n_elements(lambdastr) eq 3 then begin
- 
+
   lambdastart=float(lambdastr[0])
   lambdaend=float(lambdastr[1])
   deltalambda=float(lambdastr[2])
-  
+
   n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
   lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
 
@@ -455,50 +454,53 @@ endif else begin
 
 endelse
 
-
 ;iterating runs starts here
 
-phiCenter = (phistart+phiend)/2
-lambdaCenter = (lambdastart+lambdaend)/2
-; fCenter fixed set
-fCenter = 0.7
+if ensemble eq 1 then begin
+    phiCenter = (phistart+phiend)/2
+    lambdaCenter = (lambdastart+lambdaend)/2
+    ; fCenter fixed set
+    fCenter = 0.7
+endif
 
-for k=0, n_phi-1 do begin 
+for k=0, n_phi-1 do begin
     for l=0, n_f-1 do begin
             for m=0, n_lambda-1 do begin
-            
+
             	if n_elements(phi_arr) ne 1 then begin
 	            	phi=phi_arr[k]
 					;print, phi
 				endif else phi=phistart
-					
+
 				if n_elements(f_arr) ne 1 then begin
 		        	f=f_arr[l]
 					;print, f
 				endif else f=fstart
-  
+
 				if n_elements(lambda_arr) ne 1 then begin
                 	lambda=lambda_arr[m]
                 	;print, lambda
 				endif else lambda=lambdastart
-              
-              
+
+
               	; use for the first iteration the values in the middle of the parameter range
               	; change the values from the first run with those from the "middle" run
-              	if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
-              		f = fstart
-              		phi = phistart
-              		lambda = lambdaStart
-              	endif
-              
-				if k eq 0 and l eq 0 and m eq 0 then begin
-					f = fCenter
-					phi = phiCenter
-					lambda = lambdaCenter
-				endif
+                if ensemble eq 1 then begin
+                  	if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
+                  		f = fstart
+                  		phi = phistart
+                  		lambda = lambdaStart
+                  	endif
 
- 
- 
+    				if k eq 0 and l eq 0 and m eq 0 then begin
+    					f = fCenter
+    					phi = phiCenter
+    					lambda = lambdaCenter
+    				endif
+                endif
+
+
+
 				print, '*****'
 				print, 'f=', f
 				print, 'phi=', phi
@@ -544,7 +546,7 @@ for k=0, n_phi-1 do begin
 
 	print, 'Gamma after fitting:'
 	print, drag_parameter
-	
+
 
 	;count and save number of converging and non-converging fits
 
@@ -558,27 +560,23 @@ for k=0, n_phi-1 do begin
 	   fitworks=fitworks+1
 	endelse
 
-    
-
 	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
 
 	elevo, dir, pred
-
-
 
 	if n_elements(arr) ne 0 then begin
 	  print, '------------------------------------'
 	  print, '*****************************************************'
 	  print, '*Differences of predicted and detected arrival times*'
 	  print, '*"-" means predicted to arrive earlier than detected*'
-	  print, '*****************************************************'  
+	  print, '*****************************************************'
 
 	  j=n_elements(arr[0,*])
 
 		for i=0, j-1 do begin
 
 		  case arr[0,i] of
-			'MES': begin 
+			'MES': begin
 					 da_mes=!VALUES.F_NAN
 					 if finite(pred.mes_time) then begin
 					  da_mes = (anytim(pred.mes_time) - anytim(arr[1,i]))/3600.
@@ -586,26 +584,26 @@ for k=0, n_phi-1 do begin
 						print, '*', round(da_mes*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'
 					 endif else print, 'No arrival predicted at MESSENGER!'
-			end	
+			end
 			'VEX': begin
-					 da_mvex=!VALUES.F_NAN        
+					 da_mvex=!VALUES.F_NAN
 					 if finite(pred.vex_time) then begin
 					  da_vex = (anytim(pred.vex_time) - anytim(arr[1,i]))/3600.
 						print, '*********Venus Express********'
 						print, '*', round(da_vex*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'
 					 endif else print, 'No arrival predicted at Venus Express!'
-			end	
+			end
 			'Earth': begin
 					   da_earth=!VALUES.F_NAN
 					   if finite(pred.wind_time) then begin
 						da_earth = (anytim(pred.wind_time) - anytim(arr[1,i]))/3600.
 						print, '************Earth*************'
 						print, '*', round(da_earth*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'  
-					   endif else print, 'No arrival predicted at Wind!' 
-			end      			       
-			'A': begin 
+						print, '******************************'
+					   endif else print, 'No arrival predicted at Wind!'
+			end
+			'A': begin
 					 da_sta=!VALUES.F_NAN
 					 if finite(pred.sta_time) then begin
 						da_sta = (anytim(pred.sta_time) - anytim(arr[1,i]))/3600.
@@ -613,27 +611,27 @@ for k=0, n_phi-1 do begin
 						print, '*', round(da_sta*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
 						print, '******************************'
 					 endif else print, 'No arrival predicted at STEREO-A!'
-			end	        
-			'B': begin 
+			end
+			'B': begin
 				   da_stb=!VALUES.F_NAN
 				   if finite(pred.stb_time) then begin
 					  da_stb = (anytim(pred.stb_time) - anytim(arr[1,i]))/3600.
 						print, '***********STEREO-B***********'
 						print, '*', round(da_stb*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'   
+						print, '******************************'
 				   endif else print, 'No arrival predicted at STEREO-B!'
-			end     
+			end
 			else: begin
 					  print, 'Check in situ s/c in input file!'
 			end
 		  endcase
-	  
-	
+
+
 		endfor
-  
-	endif  
-	
-	
+
+	endif
+
+
 
 	if not isa(da_mes) then da_mes=!VALUES.F_NAN
 	if not isa(da_vex) then da_vex=!VALUES.F_NAN
@@ -647,11 +645,11 @@ for k=0, n_phi-1 do begin
 	  save_elevohi_e, fnam, dir, pred, dt_all
 	endif
 
-     
+
 			if lambda eq lambdaend then break
-		
+
 		  endfor
-	
+
 		if f eq fend then break
 
     endfor
@@ -665,18 +663,18 @@ endfor
 if fitworks eq 0 then begin
    print, 'For this CME with the chosen parameters no prediction is possible.'
    journal
-   if keyword_set(nightly) ne 1 then stop   
+   if keyword_set(nightly) ne 1 then stop
 endif
 
 if ensemble eq 1 and keyword_set(save_results) then begin
-  print, 'Ensemble results saved at '+dir+'eELEvoHI_results.txt'  
+  print, 'Ensemble results saved at '+dir+'eELEvoHI_results.txt'
 endif
 
 
 if keyword_set(statistics) and ensemble eq 1 then begin
   elevohi2sav, dir, path=path
   if ensemble eq 1 then begin
-      print, 'Ensemble results prepared for Python statistics.' 
+      print, 'Ensemble results prepared for Python statistics.'
   endif else print, 'No statistics for single run.'
 endif
 
@@ -717,7 +715,7 @@ journal
 
 
 if keyword_set(save_results) then begin
-  
+
   ;copy log-file in event directory
   spawn, 'cp '+path+'logfile.log ' +dir
 
