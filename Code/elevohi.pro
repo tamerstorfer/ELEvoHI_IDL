@@ -32,6 +32,7 @@
 ;							statistics.....set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
 ;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
 ;							nightly........set TRUE to avoid plotting of the DBMfit
+;							forMovie.......set TRUE to save the CME parameters (.sav-files can then be used to create a movie)
 ;
 ; Required functions and procedures:  	see readme
 ;
@@ -45,9 +46,10 @@
 ;			  2018: ELEvoHI 1.1 - ensemble-mode (Amerstorfer et al., 2018)
 ;             2018/10: ELEvoHI 1.2 - GCS ecliptic cut implemented (by J. Hinterreiter)
 ;             2019/01: uploaded to github
-;			  2019/02: keyword 'nightly' added (JŸrgen Hinterreiter)
+;			  2019/02: keyword 'nightly' added (Juergen Hinterreiter)
+;			  2019/08: keyword 'forMovie' added
 ;
-; Authors:    Tanja Amerstorfer & Christian Mšstl & JŸrgen Hinterreiter
+; Authors:    Tanja Amerstorfer & Christian Moestl & Juergen Hinterreiter
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
 ;
@@ -56,7 +58,7 @@
 ;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi, github-link).
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
-PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly
+PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly, forMovie=forMovie
 
 read_config_file
 
@@ -105,9 +107,12 @@ eventdateSC = eventdate+'_'+sc
 dir=path+'PredictedEvents/'+eventdateSC+'/'
 
 resdir=dir+'results/'
-filetest = FILE_TEST(resdir, /dir)
-if filetest ne 1 then file_mkdir, resdir
+if FILE_TEST(resdir, /dir) ne 1 then file_mkdir, resdir
 
+if keyword_set(forMovie) then begin
+	forMovieDir = dir+'ForMovie/'
+	if FILE_TEST(forMovieDir, /dir) ne 1 then file_mkdir, forMovieDir
+endif
 
 
 gcsdone=0
@@ -456,6 +461,8 @@ endelse
 
 ;iterating runs starts here
 
+runnumber = 0
+
 if ensemble eq 1 then begin
     phiCenter = (phistart+phiend)/2
     lambdaCenter = (lambdastart+lambdaend)/2
@@ -500,12 +507,13 @@ for k=0, n_phi-1 do begin
                 endif
 
 
-
 				print, '*****'
 				print, 'f=', f
 				print, 'phi=', phi
 				print, 'lambda=', lambda
 				print, '*****'
+
+				runnumber = runnumber + 1
 
 	elon_err=fltarr(n_elements(elon))
 
@@ -547,7 +555,7 @@ for k=0, n_phi-1 do begin
 	print, 'Gamma after fitting:'
 	print, drag_parameter
 
-
+	
 	;count and save number of converging and non-converging fits
 
 	a=[phi, f, lambda]
@@ -560,9 +568,17 @@ for k=0, n_phi-1 do begin
 	   fitworks=fitworks+1
 	endelse
 
-	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
+	
 
-	elevo, dir, pred
+
+
+	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
+	elevo, dir, pred, elevo_kin
+
+	if keyword_set(forMovie) then begin
+		elevo_kin.all_apex_s = sc
+		save, elevo_kin, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
+	endif
 
 	if n_elements(arr) ne 0 then begin
 	  print, '------------------------------------'
@@ -721,6 +737,10 @@ if keyword_set(save_results) then begin
 
 endif
 
+
+if keyword_set(forMovie) then begin
+	combine_movie_files, forMovieDir
+endif
 
 
 if keyword_set(nightly) ne 1 then stop

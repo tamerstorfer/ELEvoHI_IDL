@@ -9,16 +9,20 @@
 ; example call: elevo, 'filein.txt'  filein.txt is in folder elevo_events
 ;
 ; output:
+;       pred: Prediction for the different targets
+;       elevo_kin: kinematics of the differents runs
 ;
 ; calls elevo_elong
 ;       elliptical_geometry_for_movies_mars_new
 ;       elevo_analytic
 ;       SPICE
+;
+; History:    2019/08: added elevo_kin (Juergen Hinterreiter)
 ;-
 
 
 
-pro elevo, dir, pred
+pro elevo, dir, pred, elevo_kin
 
 
 common DRAG, vinit, gammaparam, background_wind
@@ -709,6 +713,22 @@ pred.VEX_time = arrival_VEX
 pred.VEX_speed= arrival_speed_VEX
 
 
+
+elevo_kin = {all_apex_r:dblarr(n_elements(rdrag)),    $
+      all_apex_t:strarr(n_elements(rdrag)),   $
+      all_apex_lat:fltarr(n_elements(rdrag)), $
+        all_apex_lon:fltarr(n_elements(rdrag)), $
+        all_apex_s:strarr(n_elements(rdrag)), $
+        all_apex_f:fltarr(n_elements(rdrag)),$
+        all_apex_w:fltarr(n_elements(rdrag))}
+
+elevo_kin.all_apex_r = rdrag
+elevo_kin.all_apex_t = anytim(tdrag, /ccsds)
+elevo_kin.all_apex_lat = fltarr(n_elements(rdrag))
+elevo_kin.all_apex_lon = fltarr(n_elements(rdrag))+direction
+elevo_kin.all_apex_s = make_array(n_elements(rdrag), /string, value=sc)
+elevo_kin.all_apex_f = fltarr(n_elements(rdrag))+f
+elevo_kin.all_apex_w  = fltarr(n_elements(rdrag))+lambda
 
 
 END
