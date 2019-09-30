@@ -1,20 +1,20 @@
 ;+
-; 
+;
 ; Name:       dbmfit_V1 - testversion to fix problem with negative gamma
 
-; 
+;
 ; Purpose:    to fit a kinematical profile (time-distance) of a CME observed by heliospheric imagers;
 ;             More information can be found in Rollett et al. (2016) and Amerstorfer et al. (2018)
-;		      
-; 
+;
+;
 ; Calling sequence: part of ELEvoHI package
 ;
-; 
+;
 ; Authors:    Tanja Amerstorfer & Christian Mšstl
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
 ;
-; History: 
+; History:
 ;			20190201: added keyword nightly to avoid plotting of DBMfit (JŸrgen Hinterreiter)
 ;
 ;
@@ -49,7 +49,7 @@ r_apex_sun=r_apex*au/r_sun
 
 speed_errhi = DERIVSIG(ti, r_apex*au, 0.0, r_error[0,*]*au)
 speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
-  
+
 yrmax=max(s+speed_errhi)
 
 if keyword_set(nightly) ne 1 then begin
@@ -73,27 +73,27 @@ endif
 ;manually define starting point of fit if needed (-> cut off area where Lorentz force is still dominant)
 if n_elements(startcut) eq 0 then begin
 window, 1
-  
+
   plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
   errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
-    
+
   print, 'Klick on starting point of DBM fit!'
   cursor, rin, vin, /data, /down
-  
+
   ;Find closest data point:
   c=where(r_apex_sun lt rin, count)
-  
+
   if count ne 0 then begin
     cnear=rin-r_apex_sun[c[n_elements(c)-1]]
   endif else begin
     j=0
     scut=r_apex_sun[j]
   endelse
-  
+
   c1=where(r_apex_sun gt rin, count1)
-  
+
   if count1 ne 0 then begin
-    c1near=r_apex_sun[c1[0]]-rin 
+    c1near=r_apex_sun[c1[0]]-rin
   endif else begin
     j=n_elements(r_apex_sun)-1
     scut=r_apex_sun[j]
@@ -110,17 +110,17 @@ window, 1
       j=c1[0]
     endif
   endif
-  
+
   a = findgen(17) * (!pi*2/16.)
   usersym, cos(A), sin(A)
-  
+
   oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
-  
+
   cut=j
-  
+
   r_init=scut*r_sun
   v_init=s[cut]
-  
+
 endif else begin
   cut=startcut
   scut=r_apex[cut]*au/r_sun
@@ -147,16 +147,16 @@ window, 1
   s = DERIV(ti, r_apex*au)
   speed_errhi = DERIVSIG(ti, r_apex*au, 0.0, r_error[0,*]*au)
   speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
-  
+
   r_apex_sun=r_apex*au/r_sun
   plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
   errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
-  
+
   oplot, [r_apex_sun[cut],r_apex_sun[cut]], [s[cut],s[cut]], psym=8, symsize=3
-  
+
   print, 'Klick on end point of DBM fit!'
   cursor, rout, vout, /data, /down
-  
+
   ;find closest data point:
   c=where(r_apex_sun lt rout, count)
   if count ne 0 then begin
@@ -165,10 +165,10 @@ window, 1
     j=0
     ecut=r_apex_sun[j]
   endelse
-  
+
   c1=where(r_apex_sun gt rout, count1)
   if count1 ne 0 then begin
-    c1near=r_apex_sun[c1[0]]-rout 
+    c1near=r_apex_sun[c1[0]]-rout
   endif else begin
     j=n_elements(r_apex_sun)-1
     ecut=r_apex_sun[j]
@@ -185,10 +185,10 @@ window, 1
       j=c1[0]
     endif
   endif
-  
+
   a = findgen(17) * (!pi*2/16.)
   usersym, cos(A), sin(A)
-  
+
   oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
 
 
@@ -213,7 +213,7 @@ Y = r_apex[cut:ecut]*au
 fitend=r_apex[ecut]
 
 
-;chose background solar wind speed from L1 (or STEREO) data 
+;chose background solar wind speed from L1 (or STEREO) data
 
 startt=where(anytim(sw.time) le anytim(time[0]))
 endt=where(anytim(sw.time) gt anytim(time[n_elements(time)-1]))
@@ -229,7 +229,7 @@ max_bg_speed = max(sw[startt[n_elements(startt)-1]:endt[0]].vtot)
 print, 'mean:', bg_speed
 print, 'stddev:', bg_speed_std
 print, 'min:', min_bg_speed
-print, 'max:', max_bg_speed 
+print, 'max:', max_bg_speed
 
 ;print, 'STOP 1'
 ;stop
@@ -278,9 +278,9 @@ for i=0, n_elements(winds)-1 do begin
 	;if gasi gt 0 then begin
 	  RES = 0
 	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-8,1e-8])
-	  
+
 	  ;stop
-  
+
 	  ;print, 'gamma sign positive!'
 	;endif
 
@@ -301,7 +301,7 @@ for i=0, n_elements(winds)-1 do begin
 	;  print, 'DBM fit failed to converge'
 	;  continue
 	;endif
-	
+
 	;undefine, fitpara
 
 ;	if signum(gasi) ne signum(res[0]) then begin
@@ -314,7 +314,7 @@ for i=0, n_elements(winds)-1 do begin
 ;	  ;fitpara=fltarr(n_elements(winds),3)
 ;	;endelse
 
-    
+
 
 	;calculate function values
 	;if gasi gt 0 then begin
@@ -332,8 +332,11 @@ for i=0, n_elements(winds)-1 do begin
 
 	;mean residual per curve
 	;if fit is not converging (e.g. because of improper bg solar wind speed) resi should be NaN.
-	
-	resi=mean(abs(y-fit))
+
+	;resi = mean(abs(y-fit))
+
+    ;mean residual of last three points fitted
+    resi = mean(abs([y[n_elements(y)-3], y[n_elements(y)-2], y[n_elements(y)-1]]-[fit[n_elements(y)-3], fit[n_elements(y)-2], fit[n_elements(y)-1]]))
 
 
 
@@ -341,20 +344,20 @@ for i=0, n_elements(winds)-1 do begin
 	if signum(gasi) ne signum(res[0]) then begin
 	  print, 'Fit not valid: drag-parameter has wrong sign!'
 	  print, 'i: ', i
-	  drag_parameter=NaN
-	  fitpara[i,0]=NaN
-	  fitpara[i,1]=sw_speed
-	  fitpara[i,2]=resi/r_sun
+	  drag_parameter = NaN
+	  fitpara[i,0] = NaN
+	  fitpara[i,1] = sw_speed
+	  fitpara[i,2] = resi/r_sun
 	endif else begin
-	  fitpara[i,0]=res
-	  fitpara[i,1]=sw_speed
-	  fitpara[i,2]=resi/r_sun
+	  fitpara[i,0] = res
+	  fitpara[i,1] = sw_speed
+	  fitpara[i,2] = resi/r_sun
 	endelse
-	
 
 
-	
-	
+
+
+
 
 	;calculate fitspeed
 	fitspeed = DERIV(X, fit)
@@ -381,7 +384,7 @@ for i=0, n_elements(winds)-1 do begin
 
 		window, 2
 
-		!P.MULTI=[0,1,2]
+		!P.MULTI = [0,1,2]
 
 		utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]]
 		uterrplot, time, r_apex_sun+r_error*au/r_sun, r_apex_sun-r_error*au/r_sun
@@ -405,7 +408,7 @@ for i=0, n_elements(winds)-1 do begin
 
 	print, '------------------------------------'
 
-	;plot outcome 
+	;plot outcome
 	if res ne -1 then begin
 
 		!P.MULTI=[0,1,2]
@@ -465,7 +468,7 @@ if isa(fitpara) eq 0 then begin
  vinit=0
  swspeed=0
  drag_parameter=0
- 
+
  return
 endif
 
@@ -478,7 +481,7 @@ if count gt 0 then fitpara[cu]=NaN
 
 index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
-dragrangepos=3d-7 
+dragrangepos=3d-7
 dragrangeneg=-2d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
 
 ;if finite(res[0]) eq 0 then begin
@@ -574,7 +577,7 @@ if counti ne 0 then begin
 
 	if keyword_set(nightly) ne 1 then begin
 		loadct, 0
-		
+
 				drag=0
 		if gasi eq -1 then begin
 			drag=strmid(string(fitpara[index,0]),1,4)
@@ -613,7 +616,7 @@ if counti ne 0 then begin
 
 		!P.MULTI=0
 	endif
-	
+
 	endif
 endif
 

@@ -12,7 +12,7 @@
 ;
 ; History:    2019/08: created (Juergen Hinterreiter)
 ;
-; Authors:    Tanja Amerstorfer & Christian Mšstl & Juergen Hinterreiter
+; Authors:    Tanja Amerstorfer & Christian Moestl & Juergen Hinterreiter
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
 ; -
@@ -42,9 +42,9 @@ pro combine_movie_files, dir
 
 	for i=0,  n_elements(files)-1 do begin
 		restore, files[i]
-		 
+
 		run=fix(strmid(files[i], strpos(files[i], '.')-4, 4))
-		 
+
 		apex_r[i*timesteps:(round(i*timesteps+timesteps-1))]=elevo_kin.all_apex_r
 		apex_t[i*timesteps:(round(i*timesteps+timesteps-1))]=elevo_kin.all_apex_t
 		apex_lat[i*timesteps:(round(i*timesteps+timesteps-1))]=elevo_kin.all_apex_lat
