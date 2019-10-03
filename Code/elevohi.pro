@@ -293,10 +293,12 @@ case source of
 					   elon=track.elon
 					   elon_err=track.elon_stdd
 					   sc=track.sc
+
+					   track.track_date = anytim(track.track_date, /ccsds)
+					   save, track, filename = dir+eventdateSC+'_ccsds.sav'
                    end
     else: print, 'Define HI input file!'
 endcase
-
 
 ;if source eq 'helcats' then begin
 ;	print, 'Source file from HELCATS'
@@ -357,8 +359,9 @@ endif else begin
 
    ;phi
    case sc of
-     'A': angle=round(apexsta)
-     'B': angle=round(apexstb)
+   	 ; only get even number for the apex direction
+     'A': angle=(floor(apexsta)+1)/2*2
+     'B': angle=(floor(apexstb)+1)/2*2
    endcase
 
    if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')
@@ -568,8 +571,6 @@ for k=0, n_phi-1 do begin
 	   fitworks=fitworks+1
 	endelse
 
-	
-
 
 
 	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
@@ -577,7 +578,7 @@ for k=0, n_phi-1 do begin
 
 	if keyword_set(forMovie) then begin
 		elevo_kin.all_apex_s = sc
-		save, elevo_kin, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
+		save, elevo_kin, startcut, endcut, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
 	endif
 
 	if n_elements(arr) ne 0 then begin
