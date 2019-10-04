@@ -333,10 +333,10 @@ for i=0, n_elements(winds)-1 do begin
 	;mean residual per curve
 	;if fit is not converging (e.g. because of improper bg solar wind speed) resi should be NaN.
 
-	;resi = mean(abs(y-fit))
+	resi = mean(abs(y-fit))
 
     ;mean residual of last three points fitted
-    resi = mean(abs([y[n_elements(y)-3], y[n_elements(y)-2], y[n_elements(y)-1]]-[fit[n_elements(y)-3], fit[n_elements(y)-2], fit[n_elements(y)-1]]))
+    ;resi = mean(abs([y[n_elements(y)-3], y[n_elements(y)-2], y[n_elements(y)-1]]-[fit[n_elements(y)-3], fit[n_elements(y)-2], fit[n_elements(y)-1]]))
 
 
 
