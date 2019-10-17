@@ -78,7 +78,7 @@ pro combine_movie_files, dir
 	elevo_kin.all_apex_w  = apex_w
 	elevo_kin.colorflag = colorflag
 
-	save, elevo_kin, filename=dir+'formovie_all_flag.sav'
+	save, elevo_kin, startcut, endcut, filename=dir+'formovie_all_flag.sav'
 	print, 'formovie_all saved'
 
 
