@@ -70,6 +70,13 @@ gcs_path=getenv('EAGEL_DIR')
 au=149597870.
 r_sun=695700.
 
+r_start_min = 200
+r_end_max = 0
+phi_min = 200
+phi_max = 0
+lam_max = 0
+eventTime = '0'
+
 
 set_plot, 'x'
 
@@ -553,7 +560,18 @@ for k=0, n_phi-1 do begin
 
 	;next step is fitting the time-distance profile using the DBM
 
-	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
+	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
+
+	startmin = r_ell[startcut]*au/r_sun
+	endmax = r_ell[endcut]*au/r_sun
+
+	if r_start_min gt startmin then r_start_min = startmin
+	if r_end_max lt endmax then r_end_max = endmax
+	if phi_min gt phi then phi_min = phi
+	if phi_max lt phi then phi_max = phi
+	if lam_max lt lambda then lam_max = lambda
+	if finite(tinit) ne 0 then eventTime = tinit
+
 
 	print, 'Gamma after fitting:'
 	print, drag_parameter
@@ -575,6 +593,7 @@ for k=0, n_phi-1 do begin
 
 	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
 	elevo, dir, pred, elevo_kin
+
 
 	if keyword_set(forMovie) then begin
 		elevo_kin.all_apex_s = sc
@@ -738,6 +757,11 @@ if keyword_set(save_results) then begin
 
 endif
 
+datadir=getenv('DATA_DIR')
+event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
+sc = strmid(event, 9, 1)
+wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir)
 
 if keyword_set(forMovie) then begin
 	combine_movie_files, forMovieDir

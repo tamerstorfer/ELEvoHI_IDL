@@ -10,12 +10,12 @@
 ; Calling sequence: part of ELEvoHI package
 ;
 ;
-; Authors:    Tanja Amerstorfer & Christian Mšstl
+; Authors:    Tanja Amerstorfer & Christian MÅ¡stl
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
 ;
 ; History:
-;			20190201: added keyword nightly to avoid plotting of DBMfit (JŸrgen Hinterreiter)
+;			20190201: added keyword nightly to avoid plotting of DBMfit (JÅ¸rgen Hinterreiter)
 ;
 ;
 ;(c) 2018 T. Amerstorfer, The software is provided "as is", without warranty of any kind.
@@ -24,7 +24,7 @@
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 
-PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
+PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
 
 au=149597870.
 r_sun=695700.
@@ -244,6 +244,14 @@ winds[4] = max_bg_speed
 
 ;winds = findgen(19)*25+250
 
+; run ELEvoHI with the data from the modeled background solar wind
+datadir=getenv('DATA_DIR')
+event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
+sc = strmid(event, 9, 1)
+winds = get_bgsw(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /savePlot, plotPath = dir)
+
+
 fitauall=fltarr(n_elements(winds),n_elements(y))
 fitspeedall=fltarr(n_elements(winds),n_elements(y))
 
@@ -335,9 +343,14 @@ for i=0, n_elements(winds)-1 do begin
 
 	resi = mean(abs(y-fit))
 
+
     ;mean residual of last three points fitted
     ;resi = mean(abs([y[n_elements(y)-3], y[n_elements(y)-2], y[n_elements(y)-1]]-[fit[n_elements(y)-3], fit[n_elements(y)-2], fit[n_elements(y)-1]]))
 
+	if resi gt 2*r_sun then begin
+		print, 'Mean residual greater 2R_sun'
+		resi = NaN
+	endif
 
 
 	;if i eq 0 then fitpara=fltarr(n_elements(winds),3)
