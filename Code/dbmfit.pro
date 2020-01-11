@@ -249,8 +249,7 @@ datadir=getenv('DATA_DIR')
 event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
 bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
 sc = strmid(event, 9, 1)
-winds = get_bgsw(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /savePlot, plotPath = dir)
-
+winds = get_bgsw(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /saveData, plotPath = dir)
 
 fitauall=fltarr(n_elements(winds),n_elements(y))
 fitspeedall=fltarr(n_elements(winds),n_elements(y))
@@ -495,7 +494,7 @@ if count gt 0 then fitpara[cu]=NaN
 index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
 dragrangepos=3d-7
-dragrangeneg=-2d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
+dragrangeneg=-3d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
 
 ;if finite(res[0]) eq 0 then begin
 

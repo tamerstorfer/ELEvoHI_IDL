@@ -7,7 +7,7 @@ FUNCTION CIRCLE, xcenter, ycenter, radius
    END
 
 
-function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc, stepSize=stepSize, MAE = MAE, savePlot=savePlot, earthLon = earthLon, minSW = minSW, plotPath = plotPath
+function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc, stepSize=stepSize, MAE = MAE, savePlot=savePlot, earthLon = earthLon, minSW = minSW, plotPath = plotPath, saveData = saveData
 
   ;tinit = '4-Feb-2010 02:19:13.931'
   ;startcut = 30
@@ -101,14 +101,24 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     newdata[earthPos-hw+shiftVal-dir_E-phiDiff:earthPos+hw+shiftVal-dir_E+phiDiff, startcut] = maxVal
     newdata[earthPos+hw+shiftVal-dir_E+phiDiff, startcut:endcut] = maxVal
     newdata[earthPos-hw+shiftVal-dir_E-phiDiff:earthPos+hw+shiftVal-dir_E+phiDiff, endcut] = maxVal
-;    newdata[earthPos+shiftval, 0:400] = maxVal
+    ;newdata[earthPos+shiftval, 0:400] = maxVal
 ;    newData[earthPos+shiftval-dir_E, startcut:endcut] = min(data)
   endif
 
-  
   ; shift data back
   newdata = shift(newdata, [-dir_E,0])
-;  dataPolarPlot = newData
+  
+  if keyword_set(saveData) and keyword_set(plotPath) then begin
+      bgsw_data = newData
+      save, bgsw_data, filename = plotPath + '/bgsw_data.sav'
+      bgsw_data = dataPolarPlot
+      save, bgsw_data, filename = plotPath + '/bgsw_data_noCutout.sav'
+      bgsw_cutout = newbgsw
+      save, bgsw_cutout, filename = plotPath + '/bgsw_cutout_only.sav'
+  endif
+
+  
+
 
   if keyword_set(savePlot) then begin
     plotP = ''
@@ -151,12 +161,12 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     xrange = [dSize[1], -dSize[1]], $
     yrange = [0, dSize[2]], $
     xtitle = 'Longitude', $
-    ytitle = 'Distance [Rsun]', $
+    ytitle = 'Distance [R!DSun!N]', $
     xstyle = 1, ystyle = 1, /nodata, /noerase, $
     position = [plot_left / page_width, plot_bottom / page_height, $
       (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height]
 
-    cgColorbar, Range=[Min(data), Max(data)], /Vertical, /fit, /right
+    cgColorbar, Range=[Min(data), Max(data)], /Vertical, /fit, /right, title = 'Speed [km/s]'
     
 
     wspd = dataPolarPlot
@@ -182,14 +192,14 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     loadct, 0
     POLAR_CONTOUR, wspd, lrad, r, /nodata, background = 255, color = cgcolor('black'), $
       position = [plot_left / page_width, plot_bottom / page_height, $
-      (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height]
+      (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], xtitle = 'Distance [R!DSun!N]', ytitle = 'Distance [R!DSun!N]'
     loadct, 25
     POLAR_CONTOUR, wspd, lrad, r, /cell_fill, nlevels = 100, /over, $
       position = [plot_left / page_width, plot_bottom / page_height, $
       (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height];, /isotropic, xgridstyle = 1, ygridstyle = 1
     ;cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [plot_left / page_width, plot_bottom / page_height, $
     ;  (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], /normal, ncolors = 100
-    cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [0.575, 0.825, 0.927, 0.845], /right, charsize = 1;, ncolors = 100
+    cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [0.575, 0.815, 0.927, 0.835], /right, charsize = 1, title = 'Speed [km/s]';, ncolors = 100
     ;cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [0.186, 0.9, 0.839, 0.95], /data;, ncolors = 100
     ;colorbar, range = [Min(data), Max(data)], /vertical, position = [-400, 400, 400, 500], /data
 
@@ -210,7 +220,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
 
     ; Plot histogram
     !p.multi = [0,1,3]
-    cghistoplot, newswarr, title = 'Histogram of selected range of the BGSW'
+    cghistoplot, newswarr, title = 'Histogram of selected range of the BGSW', xtitle = 'Speed [km/s]'
     !p.multi = 0
 
     device, /close

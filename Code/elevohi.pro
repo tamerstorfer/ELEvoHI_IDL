@@ -113,6 +113,9 @@ eventdateSC = eventdate+'_'+sc
 ;produce name for event directory
 dir=path+'PredictedEvents/'+eventdateSC+'/'
 
+
+file_delete, dir, /allow_n, /recursive
+
 resdir=dir+'results/'
 if FILE_TEST(resdir, /dir) ne 1 then file_mkdir, resdir
 
@@ -562,16 +565,17 @@ for k=0, n_phi-1 do begin
 
 	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
 
-	startmin = r_ell[startcut]*au/r_sun
-	endmax = r_ell[endcut]*au/r_sun
+	if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
+		startmin = r_ell[startcut]*au/r_sun
+		endmax = r_ell[endcut]*au/r_sun
 
-	if r_start_min gt startmin then r_start_min = startmin
-	if r_end_max lt endmax then r_end_max = endmax
-	if phi_min gt phi then phi_min = phi
-	if phi_max lt phi then phi_max = phi
-	if lam_max lt lambda then lam_max = lambda
-	if finite(tinit) ne 0 then eventTime = tinit
-
+		if r_start_min gt startmin then r_start_min = startmin
+		if r_end_max lt endmax then r_end_max = endmax
+		if phi_min gt phi then phi_min = phi
+		if phi_max lt phi then phi_max = phi
+		if lam_max lt lambda then lam_max = lambda
+		if finite(tinit) ne 0 then eventTime = tinit
+	endif
 
 	print, 'Gamma after fitting:'
 	print, drag_parameter
@@ -761,7 +765,7 @@ datadir=getenv('DATA_DIR')
 event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
 bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
 sc = strmid(event, 9, 1)
-wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir)
+wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
 
 if keyword_set(forMovie) then begin
 	combine_movie_files, forMovieDir
