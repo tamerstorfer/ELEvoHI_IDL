@@ -24,7 +24,7 @@
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 
-PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
+PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
 
 au=149597870.
 r_sun=695700.
@@ -235,21 +235,27 @@ print, 'max:', max_bg_speed
 ;stop
 ;calculate fit for a range of background solar wind speeds
 
-winds=fltarr(5)
-winds[0] = min_bg_speed
-winds[1] = min_bg_speed+(bg_speed-min_bg_speed)/2
-winds[2] = bg_speed
-winds[3] = bg_speed+(max_bg_speed-bg_speed)/2
-winds[4] = max_bg_speed
+winds = findgen(19)*25+250
 
-;winds = findgen(19)*25+250
 
-; run ELEvoHI with the data from the modeled background solar wind
-datadir=getenv('DATA_DIR')
-event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
-bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
-sc = strmid(event, 9, 1)
-winds = get_bgsw(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /saveData, plotPath = dir)
+if bgsw eq 3 then begin
+	winds=fltarr(5)
+	winds[0] = min_bg_speed
+	winds[1] = min_bg_speed+(bg_speed-min_bg_speed)/2
+	winds[2] = bg_speed
+	winds[3] = bg_speed+(max_bg_speed-bg_speed)/2
+	winds[4] = max_bg_speed
+endif
+
+
+if bgsw eq 2 then begin
+	; run ELEvoHI with the data from the modeled background solar wind
+	datadir=getenv('DATA_DIR')
+	event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+	bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
+	sc = strmid(event, 9, 1)
+	winds = get_bgsw(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /saveData, plotPath = dir)
+endif
 
 fitauall=fltarr(n_elements(winds),n_elements(y))
 fitspeedall=fltarr(n_elements(winds),n_elements(y))

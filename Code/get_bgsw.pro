@@ -12,15 +12,18 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
   ;tinit = '4-Feb-2010 02:19:13.931'
   ;startcut = 30
   ;endcut = 120
-  ;phi = 78
+  ;minphi = 78
+  ;maxphi = 78
   ;halfWidth = 70
   ;file = file_search('/nas/helio/data/bgsw_WSA/20090623_A/vmap.txt')
   ;savePlot = 1
   ;earthLon = 30
   ;sc = 'A'
+  ;plotPath = '/home/jhinterreiter/'
 
   print, '!!!! Background Solar Wind from WSA model !!!!'
   MAError = 100 ;/km/s
+  modelStartDist = 5
   if keyword_set(MAE) then MAError = MAE
 
   stSize = 25 ;km/s
@@ -159,7 +162,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     thick = 5, $
     ;xrange = [0, dSize[1]], $
     xrange = [dSize[1], -dSize[1]], $
-    yrange = [0, dSize[2]], $
+    yrange = [modelStartDist, dSize[2]+modelStartDist], $
     xtitle = 'Longitude', $
     ytitle = 'Distance [R!DSun!N]', $
     xstyle = 1, ystyle = 1, /nodata, /noerase, $

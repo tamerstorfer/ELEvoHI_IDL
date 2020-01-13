@@ -1,6 +1,6 @@
 ;produce .txt input file for elevo.pro from ElCon/DBM-fitting output
 
-PRO elevo_input, sc, hwidth, aspect_ratio, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
+PRO elevo_input, sc, hwidth, aspect_ratio, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
 
 AU=149597871 ;km
 r_sun=6.957d5; km
@@ -19,6 +19,18 @@ if sc eq 'B' then begin
   sep=abs(pos_E[1]-pos_B[1])/!dtor  
   dir_E=-(sep-phi)
 endif  
+
+
+if keyword_set(realtime) then begin
+    if sc eq 'B' then begin
+      sep=abs(pos_E[1]-pos_B[1])/!dtor
+      dir_E=sep-phi
+    endif
+    if sc eq 'A' then begin
+      sep=abs(pos_E[1]-pos_A[1])/!dtor
+      dir_E=-(sep-phi)
+    endif
+endif
 
 print, dir_E
 

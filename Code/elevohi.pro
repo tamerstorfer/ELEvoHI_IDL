@@ -33,6 +33,10 @@
 ;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
 ;							nightly........set TRUE to avoid plotting of the DBMfit
 ;							forMovie.......set TRUE to save the CME parameters (.sav-files can then be used to create a movie)
+;             realtime.......set TRUO to get the correct angle for STEREO-A
+;             bgsw...........set to 1 for range of background solar wind (250 - 700 km/s (25 km/s steps))
+;                            set to 2 for to use background solar wind from model
+;                            set to 3 for in-situ sw
 ;
 ; Required functions and procedures:  	see readme
 ;
@@ -58,8 +62,9 @@
 ;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi, github-link).
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
-PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly, forMovie=forMovie
+PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly, forMovie=forMovie, realtime=realtime, bgsw=bgsw
 
+if ~keyword_set(bgsw) then bgsw = 1
 read_config_file
 
 path=getenv('ELEvoHI_DIR')
@@ -563,7 +568,7 @@ for k=0, n_phi-1 do begin
 
 	;next step is fitting the time-distance profile using the DBM
 
-	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly
+	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
 
 	if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
 		startmin = r_ell[startcut]*au/r_sun
@@ -595,7 +600,7 @@ for k=0, n_phi-1 do begin
 
 
 
-	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir
+	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
 	elevo, dir, pred, elevo_kin
 
 
@@ -761,11 +766,13 @@ if keyword_set(save_results) then begin
 
 endif
 
-datadir=getenv('DATA_DIR')
-event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
-bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
-sc = strmid(event, 9, 1)
-wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
+if bgsw eq 2 then begin
+  datadir=getenv('DATA_DIR')
+  event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+  bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
+  sc = strmid(event, 9, 1)
+  wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
+endif
 
 if keyword_set(forMovie) then begin
 	combine_movie_files, forMovieDir
