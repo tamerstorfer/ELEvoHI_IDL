@@ -9,21 +9,29 @@ FUNCTION CIRCLE, xcenter, ycenter, radius
 
 function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc, stepSize=stepSize, MAE = MAE, savePlot=savePlot, earthLon = earthLon, minSW = minSW, plotPath = plotPath, saveData = saveData
 
-  ;tinit = '4-Feb-2010 02:19:13.931'
-  ;startcut = 30
-  ;endcut = 120
-  ;minphi = 78
-  ;maxphi = 78
-  ;halfWidth = 70
-  ;file = file_search('/nas/helio/data/bgsw_WSA/20090623_A/vmap.txt')
-  ;savePlot = 1
-  ;earthLon = 30
-  ;sc = 'A'
-  ;plotPath = '/home/jhinterreiter/'
+  doTest = 0
+  if doTest eq 1 then begin
+    tinit = '4-Feb-2010 02:19:13.931'
+    startcut = 0
+    endcut = 120
+    minphi = 78
+    maxphi = 78
+    halfWidth = 70
+    file = file_search('/nas/helio/data/bgsw_WSA/20090623_A/vmap.txt')
+    savePlot = 1
+    earthLon = 30
+    sc = 'A'
+    plotPath = '/home/jhinterreiter/'
+  endif
 
   print, '!!!! Background Solar Wind from WSA model !!!!'
   MAError = 100 ;/km/s
   modelStartDist = 5
+  startcut = startcut - modelStartDist
+  endcut = endcut - modelStartDist
+
+  if startcut lt 0 then startcut = 0
+  if endcut lt 0 then endcut = 0
   if keyword_set(MAE) then MAError = MAE
 
   stSize = 25 ;km/s
