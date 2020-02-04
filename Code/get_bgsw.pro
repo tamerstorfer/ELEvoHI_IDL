@@ -11,18 +11,20 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
 
   doTest = 0
   if doTest eq 1 then begin
+    file = '/nas/helio/data/bgsw_WSA/20120614_B/vmap.txt'
     tinit = '4-Feb-2010 02:19:13.931'
     startcut = 0
     endcut = 120
     minphi = 78
     maxphi = 78
     halfWidth = 70
-    file = file_search('/nas/helio/data/bgsw_WSA/20090623_A/vmap.txt')
     savePlot = 1
     earthLon = 30
     sc = 'A'
     plotPath = '/home/jhinterreiter/'
   endif
+
+  eventDate = strmid(file, strpos(file, 'vmap')-11, 8)
 
   print, '!!!! Background Solar Wind from WSA model !!!!'
   MAError = 100 ;/km/s
@@ -138,7 +140,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     !p.multi = 0
     set_plot, 'ps'
     DEVICE, SET_FONT='Helvetica', /TT_FONT
-    device, filename = plotP + 'bgsw.ps', xsize = 15, ysize = 25, xoffset = 2, yoffset = 2, encaps = 0
+    device, filename = plotP + 'bgsw_'+eventDate+'.ps', xsize = 15, ysize = 25, xoffset = 2, yoffset = 2, encaps = 0
 
 
     !p.multi = 0
@@ -165,20 +167,21 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
 
     ; draw axes
     cgplot, [0], [0], $
-    xcharsize = 1.0, $
-    ycharsize = 1.0, $
+    ;xcharsize = 1.0, $
+    ;ycharsize = 1.0, $
+    charsize = 1.0, $
     thick = 5, $
     ;xrange = [0, dSize[1]], $
     xrange = [dSize[1], -dSize[1]], $
     yrange = [modelStartDist, dSize[2]+modelStartDist], $
     xtitle = 'Longitude', $
     ytitle = 'Distance [R!DSun!N]', $
+    title = eventDate, $
     xstyle = 1, ystyle = 1, /nodata, /noerase, $
     position = [plot_left / page_width, plot_bottom / page_height, $
       (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height]
 
-    cgColorbar, Range=[Min(data), Max(data)], /Vertical, /fit, /right, title = 'Speed [km/s]'
-    
+    cgColorbar, Range=[Min(data), Max(data)], /Vertical, /fit, /right, title = 'Speed [km/s]', charsize = 1.0
 
     wspd = dataPolarPlot
 
@@ -200,12 +203,14 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     
 
     ; Plot BGSW as polar plot
+    diff = fix(max(data) - min(data))
+    levs = indgen(diff)+min(data)
     loadct, 0
     POLAR_CONTOUR, wspd, lrad, r, /nodata, background = 255, color = cgcolor('black'), $
       position = [plot_left / page_width, plot_bottom / page_height, $
-      (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], xtitle = 'Distance [R!DSun!N]', ytitle = 'Distance [R!DSun!N]'
+      (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], xtitle = 'Distance [R!DSun!N]', ytitle = 'Distance [R!DSun!N]', title = eventDate
     loadct, 25
-    POLAR_CONTOUR, wspd, lrad, r, /cell_fill, nlevels = 100, /over, $
+    POLAR_CONTOUR, wspd, lrad, r, /fill, levels = levs, /over, $
       position = [plot_left / page_width, plot_bottom / page_height, $
       (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height];, /isotropic, xgridstyle = 1, ygridstyle = 1
     ;cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [plot_left / page_width, plot_bottom / page_height, $
