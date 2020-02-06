@@ -310,11 +310,16 @@ for w=0, j-1 do begin
 	 print, '=========================='
      
      if str[28] ne '' then begin
-       print, 'In situ arrival time (observed): ', str[28]+' UT', format='(A32,1X,A20)'
+       posSpeed = strpos(str[28], '/')
+	   arrTime = str[28]
+	   if posSpeed ne -1 then begin
+	   	arrTime = strmid(arrTime, 0, posSpeed)
+	   endif
+       print, 'In situ arrival time (observed): ', arrTime+' UT', format='(A32,1X,A20)'
        print, '--------------------------'
        print, 'Difference between observation and prediction:'
-       print, 'dt (mean): ', round((anytim(arrtime_mean)-anytim(str[28]))/360.)/10., 'h', format='(A11,F5.1,1X,A1)'
-       print, 'dt (median): ', round((anytim(arrtime_median)-anytim(str[28]))/360.)/10., 'h', format='(A13,F5.1,1X,A1)'
+       print, 'dt (mean): ', round((anytim(arrtime_mean)-anytim(arrTime))/360.)/10., 'h', format='(A11,F5.1,1X,A1)'
+       print, 'dt (median): ', round((anytim(arrtime_median)-anytim(arrTime))/360.)/10., 'h', format='(A13,F5.1,1X,A1)'
        print, '=========================='
      endif
      
@@ -336,14 +341,21 @@ for w=0, j-1 do begin
  
 	 arrerr=string((round(arrstdd*100.)/100.), format='(F5.1)')
  
+ 	 insituArrSpeed = ''
 	 if anytim(arr[1,w]) ne 0 then begin
-	   cutstring12=strmid(anytim(arr[1,w], /ccsds), 0, 10)
-	   cutstring22=strmid(anytim(arr[1,w], /ccsds), 11, 5)
+	   posSpeed = strpos(arr[1,w], '/')
+	   arrTime = arr[1,w]
+	   if posSpeed ne -1 then begin
+	   	arrTime = strmid(arrTime, 0, posSpeed)
+	   	insituArrSpeed = string(strmid(arr[1,w], posSpeed+1, strlen(arr[1,w])-posSpeed+1))
+	   endif
+	   cutstring12=strmid(anytim(arrTime, /ccsds), 0, 10)
+	   cutstring22=strmid(anytim(arrTime, /ccsds), 11, 5)
 	   insituarr=cutstring12+' '+cutstring22   
-	   save, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
+	   save, arrplotmedian, arrplotmean, arrerr, insituarr, insituArrSpeed, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endif else begin
 	   insituarr=['']
-	   save, arrplotmedian, arrplotmean, arrerr, insituarr, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
+	   save, arrplotmedian, arrplotmean, arrerr, insituarr, insituArrSpeed, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endelse
   endif
 

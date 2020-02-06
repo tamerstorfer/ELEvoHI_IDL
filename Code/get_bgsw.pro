@@ -11,13 +11,13 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
 
   doTest = 0
   if doTest eq 1 then begin
-    file = '/nas/helio/data/bgsw_WSA/20120614_B/vmap.txt'
-    tinit = '4-Feb-2010 02:19:13.931'
-    startcut = 0
-    endcut = 120
-    minphi = 78
-    maxphi = 78
-    halfWidth = 70
+    file = '/nas/helio/data/bgsw_WSA/20100523_A/vmap.txt'
+    tinit = '24-May-2010 03:06:06.379'
+    startcut = 24.207689
+    endcut = 103.49942
+    minphi = 56
+    maxphi = 76
+    halfWidth = 50
     savePlot = 1
     earthLon = 30
     sc = 'A'
@@ -92,7 +92,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
   dSize = size(data)
 
   ; shift matrix so 'Earth' is in center
-  phiDiff = (maxphi-minphi)/2
+  phiDiff = ((maxphi-minphi)/2)/2
   shiftVal = dSize[1]/2-earthPos+dir_E
 
   newdata = data
@@ -175,18 +175,20 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     xrange = [dSize[1], -dSize[1]], $
     yrange = [modelStartDist, dSize[2]+modelStartDist], $
     xtitle = 'Longitude', $
-    ytitle = 'Distance [R!DSun!N]', $
+    ;ytitle = 'Distance [R!DSun!N]', $
+    ytitle = 'Distance [R'+sunsymbol()+']', $
     title = eventDate, $
     xstyle = 1, ystyle = 1, /nodata, /noerase, $
     position = [plot_left / page_width, plot_bottom / page_height, $
       (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height]
 
-    cgColorbar, Range=[Min(data), Max(data)], /Vertical, /fit, /right, title = 'Speed [km/s]', charsize = 1.0
+    cgColorbar, Range=[Min(data), Max(data)], /Vertical, /fit, /right, title = 'Speed [km s!E-1!N]', charsize = 1.0
 
     wspd = dataPolarPlot
 
     for i = 0, 179 do begin
-      wspd[i,*] = dataPolarPlot[179-i, *]
+      ;wspd[i,*] = dataPolarPlot[179-i, *]
+      wspd[i,*] = newData[179-i, *]
     endfor
     
     lon = findgen(dSize[1])*2
@@ -208,14 +210,14 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     loadct, 0
     POLAR_CONTOUR, wspd, lrad, r, /nodata, background = 255, color = cgcolor('black'), $
       position = [plot_left / page_width, plot_bottom / page_height, $
-      (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], xtitle = 'Distance [R!DSun!N]', ytitle = 'Distance [R!DSun!N]', title = eventDate
+      (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], xtitle = 'Distance [R'+sunsymbol()+']', ytitle = 'Distance [R'+sunsymbol()+']', title = eventDate
     loadct, 25
     POLAR_CONTOUR, wspd, lrad, r, /fill, levels = levs, /over, $
       position = [plot_left / page_width, plot_bottom / page_height, $
       (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height];, /isotropic, xgridstyle = 1, ygridstyle = 1
     ;cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [plot_left / page_width, plot_bottom / page_height, $
     ;  (plot_left + xsize) / page_width, (plot_bottom + ysize) / page_height], /normal, ncolors = 100
-    cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [0.575, 0.815, 0.927, 0.835], /right, charsize = 1, title = 'Speed [km/s]';, ncolors = 100
+    cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [0.575, 0.815, 0.927, 0.835], /right, charsize = 1, title = 'Speed [km s!E-1!N]';, ncolors = 100
     ;cgColorbar, Range=[Min(data), Max(data)], /Vertical, position = [0.186, 0.9, 0.839, 0.95], /data;, ncolors = 100
     ;colorbar, range = [Min(data), Max(data)], /vertical, position = [-400, 400, 400, 500], /data
 
@@ -236,7 +238,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
 
     ; Plot histogram
     !p.multi = [0,1,3]
-    cghistoplot, newswarr, title = 'Histogram of selected range of the BGSW', xtitle = 'Speed [km/s]'
+    cghistoplot, newswarr, title = 'Histogram of selected range of the BGSW', xtitle = 'Speed [km s!E-1!N]'
     !p.multi = 0
 
     device, /close

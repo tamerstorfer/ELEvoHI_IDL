@@ -283,9 +283,9 @@ if n_elements(sourcestring) eq 3 then begin
 endif
 
 insitu=str[24]
-if str[27] ne '' and str[29] eq '' then arr=[[str[27], str[28]]]
-if str[27] ne '' and str[29] ne '' and str[31] eq '' then arr=[[str[27], str[28]],[str[29], str[30]]]
-if str[27] ne '' and str[29] ne '' and str[31] ne '' then arr=[[str[27], str[28]],[str[29], str[30]], [str[31], str[32]]]
+if str[27] ne '' and str[29] eq '' then arr=[[str[27], strmid(str[28], 0, 17)]]
+if str[27] ne '' and str[29] ne '' and str[31] eq '' then arr=[[str[27], strmid(str[28], 0, 17)],[str[29], strmid(str[30], 0, 17)]]
+if str[27] ne '' and str[29] ne '' and str[31] ne '' then arr=[[str[27], strmid(str[28], 0, 17)],[str[29], strmid(str[30], 0, 17)], [str[31], strmid(str[32], 0, 17)]]
 
 ;initialize counting variable for non-converging DBMfits
 nofit=0
