@@ -213,24 +213,6 @@ Y = r_apex[cut:ecut]*au
 fitend=r_apex[ecut]
 
 
-;chose background solar wind speed from L1 (or STEREO) data
-
-startt=where(anytim(sw.time) le anytim(time[0]))
-endt=where(anytim(sw.time) gt anytim(time[n_elements(time)-1]))
-
-
-bg_speed=mean(sw[startt[n_elements(startt)-1]:endt[0]].vtot, /NaN)
-bg_speed_std=stddev(sw[startt[n_elements(startt)-1]:endt[0]].vtot, /NaN)
-
-min_bg_speed = min(sw[startt[n_elements(startt)-1]:endt[0]].vtot)
-max_bg_speed = max(sw[startt[n_elements(startt)-1]:endt[0]].vtot)
-
-
-print, 'mean:', bg_speed
-print, 'stddev:', bg_speed_std
-print, 'min:', min_bg_speed
-print, 'max:', max_bg_speed
-
 ;print, 'STOP 1'
 ;stop
 ;calculate fit for a range of background solar wind speeds
@@ -239,6 +221,23 @@ winds = findgen(19)*25+250
 
 
 if bgsw eq 3 then begin
+	;chose background solar wind speed from L1 (or STEREO) data
+
+	startt=where(anytim(sw.time) le anytim(time[0]))
+	endt=where(anytim(sw.time) gt anytim(time[n_elements(time)-1]))
+
+
+	bg_speed=mean(sw[startt[n_elements(startt)-1]:endt[0]].vtot, /NaN)
+	bg_speed_std=stddev(sw[startt[n_elements(startt)-1]:endt[0]].vtot, /NaN)
+
+	min_bg_speed = min(sw[startt[n_elements(startt)-1]:endt[0]].vtot)
+	max_bg_speed = max(sw[startt[n_elements(startt)-1]:endt[0]].vtot)
+
+	print, 'mean:', bg_speed
+	print, 'stddev:', bg_speed_std
+	print, 'min:', min_bg_speed
+	print, 'max:', max_bg_speed
+
 	winds=fltarr(5)
 	winds[0] = min_bg_speed
 	winds[1] = min_bg_speed+(bg_speed-min_bg_speed)/2
