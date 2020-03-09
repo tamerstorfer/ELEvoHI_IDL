@@ -330,24 +330,26 @@ d=distance[0]/au ; Sun-s/c distance in AU
 
 
 
-case insitu of
-	'Earth': begin
-			 insitu_file=data+'DATACAT/WIND_2007to2018_HEEQ.sav'
-			 restore, insitu_file, /verb
-			 sw=wind
-	end
-	'A':     begin
-			 insitu_file=data+'DATACAT/STA_2007to2015_SCEQ.sav'
-			 restore, insitu_file, /verb
-			 sw=sta
-	end
-	'B':     begin
-			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'
-			 restore, insitu_file, /verb
-			 sw=stb
-	end
-	else: print, 'In situ spacecraft not defined!'
-endcase
+if bgsw eq 3 then begin
+  case insitu of
+  	'Earth': begin
+  			 insitu_file=data+'DATACAT/WIND_2007to2018_HEEQ.sav'
+  			 restore, insitu_file, /verb
+  			 sw=wind
+  	end
+  	'A':     begin
+  			 insitu_file=data+'DATACAT/STA_2007to2015_SCEQ.sav'
+  			 restore, insitu_file, /verb
+  			 sw=sta
+  	end
+  	'B':     begin
+  			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'
+  			 restore, insitu_file, /verb
+  			 sw=stb
+  	end
+  	else: print, 'In situ spacecraft not defined!'
+  endcase
+endif
 
 ensemble=0
 ;check if ELEvoHI is in ensemble mode:
@@ -767,9 +769,8 @@ if keyword_set(save_results) then begin
 endif
 
 if bgsw eq 2 then begin
-  datadir=getenv('DATA_DIR')
   event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
-  bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
+  bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
   sc = strmid(event, 9, 1)
   wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
 endif
