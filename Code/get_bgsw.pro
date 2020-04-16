@@ -11,7 +11,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
 
   doTest = 0
   if doTest eq 1 then begin
-    file = '/nas/helio/data/bgsw_WSA/20100523_A/vmap.txt'
+    file = '/nas/helio/data/bgsw_WSA/20110907_B/vmap.txt'
     tinit = '24-May-2010 03:06:06.379'
     startcut = 24.207689
     endcut = 103.49942
@@ -20,6 +20,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     halfWidth = 50
     savePlot = 1
     earthLon = 30
+    saveData = 1
     sc = 'A'
     plotPath = '/home/jhinterreiter/'
   endif
@@ -122,12 +123,31 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
   newdata = shift(newdata, [-dir_E,0])
   
   if keyword_set(saveData) and keyword_set(plotPath) then begin
+      strPos = strpos(file, '/vmap.txt')
+      timeFile = strmid(file, 0, strPos-10) + 'dataset-overview.txt'
+      timeFile = file_search(timeFile)
+
+      yr = strmid(eventDate, 0, 4)
+      mon = strmid(eventDate, 4, 2)
+      dy = strmid(eventDate, 6, 2)
+      evDateNum = anytim(yr + '-' + mon + '-' + dy)
+
+
+      readcol, timefile, label, bgswDate, bgswTime, bgswCR, format='A,A,A,A', skipline=2
+
+      bgswDateTime = bgswDate + ' ' + bgswTime
+      timeDiff = abs(anytim(bgswDateTime) - evDateNum)
+      idTimeDiff = where(timeDiff eq min(timeDiff))
+
+      bgswStartTime = bgswDateTime[idTimeDiff]
+      
+
       bgsw_data = newData
-      save, bgsw_data, filename = plotPath + '/bgsw_data.sav'
+      save, bgsw_data, bgswStartTime, filename = plotPath + '/bgsw_data.sav'
       bgsw_data = dataPolarPlot
-      save, bgsw_data, filename = plotPath + '/bgsw_data_noCutout.sav'
+      save, bgsw_data, bgswStartTime, filename = plotPath + '/bgsw_data_noCutout.sav'
       bgsw_cutout = newbgsw
-      save, bgsw_cutout, filename = plotPath + '/bgsw_cutout_only.sav'
+      save, bgsw_cutout, bgswStartTime, filename = plotPath + '/bgsw_cutout_only.sav'
   endif
 
   
