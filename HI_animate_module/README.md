@@ -2,7 +2,7 @@
 
 Python package for animation of Heliospheric imager modeling/prediction results
 
-by C. Möstl, T. Amerstorfer, contributors: J. Hinterreiter
+by  T. Amerstorfer, J. Hinterreiter, C. Möstl
 
 Current status (April 2020): work in progress
 
