@@ -96,5 +96,5 @@ The only interaction needed is the definition of the start and end points of the
 
 When ELEvoHI has finished, the result of the prediction is given in the terminal.
 
-The Python-codes for the visualization of the prediction result can be found in 
+The Python-codes for the visualization of the prediction result can be found in https://github.com/tamerstorfer/ELEvoHI/tree/master/HI_animate_module.
         
