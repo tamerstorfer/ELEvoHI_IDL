@@ -18,7 +18,7 @@ The first and mandatory step to use ELEvoHI is to measure the propagating CME wi
 
 Usually, we measure a CME front at least 5 times and build a mean track in order to get a good representative of the CME evolution. Note, that the standard deviation derived from these measurements is not used within ELEvoHI. Due to the ensemble character of the model, the differences between the ensemble members are much larger than any differences due to the measurement error of the time-elongation track.
 
-**Important:** *Since ELEvoHI is used to predict arrival times and speeds at targets in the ecliptic, it is necessary to perform the measurements of the CME front within the ecliptic as well!*
+**Important:** *Since ELEvoHI is used to predict arrival times and speeds at targets in the ecliptic, it is necessary to perform the measurements of the CME front within the ecliptic!*
 
 **2. Derive the direction of motion**
 
@@ -75,7 +75,7 @@ For the angular half width within the ecliptic plane, a range between 30 and 50 
         angular half width, lambda, ensemble: (lambda_min/lambda_max/d_lambda)
         30/50/5
 
-In line 81, the most probable in situ arrival can be given. This is needed for the version of ELEvoHI, were in situ data from 1 AU is used as an approximation of the ambient solar wind speed that is influencing the CME evolution. It is not recommended to use this option and in the future it will be deleted.
+In line 25, the most probable in situ arrival target can be given. This is needed for the version of ELEvoHI, were in situ data from 1 AU is used as an approximation of the ambient solar wind speed that is influencing the CME evolution. It is not recommended to use this option and in the future, it will be deleted.
 
         ________________
         most likely in situ detection at 1 AU (Earth or A or B)
