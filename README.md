@@ -88,9 +88,13 @@ The last change that can be made in the source file, is the actual in situ arriv
         Earth
         2008-Dec-17 03:35
         
-When parameters needed are changed, save the file and start ELEvoHI as follows:
+When the parameters needed are changed, save the file and start ELEvoHI as follows:
 
         elevohi, /save_results, /statistics, /silent, /forMovie, bgsw=1
 
+The only interaction needed is the definition of the start and end points of the DBM fit. This is done by clicking into a figure and should be self-explanatory.
 
+When ELEvoHI has finished, the result of the prediction is given in the terminal.
+
+The Python-codes for the visualization of the prediction result can be found in 
         
