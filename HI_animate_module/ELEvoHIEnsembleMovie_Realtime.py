@@ -453,32 +453,27 @@ def read_CME_data(read_data, dayjump, current_event_dir, ensemble_results,
 # directory of current event
 # Animation of ensemble simulations for ElEvoHI
 
-# Author: C. Moestl, IWF Graz, Austria
+# Author: C. Moestl, J. Hinterreiter, IWF Graz, Austria
 # twitter @chrisoutofspace, https://github.com/cmoestl
 # November 2018
 # This work is published under the MIT LICENSE (see bottom)
 # parameter:
 #            eventsList: List with the events for which the movies should be
 #                        generated
-#            spaceCraft: None for A and B, A for A and B for B
+#            spaceCraft: None or 'AB' for A and B, 'A' for A and 'B'' for B
 #            readData: set to 1 if you want to create the pickle file
 #            coordSys: HEEQ or HEE, None for HEE
 #            catPath: Path to the catalogs
 #            scriptPath: Path to the ELEvoHI ensemble output
-#            outPath: Path where to save the movies
+#            outPath: Save path for the movies
+#            plotBGSW: set to 'True' to plot the background solar wind, if available
+#            showMag: set to 'True' to plot the magnetic field legend
+#            ffmpegPath: Path to ffmpeg
 
 
 def main(eventsList, spaceCraft=None, readData=None, coordSys=None,
          catPath=None, scriptPath=None, outPath=None, plotBGSW=None,
-         showMag=None):
-    """_Bisschen Text.
-
-    Parameters...
-    eventList...
-
-    Returns
-    ...
-    """
+         showMag=None, ffmpegPath=None):
 
     if catPath is None:
         catPath = 'cats/'
@@ -495,6 +490,8 @@ def main(eventsList, spaceCraft=None, readData=None, coordSys=None,
     plotSolarWind = True
     if plotBGSW is None or not plotBGSW:
         plotSolarWind = False
+    if ffmpegPath is None:
+        ffmpegPath = '/nas/helio/ffmpeg/'
 
     r_sun = 695700.
     au = 149597870.
@@ -981,13 +978,9 @@ def main(eventsList, spaceCraft=None, readData=None, coordSys=None,
 
         outpath = outpath + '/'
 
-        # convert to jpg
-        # os.system('ffmpeg -i "'+current_event_dir+'frames/elevo_%04d.png" '
-        # +current_event_dir+'frames/elevo_%04d.jpg -y -loglevel quiet')
-        # make mp4
-
-        os.system('/nas/helio/ffmpeg/ffmpeg -r 20 -i "' + current_event_dir +
-                  'frames/elevohi_%04d.png" -b:v 5000k -r 20 ' + outpath +
+    
+        os.system(ffmpegPath + 'ffmpeg -r 20 -i "' + current_event_dir +
+                  'frames/elevohi_%04d.png" -c:v libx264 -vf "fps=25,format=yuv420p" ' + outpath +
                   current_event + '_' + spacecraft +
                   '_ensemble_movie.mp4 -y -loglevel quiet')
         plt.close('all')

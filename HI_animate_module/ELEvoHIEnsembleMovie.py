@@ -465,22 +465,14 @@ def read_CME_data(read_data, dayjump, current_event_dir, ensemble_results,
 #            coordSys: HEEQ or HEE, None for HEE
 #            catPath: Path to the catalogs
 #            scriptPath: Path to the ELEvoHI ensemble output
-#            outPath: Path where to save the movies
-#            plotBGSW: set to 'True' to plot the plot the background solar wind, if available
+#            outPath: Save path for the movies
+#            plotBGSW: set to 'True' to plot the background solar wind, if available
 #            showMag: set to 'True' to plot the magnetic field legend
 #            ffmpegPath: Path to ffmpeg
 
 
 def main(eventsList, spaceCraft=None, readData=None, coordSys=None,
          catPath=None, scriptPath=None, outPath=None, plotBGSW=None, showMag=None, ffmpegPath=None):
-    """_Bisschen Text.
-
-    Parameters...
-    eventList...
-
-    Returns
-    ...
-    """
 
     if catPath is None:
         catPath = 'cats/'
@@ -1075,4 +1067,3 @@ if __name__ == '__main__':
 # FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
