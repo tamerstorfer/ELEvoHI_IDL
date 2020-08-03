@@ -52,29 +52,31 @@ endif else begin
 	print, "Target must be defined in input file!"
 	return
 	END
-	
+
 
 
 for w=0, j-1 do begin
 
       ;check if directory already exists
-      filetest = FILE_TEST(dir+'results/'+arr[0,w]+'/', /dir) 
+      filetest = FILE_TEST(dir+'results/'+arr[0,w]+'/', /dir)
       ;make directory for analyzed event
       if filetest eq 0 then file_mkdir, dir+'results/'+arr[0,w]+'/'
-      
+
 
       case arr[0,w] of
         'MES': begin
                   mnan = where(finite(eELEvoHI.arrtime_mes), mcount)
-                  tt = (anytim(eELEvoHI.arrtime_mes) - anytim(eELEvoHI.tinit))/3600.                  
+                  tt = (anytim(eELEvoHI.arrtime_mes) - anytim(eELEvoHI.tinit))/3600.
                end
         'VEX': tt = (anytim(eELEvoHI.arrtime_vex) - anytim(eELEvoHI.tinit))/3600.
         'Earth': tt = (anytim(eELEvoHI.arrtime_earth) - anytim(eELEvoHI.tinit))/3600.
-        'A': tt = (anytim(eELEvoHI.arrtime_sta) - anytim(eELEvoHI.tinit))/3600.	        
-        'B': tt = (anytim(eELEvoHI.arrtime_stb) - anytim(eELEvoHI.tinit))/3600.    
+        'A': tt = (anytim(eELEvoHI.arrtime_sta) - anytim(eELEvoHI.tinit))/3600.
+        'B': tt = (anytim(eELEvoHI.arrtime_stb) - anytim(eELEvoHI.tinit))/3600.
+        'SOLO': tt = (anytim(eELEvoHI.arrtime_solo) - anytim(eELEvoHI.tinit))/3600.
+        'PSP': tt = (anytim(eELEvoHI.arrtime_psp) - anytim(eELEvoHI.tinit))/3600.
         else: print, 'In situ spacecraft name not valid.'
       endcase
-      
+
       case arr[0,w] of
         'MES': begin
                  mes_nan = where(finite(eelevohi.arrtime_mes), countmes, /null)
@@ -92,19 +94,31 @@ for w=0, j-1 do begin
                  earth_nan = where(finite(eelevohi.arrtime_earth), countearth, /null)
                  if countearth ne 0 then begin
                      tt = (anytim(eELEvoHI.arrtime_earth[earth_nan]) - anytim(eELEvoHI.tinit[earth_nan]))/3600.
-				 endif           
+				 endif
                  end
         'A': begin
                  sta_nan = where(finite(eelevohi.arrtime_sta), countsta, /null)
                  if countsta ne 0 then begin
                      tt = (anytim(eELEvoHI.arrtime_sta[sta_nan]) - anytim(eELEvoHI.tinit[sta_nan]))/3600.
 				 endif
-             end        
+             end
         'B': begin
                  stb_nan = where(finite(eelevohi.arrtime_stb), countstb, /null)
                  if countstb ne 0 then begin
                      tt = (anytim(eELEvoHI.arrtime_stb[stb_nan]) - anytim(eELEvoHI.tinit[stb_nan]))/3600.
 				 endif
+             end
+        'SOLO': begin
+                 solo_nan = where(finite(eelevohi.arrtime_solo), countsolo, /null)
+                 if countsolo ne 0 then begin
+                     tt = (anytim(eELEvoHI.arrtime_solo[solo_nan]) - anytim(eELEvoHI.tinit[solo_nan]))/3600.
+                 endif
+             end
+        'PSP': begin
+                 psp_nan = where(finite(eelevohi.arrtime_psp), countpsp, /null)
+                 if countpsp ne 0 then begin
+                     tt = (anytim(eELEvoHI.arrtime_psp[psp_nan]) - anytim(eELEvoHI.tinit[psp_nan]))/3600.
+                 endif
              end
         else: print, 'In situ spacecraft name not valid.'
       endcase
@@ -120,9 +134,9 @@ for w=0, j-1 do begin
 
 	  bin=tt_start+(i+1)*tt_d
 	  result=where(tt lt bin)
-  
+
 	  if i eq 7 then result=where(tt le bin)
-  
+
 	  case i of
 		0: tt1=result
 		1: tt2=result
@@ -133,7 +147,7 @@ for w=0, j-1 do begin
 		6: tt7=result
 		7: tt8=result
 	  endcase
-	
+
 	if i eq 0 then begin
 	   labels[i]='$'+strtrim(string(fix(min(tt[result]))),2)+' - '+strtrim(string(fix(max(tt[result]))),2)+'$ h'
 	   labelstart=strtrim(string(fix(max(tt[result]))),2)
@@ -195,7 +209,7 @@ for w=0, j-1 do begin
 	sw=eELEvoHI.bg_sw_speed
 
     ;check if directory already exists
-    ;filetest = FILE_TEST(dir+'results/'+arr[0,w]+'/', /dir) 
+    ;filetest = FILE_TEST(dir+'results/'+arr[0,w]+'/', /dir)
 
     ;make directory for analyzed event
     ;if filetest eq 0 then file_mkdir, dir+'results/'+arr[0,w]+'/'
@@ -209,13 +223,13 @@ for w=0, j-1 do begin
 	residuals=eELEvoHI.mean_residual
 
 	save, residuals, tt, filename=dir+'results/'+arr[0,w]+'/residuals.sav'
-	
+
 	save, eELEvoHI, filename=dir+'eELEvoHI_results.sav'
-	
+
 	;produce data for prediction result
-	
+
 	print, '=========================='
-	
+
       case arr[0,w] of
         'MES': begin
                  mes_nan = where(finite(eelevohi.arrtime_mes), countmes, /null)
@@ -259,11 +273,11 @@ for w=0, j-1 do begin
 					 insitu_sc='Earth'
 					 save, arrivaltimes, insitu_sc, filename=dir+'results/'+arr[0,w]+'/arrivaltimes.sav'
 					 print, 'Arrival time at Earth'
-					 print, '-------------------------'     
+					 print, '-------------------------'
 				 endif else begin
 				 	 print, 'No arrival predicted at Earth!'
 				     print, '-------------------------'
-				 endelse            
+				 endelse
                  end
         'A': begin
                  sta_nan = where(finite(eelevohi.arrtime_sta), countsta, /null)
@@ -275,12 +289,12 @@ for w=0, j-1 do begin
 					 insitu_sc='A'
 					 save, arrivaltimes, insitu_sc, filename=dir+'results/'+arr[0,w]+'/arrivaltimes.sav'
 					 print, 'Arrival time at STEREO-Ahead'
-					 print, '-------------------------' 
+					 print, '-------------------------'
 				 endif else begin
 				 	 print, 'No arrival predicted at STEREO-A!'
 				     print, '-------------------------'
 				 endelse
-             end        
+             end
         'B': begin
                  stb_nan = where(finite(eelevohi.arrtime_stb), countstb, /null)
                  if countstb ne 0 then begin
@@ -291,24 +305,56 @@ for w=0, j-1 do begin
 					 insitu_sc='B'
 					 save, arrivaltimes, insitu_sc, filename=dir+'results/'+arr[0,w]+'/arrivaltimes.sav'
 					 print, 'Arrival time at STEREO-Behind'
-					 print, '-------------------------' 
+					 print, '-------------------------'
 				 endif else begin
 				 	 print, 'No arrival predicted at STEREO-B!'
 				     print, '-------------------------'
 				 endelse
+             end
+        'SOLO': begin
+                 solo_nan = where(finite(eelevohi.arrtime_solo), countsolo, /null)
+                 if countsolo ne 0 then begin
+                     arrtime_mean = anytim(mean(anytim(eELEvoHI.arrtime_solo[solo_nan]), /nan), /ccsds)
+                     arrstdd = stddev(anytim(eELEvoHI.arrtime_solo[solo_nan]))/3600.
+                     arrtime_median = anytim(median(anytim(eELEvoHI.arrtime_solo[solo_nan])), /ccsds)
+                     arrivaltimes = eELEvoHI.arrtime_solo
+                     insitu_sc='SOLO'
+                     save, arrivaltimes, insitu_sc, filename=dir+'results/'+arr[0,w]+'/arrivaltimes.sav'
+                     print, 'Arrival time at Solar Orbiter'
+                     print, '-------------------------'
+                 endif else begin
+                     print, 'No arrival predicted at Solar Orbiter!'
+                     print, '-------------------------'
+                 endelse
+             end
+        'PSP': begin
+                 psp_nan = where(finite(eelevohi.arrtime_psp), countpsp, /null)
+                 if countpsp ne 0 then begin
+                     arrtime_mean = anytim(mean(anytim(eELEvoHI.arrtime_psp[psp_nan]), /nan), /ccsds)
+                     arrstdd = stddev(anytim(eELEvoHI.arrtime_psp[psp_nan]))/3600.
+                     arrtime_median = anytim(median(anytim(eELEvoHI.arrtime_psp[psp_nan])), /ccsds)
+                     arrivaltimes = eELEvoHI.arrtime_psp
+                     insitu_sc='PSP'
+                     save, arrivaltimes, insitu_sc, filename=dir+'results/'+arr[0,w]+'/arrivaltimes.sav'
+                     print, 'Arrival time at Parker Solar Probe'
+                     print, '-------------------------'
+                 endif else begin
+                     print, 'No arrival predicted at Parker Solar Probe!'
+                     print, '-------------------------'
+                 endelse
              end
         else: print, 'In situ spacecraft name not valid.'
       endcase
 
  if isa(arrtime_mean) and isa(arrtime_median) then begin
    if isa(arrtime_mean) and finite(arrtime_mean) and isa(arrtime_median) and finite(arrtime_median) then begin
- 
+
 	 print, 'Ensemble mean:'
 	 print, arrtime_mean, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'
 	 print, 'Ensemble median:'
-	 print, arrtime_median, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'  
+	 print, arrtime_median, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'
 	 print, '=========================='
-     
+
      if str[28] ne '' then begin
        posSpeed = strpos(str[28], '/')
 	   arrTime = str[28]
@@ -322,25 +368,25 @@ for w=0, j-1 do begin
        print, 'dt (median): ', round((anytim(arrtime_median)-anytim(arrTime))/360.)/10., 'h', format='(A13,F5.1,1X,A1)'
        print, '=========================='
      endif
-     
- 
+
+
 	 shadelimlow=anytim(anytim(arrtime_median)-arrstdd*3600., /ccsds)
 	 shadelimhigh=anytim(anytim(arrtime_median)+arrstdd*3600., /ccsds)
- 
+
 	 save, arrtime_mean, arrtime_median, arrstdd, shadelimlow, shadelimhigh, filename=+dir+'results/'+arr[0,w]+'/prediction.sav'
- 
+
 	 cutstring1=strmid(arrtime_median, 0, 10)
 	 cutstring2=strmid(arrtime_median, 11, 5)
- 
+
 	 arrplotmedian=cutstring1+' '+cutstring2
- 
+
 	 cutstring11=strmid(arrtime_mean, 0, 10)
 	 cutstring21=strmid(arrtime_mean, 11, 5)
- 
+
 	 arrplotmean=cutstring11+' '+cutstring21
- 
+
 	 arrerr=string((round(arrstdd*100.)/100.), format='(F5.1)')
- 
+
  	 insituArrSpeed = ''
 	 if anytim(arr[1,w]) ne 0 then begin
 	   posSpeed = strpos(arr[1,w], '/')
@@ -351,7 +397,7 @@ for w=0, j-1 do begin
 	   endif
 	   cutstring12=strmid(anytim(arrTime, /ccsds), 0, 10)
 	   cutstring22=strmid(anytim(arrTime, /ccsds), 11, 5)
-	   insituarr=cutstring12+' '+cutstring22   
+	   insituarr=cutstring12+' '+cutstring22
 	   save, arrplotmedian, arrplotmean, arrerr, insituarr, insituArrSpeed, filename=dir+'results/'+arr[0,w]+'/plottimes.sav'
 	 endif else begin
 	   insituarr=['']
@@ -359,14 +405,14 @@ for w=0, j-1 do begin
 	 endelse
   endif
 
-  
+
  endif else print, '=========================='
 
 
  file_mkdir, path+'/PredictedEvents/current/'+eventdate
- 
+
  spawn, 'cp -R '+dir+'results/'+arr[0,w]+'/ '+path+'/PredictedEvents/current/'+eventdate
- 
+
 endfor
 
 
