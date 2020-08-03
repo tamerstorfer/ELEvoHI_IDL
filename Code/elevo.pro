@@ -74,7 +74,8 @@ marp=get_stereo_lonlat(suntime, 'Mars', system='HEE')
 stap=get_stereo_lonlat(suntime, 'STEREO-A', system='HEE')
 stbp=get_stereo_lonlat(suntime, 'STEREO-B', system='HEE')
 vexp=get_stereo_lonlat(suntime, 'Venus', system='HEE')
-
+solop=get_stereo_lonlat(suntime, 'solo', system='HEE')
+pspp=get_stereo_lonlat(suntime, 'psp', system='HEE')
 
 
 if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
@@ -131,6 +132,10 @@ if direction lt vexp[1]/!dtor then delta_V=abs(direction)+vexp[1]/!dtor
 if direction gt vexp[1]/!dtor then delta_V=direction-vexp[1]/!dtor
 if direction lt mesp[1]/!dtor then delta_MES=abs(direction)+mesp[1]/!dtor
 if direction gt mesp[1]/!dtor then delta_MES=direction-mesp[1]/!dtor
+if direction lt solop[1]/!dtor then delta_SOLO=abs(direction)+solop[1]/!dtor
+if direction gt solop[1]/!dtor then delta_SOLO=direction-solop[1]/!dtor
+if direction lt pspp[1]/!dtor then delta_PSP=abs(direction)+pspp[1]/!dtor
+if direction gt pspp[1]/!dtor then delta_PSP=direction-pspp[1]/!dtor
 
 ;delta_B=direction-(360+stbp[1]/!dtor) ;...STEREO-B
 delta_E=direction                     ;...Earth
@@ -266,6 +271,8 @@ pos_stb=get_stereo_lonlat(t_plot[0], 'B', system='HEE')
 pos_earth=get_stereo_lonlat(t_plot[0], 'Earth', system='HEE')
 pos_vex=get_stereo_lonlat(t_plot[0], 'Venus', system='HEE')
 pos_mars=get_stereo_lonlat(t_plot[0], 'Mars', system='HEE')
+pos_solo=get_stereo_lonlat(t_plot[0], 'solo', system='HEE')
+pos_psp=get_stereo_lonlat(t_plot[0], 'psp', system='HEE')
 
 pos_mes=fltarr(3)
 
@@ -331,6 +338,14 @@ earth_dist=pos_earth/AU
 venus_angle=pos_vex[1]/!dtor
 venus_dist=pos_vex[0]/AU
 
+;Solar Orbiter distance in AU
+solo_angle=pos_solo[1]/!dtor
+solo_dist=pos_solo[0]/AU
+
+;Parker Solar Probe distance in AU
+psp_angle=pos_psp[1]/!dtor
+psp_dist=pos_psp[0]/AU
+
 ;---------------------------------
 
 ;sun position with ssc_plot_where xrange and yrange from -1.1 to 1.1, and window 1000 by 1000
@@ -349,7 +364,7 @@ stereob=[sun[0]+sin(stereob_angle*!dtor)*stereob_dist*AUscale,sun[1]-cos(stereob
 
 ;plot s/c positions
 
-ssc_plot_where_elevo, t_plot[framenumber], /WHITE_BG, xrange=[1.5, -1.5], yrange=[-1.5,1.5], /yst, /xst, thick=5, font=1, charsize=3, pos=[0.12,0.1,0.9,0.9], /norm, /mess
+ssc_plot_where_elevo, t_plot[framenumber], /WHITE_BG, xrange=[1.5, -1.5], yrange=[-1.5,1.5], /yst, /xst, thick=5, font=1, charsize=3, pos=[0.12,0.1,0.9,0.9], /norm, /mess, /psp, /solo
 
 ;spacecraft positions
 ;plots, [sun[0], earth[0]], [sun[1], earth[1]],  $
@@ -446,7 +461,6 @@ for i=0,s[1]-1  do begin
 		deltaspeed_V=dvalue/R_plot[i]*V_plot[i]
   endif
 
-
   ;get distance and speed of point along delta of MESSENGER:
 ;if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
   		dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_MES)
@@ -461,6 +475,20 @@ for i=0,s[1]-1  do begin
 
   if finite(dvalue) then begin
 		deltaspeed_E=dvalue/R_plot[i]*V_plot[i]
+  endif
+
+  ;get distance and speed of point along delta of Solar Orbiter:
+  dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_SOLO)
+
+  if finite(dvalue) then begin
+    deltaspeed_SOLO=dvalue/R_plot[i]*V_plot[i]
+  endif
+
+  ;get distance and speed of point along delta of Parker Solar Probe:
+  dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_PSP)
+
+  if finite(dvalue) then begin
+    deltaspeed_PSP=dvalue/R_plot[i]*V_plot[i]
   endif
 
   ;get apex position minus b for ellipse center
@@ -621,7 +649,57 @@ endif else begin
   arrival_speed_W=!Values.F_nan
 endelse
 
+;same for Solar Orbiter
 
+  d_SOLO=elevo_analytic(rdrag, aspectratio, halfwidth, delta_SOLO)
+
+  v_SOLO=deriv(tars, d_SOLO*au)
+
+  ;check where the heliocentric distance of VEX is less than the ellipse distance
+  index_hit_SOLO=where(solop[0]/AU lt d_SOLO)
+  ;take first value of these indices = arrival time at VEX within drag time resolution (10 minutes)
+  arrival_SOLO=anytim(tdrag[index_hit_SOLO[0]], /ccsds)
+  arrival_speed_SOLO=v_SOLO[index_hit_SOLO[0]]
+
+  if finite(d_SOLO[0]) then begin
+
+  print, '---------------------------------------------'
+  print, 'Arrival at Solar Orbiter [UT]: ', anytim(arrival_SOLO, /vms), format='(A, 4x, A17)'
+  print, 'Arrival speed at Solar Orbiter [km/s]: ', arrival_speed_SOLO, format='(A, 1x, I4)'
+endif else begin
+  print, '---------------------------------------------'
+  print, '---------------------------------------------'
+  print, 'Solar Orbiter: No hit!'
+  print, '---------------------------------------------'
+  arrival_SOLO=!Values.F_nan
+  arrival_speed_SOLO=!Values.F_nan
+endelse
+
+;same for Parker Solar Probe
+
+  d_PSP=elevo_analytic(rdrag, aspectratio, halfwidth, delta_PSP)
+
+  v_PSP=deriv(tars, d_PSP*au)
+
+  ;check where the heliocentric distance of VEX is less than the ellipse distance
+  index_hit_PSP=where(pspp[0]/AU lt d_PSP)
+  ;take first value of these indices = arrival time at VEX within drag time resolution (10 minutes)
+  arrival_PSP=anytim(tdrag[index_hit_PSP[0]], /ccsds)
+  arrival_speed_PSP=v_PSP[index_hit_PSP[0]]
+
+  if finite(d_PSP[0]) then begin
+
+  print, '---------------------------------------------'
+  print, 'Arrival at Parker Solar Probe [UT]: ', anytim(arrival_PSP, /vms), format='(A, 4x, A17)'
+  print, 'Arrival speed at Parker Solar Probe [km/s]: ', arrival_speed_PSP, format='(A, 1x, I4)'
+endif else begin
+  print, '---------------------------------------------'
+  print, '---------------------------------------------'
+  print, 'Parker Solar Probe: No hit!'
+  print, '---------------------------------------------'
+  arrival_PSP=!Values.F_nan
+  arrival_speed_PSP=!Values.F_nan
+endelse
 
 
 ;times
@@ -690,15 +768,19 @@ set_plot,'X'
 
 
 pred = {Wind_time:string(0),  $
-	    Wind_speed:float(0.), $
-	    STA_time:string(0),	  $
+	     Wind_speed:float(0.), $
+	     STA_time:string(0),	  $
         STA_speed:float(0.),  $
         STB_time:string(0),   $
         STB_speed:float(0.),  $
         MES_time:string(0),   $
-		MES_speed:float(0.),   $
-		VEX_time:string(0),  $
-		VEX_speed:float(0.)}
+		  MES_speed:float(0.),   $
+		  VEX_time:string(0),  $
+		  VEX_speed:float(0.), $
+      SOLO_time:string(0),  $
+      SOLO_speed:float(0.),$
+      PSP_time:string(0),  $
+      PSP_speed:float(0.)}
 
 
 pred.Wind_time = arrival_W
@@ -711,7 +793,10 @@ pred.MES_time = arrival_MES
 pred.MES_speed= arrival_speed_MES
 pred.VEX_time = arrival_VEX
 pred.VEX_speed= arrival_speed_VEX
-
+pred.SOLO_time = arrival_SOLO
+pred.SOLO_speed= arrival_speed_SOLO
+pred.PSP_time = arrival_PSP
+pred.PSP_speed= arrival_speed_PSP
 
 
 elevo_kin = {all_apex_r:dblarr(n_elements(rdrag)),    $

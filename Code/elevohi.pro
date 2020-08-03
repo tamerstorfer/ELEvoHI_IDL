@@ -119,7 +119,7 @@ eventdateSC = eventdate+'_'+sc
 dir=path+'PredictedEvents/'+eventdateSC+'/'
 
 
-file_delete, dir, /allow_n, /recursive
+;file_delete, dir, /allow_n, /recursive
 
 resdir=dir+'results/'
 if FILE_TEST(resdir, /dir) ne 1 then file_mkdir, resdir
@@ -587,7 +587,7 @@ for k=0, n_phi-1 do begin
 	print, 'Gamma after fitting:'
 	print, drag_parameter
 
-	
+
 	;count and save number of converging and non-converging fits
 
 	a=[phi, f, lambda]
@@ -668,6 +668,24 @@ for k=0, n_phi-1 do begin
 						print, '******************************'
 				   endif else print, 'No arrival predicted at STEREO-B!'
 			end
+      'SOLO': begin
+           da_solo=!VALUES.F_NAN
+           if finite(pred.solo_time) then begin
+            da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
+            print, '***********Solar Orbiter***********'
+            print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+            print, '******************************'
+           endif else print, 'No arrival predicted at Solar Orbiter!'
+      end
+      'PSP': begin
+           da_psp=!VALUES.F_NAN
+           if finite(pred.psp_time) then begin
+            da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
+            print, '***********Parker Solar Probe***********'
+            print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+            print, '******************************'
+           endif else print, 'No arrival predicted at Parker Solar Probe!'
+      end
 			else: begin
 					  print, 'Check in situ s/c in input file!'
 			end
@@ -685,8 +703,10 @@ for k=0, n_phi-1 do begin
 	if not isa(da_earth) then da_earth=!VALUES.F_NAN
 	if not isa(da_sta) then da_sta=!VALUES.F_NAN
 	if not isa(da_stb) then da_stb=!VALUES.F_NAN
+  if not isa(da_solo) then da_solo=!VALUES.F_NAN
+  if not isa(da_psp) then da_psp=!VALUES.F_NAN
 
-	dt_all=[da_mes,da_vex,da_earth,da_sta, da_stb]
+	dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp]
 
 	if ensemble eq 1 and keyword_set(save_results) then begin
 	  save_elevohi_e, fnam, dir, pred, dt_all
@@ -739,9 +759,9 @@ print, nofit
 if keyword_set(statistics) and ensemble eq 1 then begin
 
 	file=dir+'eELEvoHI_results.txt'
-	linenumber1=34
+	linenumber1=38
 	data_insert1='# '+trim(fitworks+nofit)
-	linenumber2=37
+	linenumber2=41
 	data_insert2='# '+trim(nofit)
 
 	insert_line, file, linenumber1, data_insert1

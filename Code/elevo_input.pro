@@ -4,21 +4,24 @@ PRO elevo_input, sc, hwidth, aspect_ratio, phi, tinit, rinit, vinit, swspeed, dr
 
 AU=149597871 ;km
 r_sun=6.957d5; km
-  
-  
-pos_E=get_stereo_lonlat(tinit, 'Earth', system='HEE')
-pos_A=get_stereo_lonlat(tinit, 'Ahead', system='HEE')
-pos_B=get_stereo_lonlat(tinit, 'Behind', system='HEE')
-  
+
+
+  pos_E=get_stereo_lonlat(tinit, 'Earth', system='HEE')
+  pos_A=get_stereo_lonlat(tinit, 'Ahead', system='HEE')
+  pos_B=get_stereo_lonlat(tinit, 'Behind', system='HEE')
+
+
 ;calculate direction from Earth
+
 if sc eq 'A' then begin
-  sep=abs(pos_E[1]-pos_A[1])/!dtor  
+  sep=abs(pos_E[1]-pos_A[1])/!dtor
   dir_E=sep-phi
 endif
 if sc eq 'B' then begin
-  sep=abs(pos_E[1]-pos_B[1])/!dtor  
+  sep=abs(pos_E[1]-pos_B[1])/!dtor
   dir_E=-(sep-phi)
-endif  
+endif
+
 
 
 if keyword_set(realtime) then begin
@@ -43,7 +46,7 @@ epsfile=strmid(tinit,0, 11)+'_elevo.eps'
 direction=strtrim(string(float(dir_E)),2)
 
 d=strarr(30)
-  
+
 d[0]='Ellipse parameters'
 d[1]='halfwidth:'
 d[2]=hwidth
@@ -57,7 +60,7 @@ d[9]='R0 initial distance:'
 d[10]=rinit
 d[11]='tinit:'
 d[12]=tinit
-d[13]='vinit:' 
+d[13]='vinit:'
 d[14]=vinit
 d[15]='background wind:'
 d[16]=swspeed
@@ -66,12 +69,12 @@ d[18]=drag
 d[19]='----------------------------------'
 d[20]='plot controls'
 d[21]='plot title:'
-d[22]='ElEvo model of CME shock ('+title+'UT)' 
+d[22]='ELEvoHI model of CME shock ('+title+'UT)'
 d[23]=''
 d[24]='----------------------------------'
 d[25]='output control'
 d[26]='eps plot filename:'
-d[27]=epsfile 
+d[27]=epsfile
 d[28]='steps in frames (1 frame = 10 min) in eps plot:'
 d[29]='60'
 

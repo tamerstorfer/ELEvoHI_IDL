@@ -1,30 +1,30 @@
 ;+
-; Project     :	STEREO - SSC
+; Project     : STEREO - SSC
 ;
-; Name        :	SSC_PLOT_WHERE
+; Name        : SSC_PLOT_WHERE
 ;
-; Purpose     :	Plot the positions of the two STEREO spacecraft.
+; Purpose     : Plot the positions of the two STEREO spacecraft.
 ;
-; Category    :	STEREO, Orbit, Graphics
+; Category    : STEREO, Orbit, Graphics
 ;
-; Explanation :	Plots the ecliptic positions of the two STEREO spacecraft on
+; Explanation : Plots the ecliptic positions of the two STEREO spacecraft on
 ;               top of an planetary orbital chart.  Early in the mission, it
 ;               will also zoom in on the Earth-Moon system.
 ;
-; Syntax      :	SSC_PLOT_WHERE, DATE
+; Syntax      : SSC_PLOT_WHERE, DATE
 ;
-; Examples    :	GET_UTC, UTC  &  SSC_PLOT_WHERE, UTC
+; Examples    : GET_UTC, UTC  &  SSC_PLOT_WHERE, UTC
 ;
-; Inputs      :	DATE    = The date/time to be plotted.  Can be in any format
+; Inputs      : DATE    = The date/time to be plotted.  Can be in any format
 ;                         supported by ANYTIM2UTC.
 ;
-; Opt. Inputs :	None.
+; Opt. Inputs : None.
 ;
-; Outputs     :	A plot is created showing the spacecraft positions.
+; Outputs     : A plot is created showing the spacecraft positions.
 ;
-; Opt. Outputs:	None.
+; Opt. Outputs: None.
 ;
-; Keywords    :	INNER     = If set, then expand out to the orbit of Mars.
+; Keywords    : INNER     = If set, then expand out to the orbit of Mars.
 ;               OUTER     = If set, then expand out to the orbit of Saturn.
 ;
 ;               PARKER    = If set, then overplot the Parker spiral.
@@ -40,6 +40,13 @@
 ;               MAVEN     = If set, then overplot orbit of MAVEN (projected).
 ;                           Only applicable during cruise phase.  Selects
 ;                           /INNER automatically.
+;               BEPICOLOMBO = If set, then overplot orbit of BEPICOLOMBO
+;                           (projected).  Only applicable during cruise phase.
+;                           Selects /INNER automatically.
+;               PSP       = If set, then overplot orbit of Parker Solar Probe.
+;                           Selects /INNER automatically.
+;               SOLO      = If set, then overplot orbit of Solar Orbiter.
+;                           Selects /INNER automatically.
 ;
 ;               WHITE_BG  = If set, then plot against a white background.
 ;
@@ -51,19 +58,19 @@
 ;               Will also accept any keywords for LOAD_STEREO_SPICE or
 ;               SSC_OPLOT_PARKER.
 ;
-; Calls       :	LOAD_STEREO_SPICE, ANYTIM2UTC, GET_STEREO_COORD,
+; Calls       : LOAD_STEREO_SPICE, ANYTIM2UTC, GET_STEREO_COORD,
 ;               SSC_FORM_ORBIT, LINECOLOR, CIRCLE_SYM, SETVIEW, SETSCALE,
 ;               CONCAT_DIR
 ;
-; Common      :	None.
+; Common      : None.
 ;
-; Restrictions:	None.
+; Restrictions: None.
 ;
-; Side effects:	Loads the STEREO ephemerides if not already loaded.
+; Side effects: Loads the STEREO ephemerides if not already loaded.
 ;
-; Prev. Hist. :	None.
+; Prev. Hist. : None.
 ;
-; History     :	Version 1, 23-Jun-2006, William Thompson, GSFC
+; History     : Version 1, 23-Jun-2006, William Thompson, GSFC
 ;               Version 2, 27-Jun-2006, William Thompson, GSFC
 ;                       Added keywords ULYSSES, MESSENGER, PARKER
 ;               Version 3, 05-Jul-2006, William Thompson, GSFC
@@ -84,16 +91,20 @@
 ;               Version 11, 8-Aug-2011, WTT, automatic scaling for VESTA/CERES
 ;               Version 12, 13-Sep-2011, WTT, better MU value
 ;               Version 13, 04-Feb-2013, WTT, added keyword ROSETTA
-;               
+;               Version 14, 22-Aug-2018, WTT, added keyword PSP
+;               Version 15, 28-Aug-2018, WTT, added keyword SOLO
+;               Version 16, 05-Nov-2018, WTT, PSP, SO error checking
+;               Version 17, 13-Nov-2019, WTT, added keyword BEPICOLOMBO
+;               Version 18, 26-Feb-2019, WTT, change filename for BEPICOLOMBO
 ;
-; Contact     :	WTHOMPSON
+; Contact     : WTHOMPSON
 ;-
 ;
 pro ssc_plot_where_elevo, date, inner=inner, outer=outer, ulysses=kulysses, $
                     messenger=kmessenger, vesta=kvesta, ceres=kceres, $
-                    rosetta=krosetta, maven=kmaven, parker=parker, $
+                    rosetta=krosetta, maven=kmaven, psp=kpsp, parker=parker, $
                     white_bg=white_bg, xrange=xrange, yrange=yrange, $
-                    _extra=_extra
+                    solo=ksolo, bepicolombo=kbepicolombo, _extra=_extra
 on_error, 2
 ;
 ;  Make sure the ephemeris files are loaded.
@@ -133,6 +144,15 @@ end else if keyword_set(kvesta) then begin
     x = [-2.6,2.6]
     y = [-2.6,2.6]
 end else if keyword_set(kmaven) then begin
+    x = [-1.7,1.7]
+    y = [-1.7,1.7]
+end else if keyword_set(kbepicolombo) then begin
+    x = [-1.7,1.7]
+    y = [-1.7,1.7]
+end else if keyword_set(kpsp) then begin
+    x = [-1.7,1.7]
+    y = [-1.7,1.7]
+end else if keyword_set(ksolo) then begin
     x = [-1.7,1.7]
     y = [-1.7,1.7]
 end else begin
@@ -206,16 +226,16 @@ if twin_plots then begin
     setview, 1, 3
     setscale, xmin*1.1, xmax*1.1, ymax, ymin, /noadjust
     plot, x, y, /nodata, xticks=3, xtickv=[-.2,0,.2], xtitle='Y (HEE)', $
-      ytitle='X (HEE)', _extra=_extra
+      ytitle='X (HEE)'
 end else begin
     setscale, xmin*1.1, xmax*1.1, ymax, ymin, /noadjust
-    plot, x, y, /nodata, xtitle='Y (HEE)', ytitle='X (HEE)', _extra=_extra
+    plot, x, y, /nodata, xtitle='Y (HEE)', ytitle='X (HEE)'
 endelse
 ;
 ;  If requested, overplot the Parker spiral.
 ;
 if keyword_set(parker) then ssc_oplot_parker, /au, line=1, color=grey2, $
-  /reverse
+  /reverse, _extra=_extra
 ;
 ;  Overplot the positions and orbits of the planets.
 ;
@@ -225,8 +245,8 @@ xx = mercury[1]
 yy = mercury[0]
 if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and (yy le !y.crange[0]) and $
   (yy ge !y.crange[1]) then begin
-    plots, xx, yy, psym=8, color=grey, symsize=2
-    if not keyword_set(outer) then xyouts, xx, yy, ' Mercury', color=grey, charsize=2
+    plots, xx, yy, psym=8, color=grey
+    if not keyword_set(outer) then xyouts, xx, yy, ' Mercury', color=grey
 endif
 ;
 orbit = ssc_form_orbit(utc, 'Venus', 'HEE', /au)
@@ -235,8 +255,8 @@ xx = venus[1]
 yy = venus[0]
 if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and (yy le !y.crange[0]) and $
   (yy ge !y.crange[1]) then begin
-    plots, xx, yy, psym=8, color=grey, symsize=2
-    if not keyword_set(outer) then xyouts, xx, yy, ' Venus', color=grey, charsize=2
+    plots, xx, yy, psym=8, color=grey
+    if not keyword_set(outer) then xyouts, xx, yy, ' Venus', color=grey
 endif
 ;
 orbit = ssc_form_orbit(utc, 'Mars', 'HEE', /au)
@@ -245,8 +265,8 @@ xx = mars[1]
 yy = mars[0]
 if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and (yy le !y.crange[0]) and $
   (yy ge !y.crange[1]) then begin
-    plots, xx, yy, psym=8, color=grey, symsize=2
-    if not keyword_set(outer) then xyouts, xx, yy, ' Mars', color=grey, charsize=2
+    plots, xx, yy, psym=8, color=grey
+    if not keyword_set(outer) then xyouts, xx, yy, ' Mars', color=grey
 endif
 ;
 if keyword_set(outer) then begin
@@ -256,8 +276,8 @@ if keyword_set(outer) then begin
     yy = jupiter[0]
     if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
       (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
-        plots, xx, yy, psym=8, color=grey, symsize=2
-        xyouts, xx, yy, ' Jupiter', color=grey, charsize=2
+        plots, xx, yy, psym=8, color=grey
+        xyouts, xx, yy, ' Jupiter', color=grey
     endif
 ;
     orbit = ssc_form_orbit(utc, 'Saturn barycenter', 'HEE', /au)
@@ -266,8 +286,8 @@ if keyword_set(outer) then begin
     yy = saturn[0]
     if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
       (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
-        plots, xx, yy, psym=8, color=grey, symsize=2
-        xyouts, xx, yy, ' Saturn', color=grey, charsize=2
+        plots, xx, yy, psym=8, color=grey
+        xyouts, xx, yy, ' Saturn', color=grey
     endif
 ;
     orbit = ssc_form_orbit(utc, 'Uranus barycenter', 'HEE', /au)
@@ -276,8 +296,8 @@ if keyword_set(outer) then begin
     yy = uranus[0]
     if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
       (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
-        plots, xx, yy, psym=8, color=grey, symsize=2
-        xyouts, xx, yy, ' Uranus', color=grey, charsize=2
+        plots, xx, yy, psym=8, color=grey
+        xyouts, xx, yy, ' Uranus', color=grey
     endif
 endif
 ;
@@ -338,8 +358,8 @@ if keyword_set(kmessenger) then begin
     yy = messenger[0]
     if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
       (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
-        plots, xx, yy, psym=8, symsize=2, color=orange
-        xyouts, xx, yy, charsize=2, ' Messenger', color=orange
+        plots, xx, yy, psym=8, color=orange
+        xyouts, xx, yy, ' Messenger', color=orange
     endif
 endif
 ;
@@ -403,6 +423,80 @@ if keyword_set(kmaven) then begin
           (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
             plots, xx, yy, psym=8, color=orange
             xyouts, xx, yy, ' MAVEN', color=orange
+        endif
+    endif
+endif
+;
+;  If requested, overplot the position of BEPICOLOMBO.  This is only done
+;  during the cruise phase.
+;
+if keyword_set(kbepicolombo) then begin
+    file = concat_dir( getenv('STEREO_SPICE_OTHER'), 'bc_mpo_fcp_latest.bsp')
+    body = '-121'
+    get_stereo_spice_range, file, tai0, tai1, scid, /tai
+    tai = utc2tai(utc)
+    tai1 = utc2tai('2024-09-05T08') ;Enter orbit with Mercury
+    if (tai ge tai0) and (tai le tai1) then begin
+        cspice_furnsh, file
+        edate = tai2utc(tai, /ccsds)
+        orbit = ssc_form_orbit(utc, body, 'HEE', /au, edate=edate)
+        oplot, orbit[1,*], orbit[0,*], line=2, color=orange
+        bepicolombo = get_stereo_coord(utc, /au, system='HEE', body)
+        cspice_unload, file
+        xx = bepicolombo[1]
+        yy = bepicolombo[0]
+        if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
+          (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
+            plots, xx, yy, psym=8, color=orange
+            xyouts, xx, yy, ' BEPICOLOMBO', color=orange
+        endif
+    endif
+endif
+;
+;  If requested, overplot the position of PSP.
+;
+plot_psp = keyword_set(kpsp)
+catch, error_status
+if error_status ne 0 then begin
+    plot_psp = 0
+    catch, /cancel
+endif
+;
+if plot_psp then begin
+    if utc2tai(utc) ge utc2tai('13-Aug-2018') then begin
+        orbit = ssc_form_orbit(utc, 'PSP', 'HEE', /au)
+        oplot, orbit[1,*], orbit[0,*], line=2, color=orange
+        psp = get_sunspice_coord(utc, /au, system='HEE', 'PSP')
+        xx = psp[1]
+        yy = psp[0]
+        if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
+          (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
+            plots, xx, yy, psym=8, color=orange
+            xyouts, xx, yy, ' PSP', color=orange
+        endif
+    endif
+endif
+;
+;  If requested, overplot the position of Solar Orbiter.
+;
+plot_solo = keyword_set(ksolo)
+catch, error_status
+if error_status ne 0 then begin
+    plot_solo = 0
+    catch, /cancel
+endif
+;
+if plot_solo then begin
+    if utc2tai(utc) ge utc2tai('13-Aug-2018') then begin
+        orbit = ssc_form_orbit(utc, 'SOLO', 'HEE', /au)
+        oplot, orbit[1,*], orbit[0,*], line=2, color=purple
+        solo = get_sunspice_coord(utc, /au, system='HEE', 'SOLO')
+        xx = solo[1]
+        yy = solo[0]
+        if (xx ge !x.crange[0]) and (xx le !x.crange[1]) and $
+          (yy le !y.crange[0]) and (yy ge !y.crange[1]) then begin
+            plots, xx, yy, psym=8, color=purple
+            xyouts, xx, yy, ' SO', color=purple
         endif
     endif
 endif
@@ -472,7 +566,7 @@ endif
 oplot, xearth, yearth, line=2
 oplot, [0, 0], [!y.crange[0],0], line=1
 plots, symsize=2, 0, earth[0], psym=8, color=green
-if not keyword_set(outer) then xyouts, 0, earth[0], '  Earth', color=green, charsize=2
+if not keyword_set(outer) then xyouts, 0, earth[0], '  Earth', color=green
 ;
 ;  Overplot the Sun.
 ;
@@ -484,10 +578,10 @@ if not keyword_set(outer) then xyouts, 0, 0, '  Sun', color=yellow
 ;
 oplot, [0,20*sta[1]], [0,20*sta[0]], line=1
 oplot, [0,20*stb[1]], [0,20*stb[0]], line=1
-plots, symsize=2, sta[1], sta[0], psym=8, color=red
+plots, symsize=1, sta[1], sta[0], psym=8, color=red
 if not keyword_set(outer) then xyouts, sta[1], sta[0], ' A', charsize=2, $
   color=red
-plots, symsize=2, stb[1], stb[0], psym=8, color=blue
+plots, symsize=1, stb[1], stb[0], psym=8, color=blue
 if not keyword_set(outer) then xyouts, stb[1], stb[0], ' B', charsize=2, $
   color=blue
 ;
@@ -565,9 +659,9 @@ if twin_plots then begin
 ;
 ;  Overplot the positions of STEREO A&B.
 ;
-    plots, symsize=2, -sta[1], -sta[0]+earth[0], psym=8, color=red
+    plots, symsize=1, -sta[1], -sta[0]+earth[0], psym=8, color=red
     xyouts, -sta[1], -sta[0]+earth[0], ' A', charsize=2, color=red
-    plots, symsize=2, -stb[1], -stb[0]+earth[0], psym=8, color=blue
+    plots, symsize=1, -stb[1], -stb[0]+earth[0], psym=8, color=blue
     xyouts, -stb[1], -stb[0]+earth[0], ' B', charsize=2, color=blue
 ;
 ;  Reset the scale and view.
@@ -582,3 +676,4 @@ if background_set then begin
 endif
 ;
 end
+
