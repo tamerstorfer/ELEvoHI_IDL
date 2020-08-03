@@ -5,25 +5,27 @@ HI observer (A or B)
 A
 ________________
 first observed by HI1
-20110130
+20200415
 ________________
 source of HI-tracks (helcats or other)
 user-defined
-/home/tamerstorfer/hievents/SATPLOT/20110130_A/satplot_track.sav
+/nas/helio/data/STEREO/HItracks/20200415_A.sav
 ________________
 inverse ellipse aspect ratio, f (b/a), ensemble: (f_min/f_max/d_f)
 0.7/1/0.1
 ________________
 direction of motion of CME apex, phi, ensemble: (phi_min/phi_max/d_phi)
 (angle between HI-observer and CME apex)
- 73/ 93/2
+ 54/ 74/2
 ________________
 angular half width, lambda, ensemble: (lambda_min/lambda_max/d_lambda)
- 30/50/5
+ 30/60/5
 ________________
 most likely in situ detection at 1 AU (Earth or A or B)
 Earth
 ________________
-in situ arrival s/c and times (MES, VEX, Earth, A, B)
+in situ arrival s/c and times (MES, VEX, Earth, A, B, SOLO, PSP)
+SOLO
+2020-04-19 05:07
 Earth
-2011-Feb-04 01:55
+2020-04-20 01:34
