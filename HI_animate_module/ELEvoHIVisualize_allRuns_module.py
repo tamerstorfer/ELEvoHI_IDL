@@ -5,8 +5,6 @@ import numpy as np
 from matplotlib import rcParams
 from scipy.io.idl import readsav
 from datetime import datetime
-#from sunpy.time import parse_time
-#import sunpy
 import matplotlib.dates as mdates
 import os
 from astropy.time import Time
@@ -42,400 +40,415 @@ def main(scriptPath):
     if os.path.exists(outfolder) is False:
             os.makedirs(path + '/plots/')
 
-    # path2 = path + eventdate[0] + '/results/Earth/'
-    # predictions = next(os.walk(path2))[1]
+    scs = next(os.walk(path + eventdate[0] + '/results/'))[1]
+    scs.sort()
+    
+    for sc in scs:
+        sc_folder = path + eventdate[0] + '/results/'+sc+'/'
 
-    sc_folder = path + eventdate[0] + '/results/Earth/'
+        for j in range(0, len(eventdate)):
+            sc_folder = path + eventdate[j] + '/results/'+sc+'/'
 
-    for j in range(0, len(eventdate)):
-        sc_folder = path + eventdate[j] + '/results/Earth/'
+            if os.path.exists(sc_folder + '/prediction.sav') is True:
+                elevohi_results = readsav(path + eventdate[j] +
+                                          '/eELEvoHI_results.sav', verbose=1)
 
-        if os.path.exists(sc_folder + '/prediction.sav') is True:
-            elevohi_results = readsav(path + eventdate[j] +
-                                      '/eELEvoHI_results.sav', verbose=1)
-
-            data = readsav(sc_folder + '/gamma.sav', verbose=1)
-            data1 = readsav(sc_folder + '/rinit.sav', verbose=1)
-            data2 = readsav(sc_folder + '/sw.sav', verbose=1)
-            data3 = readsav(sc_folder + '/vinit.sav', verbose=1)
-            tt = readsav(sc_folder + '/transittimes.sav', verbose=1)
-            arrival = readsav(sc_folder + '/prediction.sav', verbose=1)
-            arr = readsav(sc_folder + '/arrivaltimes.sav', verbose=1)
-            plotarr = readsav(sc_folder + '/plottimes.sav', verbose=1)
-            tt_colors = readsav(sc_folder + '/labels.sav', verbose=1)
-            if arr.insitu_sc.decode() == 'B':
-                issc = 'STEREO-B'
-            elif arr.insitu_sc.decode() == 'A':
-                issc = 'STEREO-A'
-            elif arr.insitu_sc.decode() == 'Earth':
-                issc = 'Earth'
-            elif arr.insitu_sc.decode() == 'MES':
-                issc = 'MESSENGER'
-            elif arr.insitu_sc.decode() == 'VEX':
-                issc = 'Venus Express'
-            else:
-                print('No in situ spacecraft defined!')
-
-            print('Prediction for in situ s/c:')
-            print(arr.insitu_sc.decode())
-
-            count_nan = 0
-            arrtime = []
-            # arrtime=np.zeros(np.size(0))
-
-            for i in range(len(arr.arrivaltimes)):
-                if arr.arrivaltimes[i].decode() != "NaN":
-                    arrtime.append(Time.strptime(
-                        arr.arrivaltimes[i].decode(), '%Y-%m-%dT%H:%M').datetime)
+                data = readsav(sc_folder + '/gamma.sav', verbose=1)
+                data1 = readsav(sc_folder + '/rinit.sav', verbose=1)
+                data2 = readsav(sc_folder + '/sw.sav', verbose=1)
+                data3 = readsav(sc_folder + '/vinit.sav', verbose=1)
+                tt = readsav(sc_folder + '/transittimes.sav', verbose=1)
+                arrival = readsav(sc_folder + '/prediction.sav', verbose=1)
+                arr = readsav(sc_folder + '/arrivaltimes.sav', verbose=1)
+                plotarr = readsav(sc_folder + '/plottimes.sav', verbose=1)
+                tt_colors = readsav(sc_folder + '/labels.sav', verbose=1)
+                issc = sc
+                if arr.insitu_sc.decode() == 'B':
+                    issc = 'STEREO-B'
+                elif arr.insitu_sc.decode() == 'A':
+                    issc = 'STEREO-A'
+                elif arr.insitu_sc.decode() == 'Earth':
+                    issc = 'Earth'
+                elif arr.insitu_sc.decode() == 'MES':
+                    issc = 'MESSENGER'
+                elif arr.insitu_sc.decode() == 'VEX':
+                    issc = 'Venus Express'
                 else:
-                    count_nan = count_nan + 1
+                    print('No in situ spacecraft defined!')
 
-            print("Number of predicted misses: ", count_nan, "from", len(
-                arr.arrivaltimes), " total predictions.")
+                print('Prediction for in situ s/c:')
+                print(arr.insitu_sc.decode())
 
-            # convert bytes to strings
+                count_nan = 0
+                arrtime = []
+                # arrtime=np.zeros(np.size(0))
 
-            arrtime_ = np.zeros(np.size(arrtime))
+                for i in range(len(arr.arrivaltimes)):
+                    if arr.arrivaltimes[i].decode() != "NaN":
+                        arrtime.append(Time.strptime(
+                            arr.arrivaltimes[i].decode(), '%Y-%m-%dT%H:%M').datetime)
+                    else:
+                        count_nan = count_nan + 1
 
-            for i in range(len(arrtime)):
-                arrtime_[i] = mdates.date2num(arrtime[i])
+                print("Number of predicted misses: ", count_nan, "from", len(
+                    arr.arrivaltimes), " total predictions.")
 
-            print('mean transit time:')
-            print((np.mean(tt.tt)))
+                # convert bytes to strings
 
-            print('standard deviation transit time:')
-            print((np.std(tt.tt)))
+                arrtime_ = np.zeros(np.size(arrtime))
 
-            colormap = plt.cm.viridis
-            col = np.arange(8)
+                for i in range(len(arrtime)):
+                    arrtime_[i] = mdates.date2num(arrtime[i])
 
-            for i in range(8):
-                col[i] = i * 35
+                print('mean transit time:')
+                print((np.mean(tt.tt)))
 
-            # print(arr.insitu_sc.decode())
+                print('standard deviation transit time:')
+                print((np.std(tt.tt)))
 
-            # four panel figure with frequency distributions of output parameter
+                colormap = plt.cm.viridis
+                col = np.arange(8)
 
-            fig_fourpanels, ax = plt.subplots(
-                2, 2, sharex=False, sharey=False, figsize=(10, 8))
+                for i in range(8):
+                    col[i] = i * 35
 
-            # plt.rc('text', usetex=True)
-            # plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-            rcParams['font.family'] = 'sans-serif'
-            rcParams['font.sans-serif'] = ['Tahoma']
+                # print(arr.insitu_sc.decode())
 
-            labels = tt_colors.labels.astype('U13')
-            # ['$54 - 58$ h','$58 - 64$ h','$64 - 69$ h','$69 - 73$ h','$74 -
-            # 78$ h','$78 - 83$ h','$83 - 88$ h','$88 - 90$ h']
+                # four panel figure with frequency distributions of output parameter
 
-            binBoundaries1 = np.linspace(min(data.gamma), max(data.gamma), 8)
-            dat = [data.gamma1, data.gamma2, data.gamma3, data.gamma4,
-                   data.gamma5, data.gamma6, data.gamma7, data.gamma8]
+                fig_fourpanels, ax = plt.subplots(
+                    2, 2, sharex=False, sharey=False, figsize=(10, 8))
 
-            ax[0, 0].hist(dat[7], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[0]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[7])
-            ax[0, 0].hist(dat[6], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[1]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[6])
-            ax[0, 0].hist(dat[5], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[2]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[5])
-            ax[0, 0].hist(dat[4], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[3]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[4])
-            ax[0, 0].hist(dat[3], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[4]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[3])
-            ax[0, 0].hist(dat[2], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[5]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[2])
-            ax[0, 0].hist(dat[1], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[6]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[1])
-            ax[0, 0].hist(dat[0], bins=binBoundaries1, histtype='bar', align='mid',
-                          color=colormap.colors[col[7]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[0])
+                # plt.rc('text', usetex=True)
+                # plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+                rcParams['font.family'] = 'sans-serif'
+                rcParams['font.sans-serif'] = ['Tahoma']
 
-            ax[0, 0].legend(loc=2, title='Transit Time')
-            ax[0, 0].set_ylabel("Number of runs", fontsize=14)
-            ax[0, 0].set_xlabel(
-                "Drag parameter [10$^{-7}$ km$^{-1}$]", fontsize=12)
+                labels = tt_colors.labels.astype('U13')
+                # ['$54 - 58$ h','$58 - 64$ h','$64 - 69$ h','$69 - 73$ h','$74 -
+                # 78$ h','$78 - 83$ h','$83 - 88$ h','$88 - 90$ h']
 
-            #######
+                binBoundaries1 = np.linspace(min(data.gamma), max(data.gamma), 8)
+                dat = [data.gamma1, data.gamma2, data.gamma3, data.gamma4,
+                       data.gamma5, data.gamma6, data.gamma7, data.gamma8]
 
-            binBoundaries2 = np.linspace(min(data1.rinit), max(data1.rinit), 8)
-            dat = [data1.rinit1, data1.rinit2, data1.rinit3, data1.rinit4,
-                   data1.rinit5, data1.rinit6, data1.rinit7, data1.rinit8]
+                ax[0, 0].hist(dat[7], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[0]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[7])
+                ax[0, 0].hist(dat[6], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[1]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[6])
+                ax[0, 0].hist(dat[5], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[2]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[5])
+                ax[0, 0].hist(dat[4], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[3]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[4])
+                ax[0, 0].hist(dat[3], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[4]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[3])
+                ax[0, 0].hist(dat[2], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[5]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[2])
+                ax[0, 0].hist(dat[1], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[6]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[1])
+                ax[0, 0].hist(dat[0], bins=binBoundaries1, histtype='bar', align='mid',
+                              color=colormap.colors[col[7]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[0])
 
-            ax[0, 1].hist(dat[7], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[0]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[7])
-            ax[0, 1].hist(dat[6], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[1]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[6])
-            ax[0, 1].hist(dat[5], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[2]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[5])
-            ax[0, 1].hist(dat[4], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[3]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[4])
-            ax[0, 1].hist(dat[3], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[4]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[3])
-            ax[0, 1].hist(dat[2], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[5]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[2])
-            ax[0, 1].hist(dat[1], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[6]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[1])
-            ax[0, 1].hist(dat[0], bins=binBoundaries2, histtype='bar',
-                          color=colormap.colors[col[7]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[0])
+                ax[0, 0].legend(loc=2, title='Transit Time')
+                ax[0, 0].set_ylabel("Number of runs", fontsize=14)
+                ax[0, 0].set_xlabel(
+                    "Drag parameter [10$^{-7}$ km$^{-1}$]", fontsize=12)
 
-            ax[0, 1].set_ylabel("Number of runs", fontsize=14)
-            ax[0, 1].set_xlabel("Initial Distance [R$_\odot$]", fontsize=12)
+                #######
 
-            #######
+                binBoundaries2 = np.linspace(min(data1.rinit), max(data1.rinit), 8)
+                dat = [data1.rinit1, data1.rinit2, data1.rinit3, data1.rinit4,
+                       data1.rinit5, data1.rinit6, data1.rinit7, data1.rinit8]
 
-            binBoundaries3 = np.linspace(min(data3.vinit), max(data3.vinit), 8)
-            dat = [data3.vinit1, data3.vinit2, data3.vinit3, data3.vinit4,
-                   data3.vinit5, data3.vinit6, data3.vinit7, data3.vinit8]
+                ax[0, 1].hist(dat[7], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[0]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[7])
+                ax[0, 1].hist(dat[6], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[1]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[6])
+                ax[0, 1].hist(dat[5], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[2]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[5])
+                ax[0, 1].hist(dat[4], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[3]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[4])
+                ax[0, 1].hist(dat[3], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[4]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[3])
+                ax[0, 1].hist(dat[2], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[5]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[2])
+                ax[0, 1].hist(dat[1], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[6]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[1])
+                ax[0, 1].hist(dat[0], bins=binBoundaries2, histtype='bar',
+                              color=colormap.colors[col[7]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[0])
 
-            ax[1, 1].hist(dat[7], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[0]],
-                          edgecolor=colormap.colors[col[4]],
-                          alpha=1, label=labels[7])
-            ax[1, 1].hist(dat[6], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[1]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[6])
-            ax[1, 1].hist(dat[5], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[2]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[5])
-            ax[1, 1].hist(dat[4], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[3]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[4])
-            ax[1, 1].hist(dat[3], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[4]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[3])
-            ax[1, 1].hist(dat[2], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[5]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[2])
-            ax[1, 1].hist(dat[1], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[6]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[1])
-            ax[1, 1].hist(dat[0], bins=binBoundaries3, histtype='bar',
-                          color=colormap.colors[col[7]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[0])
+                ax[0, 1].set_ylabel("Number of runs", fontsize=14)
+                ax[0, 1].set_xlabel("Initial Distance [R$_\odot$]", fontsize=12)
 
-            ax[1, 1].set_ylabel("Number of runs", fontsize=14)
-            ax[1, 1].set_xlabel("Initial Speed [km s$^{-1}$]", fontsize=12)
+                #######
 
-            #######
+                binBoundaries3 = np.linspace(min(data3.vinit), max(data3.vinit), 8)
+                dat = [data3.vinit1, data3.vinit2, data3.vinit3, data3.vinit4,
+                       data3.vinit5, data3.vinit6, data3.vinit7, data3.vinit8]
 
-            binBoundaries4 = np.linspace(min(data2.sw), max(data2.sw), 8)
-            dat = [data2.sw1, data2.sw2, data2.sw3, data2.sw4, data2.sw5,
-                   data2.sw6, data2.sw7, data2.sw8]
+                ax[1, 1].hist(dat[7], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[0]],
+                              edgecolor=colormap.colors[col[4]],
+                              alpha=1, label=labels[7])
+                ax[1, 1].hist(dat[6], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[1]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[6])
+                ax[1, 1].hist(dat[5], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[2]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[5])
+                ax[1, 1].hist(dat[4], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[3]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[4])
+                ax[1, 1].hist(dat[3], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[4]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[3])
+                ax[1, 1].hist(dat[2], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[5]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[2])
+                ax[1, 1].hist(dat[1], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[6]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[1])
+                ax[1, 1].hist(dat[0], bins=binBoundaries3, histtype='bar',
+                              color=colormap.colors[col[7]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[0])
 
-            ax[1, 0].hist(dat[7], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[0]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[7])
-            ax[1, 0].hist(dat[6], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[1]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[6])
-            ax[1, 0].hist(dat[5], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[2]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[5])
-            ax[1, 0].hist(dat[4], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[3]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[4])
-            ax[1, 0].hist(dat[3], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[4]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[3])
-            ax[1, 0].hist(dat[2], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[5]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[2])
-            ax[1, 0].hist(dat[1], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[6]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[1])
-            ax[1, 0].hist(dat[0], bins=binBoundaries4, histtype='bar',
-                          color=colormap.colors[col[7]],
-                          edgecolor=colormap.colors[col[4]], alpha=1,
-                          label=labels[0])
+                ax[1, 1].set_ylabel("Number of runs", fontsize=14)
+                ax[1, 1].set_xlabel("Initial Speed [km s$^{-1}$]", fontsize=12)
 
-            # ax[1,0].legend(loc=2, title='Transit Time')
+                #######
 
-            ax[1, 0].set_ylabel("Number of runs", fontsize=14)
-            ax[1, 0].set_xlabel(
-                "Background Solar Wind Speed [km s$^{-1}$]", fontsize=12)
+                binBoundaries4 = np.linspace(min(data2.sw), max(data2.sw), 8)
+                dat = [data2.sw1, data2.sw2, data2.sw3, data2.sw4, data2.sw5,
+                       data2.sw6, data2.sw7, data2.sw8]
 
-            #######
+                ax[1, 0].hist(dat[7], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[0]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[7])
+                ax[1, 0].hist(dat[6], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[1]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[6])
+                ax[1, 0].hist(dat[5], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[2]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[5])
+                ax[1, 0].hist(dat[4], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[3]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[4])
+                ax[1, 0].hist(dat[3], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[4]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[3])
+                ax[1, 0].hist(dat[2], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[5]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[2])
+                ax[1, 0].hist(dat[1], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[6]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[1])
+                ax[1, 0].hist(dat[0], bins=binBoundaries4, histtype='bar',
+                              color=colormap.colors[col[7]],
+                              edgecolor=colormap.colors[col[4]], alpha=1,
+                              label=labels[0])
 
-            fig_fourpanels.subplots_adjust(hspace=0.2)
-            fig_fourpanels.suptitle(
-                'ELEvoHI Ensemble Prediction for ' + issc, fontsize=16)
+                # ax[1,0].legend(loc=2, title='Transit Time')
 
-            # fig_fourpanels.show()
+                ax[1, 0].set_ylabel("Number of runs", fontsize=14)
+                ax[1, 0].set_xlabel(
+                    "Background Solar Wind Speed [km s$^{-1}$]", fontsize=12)
 
-            fig_fourpanels.savefig(outfolder + '/' + eventdate[j] + '_results.png')
-            fig_fourpanels.clf()
-            # ############################prediction plot######################
+                #######
 
-            predmedian = plotarr.arrplotmedian
-            predmean = plotarr.arrplotmean
-            prederr = plotarr.arrerr
+                fig_fourpanels.subplots_adjust(hspace=0.2)
+                fig_fourpanels.suptitle(
+                    'ELEvoHI Ensemble Prediction for ' + issc, fontsize=16)
 
-            insitu = ''
+                # fig_fourpanels.show()
 
-            if plotarr.insituarr != '':
-                insitu = plotarr.insituarr.decode()
-            if insitu != '':
-                num_insitu = mdates.date2num(Time.strptime(
-                    plotarr.insituarr.decode(), '%Y-%m-%d %H:%M').datetime)
+                fig_fourpanels.savefig(outfolder + '/' + eventdate[j] + '_' + sc + '_results.png')
+                fig_fourpanels.clf()
+                # ############################prediction plot######################
 
-            arri = mdates.date2num(Time.strptime(predmedian.decode(), '%Y-%m-%d %H:%M').datetime)
+                predmedian = plotarr.arrplotmedian
+                predmean = plotarr.arrplotmean
+                prederr = plotarr.arrerr
 
-            arri2 = mdates.date2num(Time.strptime(predmean.decode(), '%Y-%m-%d %H:%M').datetime)
+                insitu = ''
 
-            shadelow = mdates.date2num(Time.strptime(arrival.shadelimlow.decode(), '%Y-%m-%dT%H:%M:%S.%f').datetime)
-            shadehigh = mdates.date2num(Time.strptime(arrival.shadelimhigh.decode(), '%Y-%m-%dT%H:%M:%S.%f').datetime)
+                if plotarr.insituarr != '':
+                    insitu = plotarr.insituarr.decode()
+                if insitu != '':
+                    num_insitu = mdates.date2num(Time.strptime(
+                        plotarr.insituarr.decode(), '%Y-%m-%d %H:%M').datetime)
 
-            # date_arrtime=mdates.num2date(arrtime)
+                arri = mdates.date2num(Time.strptime(predmedian.decode(), '%Y-%m-%d %H:%M').datetime)
 
-            # figure displaying ELEvoHI prediction
+                arri2 = mdates.date2num(Time.strptime(predmean.decode(), '%Y-%m-%d %H:%M').datetime)
 
-            # start=min(arrtime_)
-            # end=max(arrtime_)
+                shadelow = mdates.date2num(Time.strptime(arrival.shadelimlow.decode(), '%Y-%m-%dT%H:%M:%S.%f').datetime)
+                shadehigh = mdates.date2num(Time.strptime(arrival.shadelimhigh.decode(), '%Y-%m-%dT%H:%M:%S.%f').datetime)
 
-            # dt=(end-start)/10
+                # date_arrtime=mdates.num2date(arrtime)
 
-            # binBoundaries = []
-            # binBoundaries.append(start)
+                # figure displaying ELEvoHI prediction
 
-            # for i in range(1,10):
-            #   binBoundaries.append(binBoundaries[i-1] + dt)
+                # start=min(arrtime_)
+                # end=max(arrtime_)
 
-            # print(binBoundaries)
+                # dt=(end-start)/10
 
-            # , color=['lightblue']*len(binBoundaries)
+                # binBoundaries = []
+                # binBoundaries.append(start)
 
-            fig, ax = plt.subplots(1, 1, figsize=(8, 5))
-            ax.hist(arrtime_, bins=10, color='lightblue', ec='gray', zorder=2)
+                # for i in range(1,10):
+                #   binBoundaries.append(binBoundaries[i-1] + dt)
 
-            ymin = 0
-            ymax = ax.get_ylim()[1] + 1
-            ax.set_ylim(ymin, ymax)
+                # print(binBoundaries)
 
-            ax.plot([arri, arri], [ax.get_ylim()[0],
-                                   ax.get_ylim()[1]], color='blue')
-            ax.fill_between([shadelow, shadehigh],
-                            [ax.get_ylim()[0], ax.get_ylim()[0]],
-                            [ax.get_ylim()[1], ax.get_ylim()[1]],
-                            facecolor='slategrey', zorder=3, alpha=0.3,
-                            edgecolor='none')
-            ax.plot([arri2, arri2], [ax.get_ylim()[0], ax.get_ylim()[1]],
-                    color='green')
-            if insitu != '':
-                ax.plot([num_insitu, num_insitu], [ax.get_ylim()[0],
-                                                   ax.get_ylim()[1]], color='red')
+                # , color=['lightblue']*len(binBoundaries)
 
-            # ax.xaxis_date()
+                fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+                ax.hist(arrtime_, bins=10, color='lightblue', ec='gray', zorder=2)
 
-            ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=12))
-            ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%b-%d\n%H:%M"))
-            # ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-            xmin = ax.get_xlim()[0] - 0.05
-            xmax = ax.get_xlim()[1] + 0.05
-            ax.set_xlim(xmin, xmax)
+                ymin = 0
+                ymax = ax.get_ylim()[1] + 1
+                ax.set_ylim(ymin, ymax)
 
-            ax.xaxis_date()
+                ax.plot([arri, arri], [ax.get_ylim()[0],
+                                       ax.get_ylim()[1]], color='blue')
+                ax.fill_between([shadelow, shadehigh],
+                                [ax.get_ylim()[0], ax.get_ylim()[0]],
+                                [ax.get_ylim()[1], ax.get_ylim()[1]],
+                                facecolor='slategrey', zorder=3, alpha=0.3,
+                                edgecolor='none')
+                ax.plot([arri2, arri2], [ax.get_ylim()[0], ax.get_ylim()[1]],
+                        color='green')
+                if insitu != '':
+                    ax.plot([num_insitu, num_insitu], [ax.get_ylim()[0],
+                                                       ax.get_ylim()[1]], color='red')
 
-            ax.set_ylabel("Number of Runs", fontsize=14)
-            ax.set_xlabel(datetime.strftime(mdates.num2date(arri), '%Y %b %d') +
-                          "\nPredicted Shock Arrival Time [UT]", fontsize=12)
-            # ax.set_xlabel("Predicted Shock Arrival Time [UT]", fontsize=12)
+                # ax.xaxis_date()
 
-            plt.grid(color='white', zorder=1)
-            ax.set_facecolor('whitesmoke')
+                ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=12))
+                ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%b-%d\n%H:%M"))
+                # ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+                xmin = ax.get_xlim()[0] - 0.05
+                xmax = ax.get_xlim()[1] + 0.05
+                ax.set_xlim(xmin, xmax)
 
-            plt.text(1.15, 0.8, 'Arrival Time [UT]:', horizontalalignment='center',
-                     verticalalignment='center', transform=ax.transAxes)
-            plt.text(1.15, 0.7, 'Median \n' + predmedian.decode(),
-                     horizontalalignment='center', verticalalignment='center',
-                     transform=ax.transAxes, color='blue')
-            plt.text(1.15, 0.6, 'Mean \n' + predmean.decode(),
-                     horizontalalignment='center', verticalalignment='center',
-                     transform=ax.transAxes, color='green')
-            plt.text(1.15, 0.45, 'Standard Deviation\n$\pm$' +
-                     prederr.decode() + ' hours', horizontalalignment='center',
-                     verticalalignment='center', transform=ax.transAxes,
-                     color='black', bbox={'facecolor': 'slategray', 'alpha': 0.2,
-                                          'pad': 10})
+                ax.xaxis_date()
 
-            if insitu != '':
-                plt.text(1.15, 0.2, 'Insitu Arrival \n' + insitu,
+                ax.set_ylabel("Number of Runs", fontsize=14)
+                ax.set_xlabel(datetime.strftime(mdates.num2date(arri), '%Y %b %d') +
+                              "\nPredicted Shock Arrival Time [UT]", fontsize=12)
+                # ax.set_xlabel("Predicted Shock Arrival Time [UT]", fontsize=12)
+
+                plt.grid(color='white', zorder=1)
+                ax.set_facecolor('whitesmoke')
+
+                plt.text(1.15, 0.8, 'Arrival Time [UT]:', horizontalalignment='center',
+                         verticalalignment='center', transform=ax.transAxes)
+                plt.text(1.15, 0.7, 'Median \n' + predmedian.decode(),
                          horizontalalignment='center', verticalalignment='center',
-                         transform=ax.transAxes, color='red')
+                         transform=ax.transAxes, color='blue')
+                plt.text(1.15, 0.6, 'Mean \n' + predmean.decode(),
+                         horizontalalignment='center', verticalalignment='center',
+                         transform=ax.transAxes, color='green')
+                plt.text(1.15, 0.45, 'Standard Deviation\n$\pm$' +
+                         prederr.decode() + ' hours', horizontalalignment='center',
+                         verticalalignment='center', transform=ax.transAxes,
+                         color='black', bbox={'facecolor': 'slategray', 'alpha': 0.2,
+                                              'pad': 10})
 
-            EarthHit = 0
-            NoHit = 0
-            arrtime_earth = elevohi_results.eelevohi.arrtime_earth[0]
-            NrRuns = np.size(arrtime_earth)
-            for i in range(0, NrRuns):
-                if 'NaN' in str(arrtime_earth[i]):
-                    NoHit = NoHit + 1
-                else:
-                    EarthHit = EarthHit + 1
+                if insitu != '':
+                    plt.text(1.15, 0.2, 'Insitu Arrival \n' + insitu,
+                             horizontalalignment='center', verticalalignment='center',
+                             transform=ax.transAxes, color='red')
 
-            plt.text(1.15, 0.1, str(EarthHit) + '/' + str(NrRuns) +
-                     ' runs hit Earth', horizontalalignment='center',
-                     verticalalignment='center', transform=ax.transAxes,
-                     color='black')
+                SCHit = 0
+                NoHit = 0
+                if sc == 'Earth':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_earth[0]
+                if sc == 'MES':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_mes[0]
+                if sc == 'VEX':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_vex[0]
+                if sc == 'STA':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_sta[0]
+                if sc == 'STB':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_stb[0]
+                if sc == 'SOLO':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_solo[0] 
+                if sc == 'PSP':
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_psp[0] 
+                NrRuns = np.size(arrtime_sc)
+                for i in range(0, NrRuns):
+                    if 'NaN' in str(arrtime_sc[i]):
+                        NoHit = NoHit + 1
+                    else:
+                        SCHit = SCHit + 1
 
-            plt.title('ELEvoHI Ensemble Prediction for ' + issc, fontsize=16)
+                plt.text(1.15, 0.1, str(SCHit) + '/' + str(NrRuns) +
+                         ' runs hit ' + issc, horizontalalignment='center',
+                         verticalalignment='center', transform=ax.transAxes,
+                         color='black')
 
-            fig.subplots_adjust(hspace=0.2)
+                plt.title('ELEvoHI Ensemble Prediction for ' + issc, fontsize=16)
 
-            plt.xticks(rotation=45)
+                fig.subplots_adjust(hspace=0.2)
 
-            # fig.show()
+                plt.xticks(rotation=45)
 
-            fig.savefig(outfolder + '/' + eventdate[j] + '_ELEvoHI_prediction.png',
-                        bbox_inches="tight")
-            fig.clf()
+                # fig.show()
 
-            plt.close('all')
-            # input()
+                fig.savefig(outfolder + '/' + eventdate[j] + '_' + sc + '_ELEvoHI_prediction.png',
+                            bbox_inches="tight")
+                fig.clf()
+
+                plt.close('all')
+                # input()
 
 
 if __name__ == '__main__':
