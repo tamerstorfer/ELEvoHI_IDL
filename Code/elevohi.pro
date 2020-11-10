@@ -297,21 +297,24 @@ journal, path+'logfile.log'
 
 case source of
    'helcats': begin
-				  print, 'Source file from HELCATS'
-				  read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
-				  restore, filen, /verb
-			  end
-   'user-defined': begin
-					   print, 'User-defined HI input file'
-					   restore, str[11], /verb
-					   time=track.track_date
-					   elon=track.elon
-					   elon_err=track.elon_stdd
-					   sc=track.sc
+          print, 'Source file from HELCATS'
+          read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
+          restore, filen, /verb
 
-					   track.track_date = anytim(track.track_date, /ccsds)
-					   save, track, filename = dir+eventdateSC+'_ccsds.sav'
-                   end
+          track = {track_date: time, elon: elon, elon_std: elon_err, sc: sc}
+          save, track, filename = dir+eventdateSC+'_ccsds.sav'
+        end
+   'user-defined': begin
+             print, 'User-defined HI input file'
+             restore, str[11], /verb
+             time=track.track_date
+             elon=track.elon
+             elon_err=track.elon_stdd
+             sc=track.sc
+
+             track.track_date = anytim(track.track_date, /ccsds)
+             save, track, filename = dir+eventdateSC+'_ccsds.sav'
+        end
     else: print, 'Define HI input file!'
 endcase
 
