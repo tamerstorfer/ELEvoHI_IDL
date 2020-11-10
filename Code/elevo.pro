@@ -74,8 +74,10 @@ marp=get_stereo_lonlat(suntime, 'Mars', system='HEE')
 stap=get_stereo_lonlat(suntime, 'STEREO-A', system='HEE')
 stbp=get_stereo_lonlat(suntime, 'STEREO-B', system='HEE')
 vexp=get_stereo_lonlat(suntime, 'Venus', system='HEE')
+solop=[1.2095598e+08,-0.070147458,-0.068810316]
 solop=get_stereo_lonlat(suntime, 'solo', system='HEE')
 pspp=get_stereo_lonlat(suntime, 'psp', system='HEE')
+;bepip=get_stereo_lonlat(suntime, 'bepi', system='HEE')
 
 
 if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
@@ -271,7 +273,8 @@ pos_stb=get_stereo_lonlat(t_plot[0], 'B', system='HEE')
 pos_earth=get_stereo_lonlat(t_plot[0], 'Earth', system='HEE')
 pos_vex=get_stereo_lonlat(t_plot[0], 'Venus', system='HEE')
 pos_mars=get_stereo_lonlat(t_plot[0], 'Mars', system='HEE')
-pos_solo=get_stereo_lonlat(t_plot[0], 'solo', system='HEE')
+;pos_solo=get_stereo_lonlat(t_plot[0], 'solo', system='HEE')
+pos_solo=[1.2095598e+08,-0.070147458,-0.068810316]
 pos_psp=get_stereo_lonlat(t_plot[0], 'psp', system='HEE')
 
 pos_mes=fltarr(3)
@@ -797,6 +800,8 @@ pred.SOLO_time = arrival_SOLO
 pred.SOLO_speed= arrival_speed_SOLO
 pred.PSP_time = arrival_PSP
 pred.PSP_speed= arrival_speed_PSP
+
+print, arrival_SOLO
 
 
 elevo_kin = {all_apex_r:dblarr(n_elements(rdrag)),    $

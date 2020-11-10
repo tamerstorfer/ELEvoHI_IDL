@@ -426,50 +426,53 @@ for i=0, n_elements(winds)-1 do begin
 	print, '------------------------------------'
 
 	;plot outcome
-	if res ne -1 then begin
+    if keyword_set(silent) ne 1 then begin
 
-		!P.MULTI=[0,1,2]
+    	if res ne -1 then begin
 
-		num=strmid(string(i),5,3)
+    		!P.MULTI=[0,1,2]
 
-		drag=0
-		if gasi eq -1 then begin
-			drag=strmid(string(fitpara[i,0]),1,4)
-		endif else begin
-			drag=strmid(string(fitpara[i,0]),2,3)
-		endelse
+    		num=strmid(string(i),5,3)
 
-		dragexp=strmid(string(fitpara[i,0]),10,3)
-		bgspeed=strmid(string(fitpara[i,1]),6,3)
-		meanresi=strmid(string(fitpara[i,2]),5,4)
+    		drag=0
+    		if gasi eq -1 then begin
+    			drag=strmid(string(fitpara[i,0]),1,4)
+    		endif else begin
+    			drag=strmid(string(fitpara[i,0]),2,3)
+    		endelse
 
-		;sw=strtrim(string(fix(sw_speed)),2)
+    		dragexp=strmid(string(fitpara[i,0]),10,3)
+    		bgspeed=strmid(string(fitpara[i,1]),6,3)
+    		meanresi=strmid(string(fitpara[i,2]),5,4)
 
-
-		c=strtrim(string(cut),2)
-
-		set_plot, 'ps'
-		device, filename=dir+'dbmfit_'+strtrim(string(i), 2)+'.eps', /encapsulated, /color, XSIZE=30, YSIZE=20, BITS_PER_PIXEL=16
-
-		utplot, time, r_apex_sun, psym=1, charsize=1.4, thick=2, symsize=2, ytit='Heliocentric Distance [R!D!9n!N!X]'
-		uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
-		outplot, time[cut:*], fit_au*au/r_sun, thick=2
-		xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
-		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
-		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
+    		;sw=strtrim(string(fix(sw_speed)),2)
 
 
-		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], timerange=[time[0],time[n_elements(time)-1]], psym=1, yr=[0,yrmax], charsize=1.4, thick=2, symsize=2, ytit='CME Apex Speed [km s!E-1!N]'
-		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2], skip=2
-		outplot, time[cut:*], fitspeed, thick=2
+    		c=strtrim(string(cut),2)
+
+    		set_plot, 'ps'
+    		device, filename=dir+'dbmfit_'+strtrim(string(i), 2)+'.eps', /encapsulated, /color, XSIZE=30, YSIZE=20, BITS_PER_PIXEL=16
+
+    		utplot, time, r_apex_sun, psym=1, charsize=1.4, thick=2, symsize=2, ytit='Heliocentric Distance [R!D!9n!N!X]'
+    		uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
+    		outplot, time[cut:*], fit_au*au/r_sun, thick=2
+    		xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
+    		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
+    		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
 
 
-		DEVICE, /CLOSE
-		SET_PLOT, 'X'
+    		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], timerange=[time[0],time[n_elements(time)-1]], psym=1, yr=[0,yrmax], charsize=1.4, thick=2, symsize=2, ytit='CME Apex Speed [km s!E-1!N]'
+    		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2], skip=2
+    		outplot, time[cut:*], fitspeed, thick=2
 
-		!P.MULTI=0
 
-	endif
+    		DEVICE, /CLOSE
+    		SET_PLOT, 'X'
+
+    		!P.MULTI=0
+
+    	endif
+    endif
 
 endfor
 

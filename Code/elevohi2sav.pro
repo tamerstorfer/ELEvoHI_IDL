@@ -38,7 +38,6 @@ if str[27] ne '' and str[29] eq '' then arr=[[str[27], str[28]]]
 if str[27] ne '' and str[29] ne '' and str[31] eq '' then arr=[[str[27], str[28]],[str[29], str[30]]]
 if str[27] ne '' and str[29] ne '' and str[31] ne '' then arr=[[str[27], str[28]],[str[29], str[30]], [str[31], str[32]]]
 
-
 ;calculate transit time for each run
 ;transit time is time from tinit to predicted arrival time
 
@@ -355,9 +354,9 @@ for w=0, j-1 do begin
 	 print, arrtime_median, 'UT +/-', arrstdd, 'hours', format='(A16,A6,1X,F5.1,1X,A5)'
 	 print, '=========================='
 
-     if str[28] ne '' then begin
-       posSpeed = strpos(str[28], '/')
-	   arrTime = str[28]
+     if arr[1,w] ne '' then begin
+       posSpeed = strpos(arr[1,w], '/')
+	   arrTime = arr[1,w]
 	   if posSpeed ne -1 then begin
 	   	arrTime = strmid(arrTime, 0, posSpeed)
 	   endif
@@ -368,7 +367,6 @@ for w=0, j-1 do begin
        print, 'dt (median): ', round((anytim(arrtime_median)-anytim(arrTime))/360.)/10., 'h', format='(A13,F5.1,1X,A1)'
        print, '=========================='
      endif
-
 
 	 shadelimlow=anytim(anytim(arrtime_median)-arrstdd*3600., /ccsds)
 	 shadelimhigh=anytim(anytim(arrtime_median)+arrstdd*3600., /ccsds)
