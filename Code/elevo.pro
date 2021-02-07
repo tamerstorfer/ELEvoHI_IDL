@@ -75,7 +75,7 @@ stap=get_stereo_lonlat(suntime, 'STEREO-A', system='HEE')
 stbp=get_stereo_lonlat(suntime, 'STEREO-B', system='HEE')
 vexp=get_stereo_lonlat(suntime, 'Venus', system='HEE')
 solop=[1.2095598e+08,-0.070147458,-0.068810316]
-solop=get_stereo_lonlat(suntime, 'solo', system='HEE')
+;solop=get_stereo_lonlat(suntime, 'solo', system='HEE')
 pspp=get_stereo_lonlat(suntime, 'psp', system='HEE')
 ;bepip=get_stereo_lonlat(suntime, 'bepi', system='HEE')
 

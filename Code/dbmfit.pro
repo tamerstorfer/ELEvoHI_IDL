@@ -191,6 +191,8 @@ window, 1
 
   oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
 
+  x2jpeg, dir+'ELEvoHI/Dbmfit_cuts.jpg'
+
 
 ecut=j
 
@@ -202,7 +204,7 @@ endif else begin
     print, 'Cut-off of DBM fit in Rsun: ', ecuts
 endelse
 
-
+stop
 
 ;**********************
 
@@ -370,11 +372,6 @@ for i=0, n_elements(winds)-1 do begin
 	  fitpara[i,1] = sw_speed
 	  fitpara[i,2] = resi/r_sun
 	endelse
-
-
-
-
-
 
 	;calculate fitspeed
 	fitspeed = DERIV(X, fit)

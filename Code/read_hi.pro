@@ -23,20 +23,21 @@ endif else begin
   print, nu+' events on this day!'
   print, 'Please select an event!'
   print, 'Type 1-'+nu
-  
+
   en=0
   read, en
   n=strtrim(string(en),2)
   print, 'Selected event: '+n
-  
+
   prof=read_ascii(result[en-1], template=temp)
 endelse
 
 endif else begin
   print, 'No event on this day!'
-  stop
+  return
+  ;stop
 endelse
-  
+
 
 ;calculate mean of the different tracks
 
@@ -48,7 +49,7 @@ for i=0, num_tracks do begin
   index=where(prof.track_id eq i)
   print, 'i: ', i
   print, 'number of elements:', n_elements(index)
-  
+
   case i of
     0: begin
          tr_time0=prof.time[index]
@@ -108,27 +109,27 @@ for i=0, num_tracks do begin
     1: begin
          res = interpol(tr_elon1, anytim(tr_time1), new_time)
          new_elon[*,1]=res
-       end     
+       end
     2: begin
          res = interpol(tr_elon2, anytim(tr_time2), new_time)
          new_elon[*,2]=res
-       end   
+       end
     3: begin
          res = interpol(tr_elon3, anytim(tr_time3), new_time)
          new_elon[*,3]=res
-       end   
+       end
     4: begin
          res = interpol(tr_elon4, anytim(tr_time4), new_time)
          new_elon[*,4]=res
-       end  
+       end
     5: begin
          res = interpol(tr_elon5, anytim(tr_time5), new_time)
          new_elon[*,5]=res
-       end   
+       end
     6: begin
          res = interpol(tr_elon6, anytim(tr_time6), new_time)
          new_elon[*,6]=res
-       end       
+       end
   endcase
 endfor
 
