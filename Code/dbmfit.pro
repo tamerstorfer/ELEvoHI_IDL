@@ -10,12 +10,12 @@
 ; Calling sequence: part of ELEvoHI package
 ;
 ;
-; Authors:    Tanja Amerstorfer & Christian Mšstl
+; Authors:    Tanja Amerstorfer & Christian Moestl & Juergen Hinterreiter
 ;             Space Research Institute, Austrian Academy of Sciences
 ;			  Graz, Austria
 ;
 ; History:
-;			20190201: added keyword nightly to avoid plotting of DBMfit (JŸrgen Hinterreiter)
+;			20190201: added keyword nightly to avoid plotting of DBMfit (Juergen Hinterreiter)
 ;
 ;
 ;(c) 2018 T. Amerstorfer, The software is provided "as is", without warranty of any kind.
@@ -24,18 +24,15 @@
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 
-PRO dbmfit, time, r_apex, r_error, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
+PRO dbmfit, time, r_apex, r_error, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
 
 au=149597870.
 r_sun=695700.
 
 NaN=!Values.F_NAN
 
-
-
 if n_elements(startcut) ne 0 then scut=startcut
 if n_elements(endcut) ne 0 then ecut=endcut
-
 
 ;define common block for amoeba fit
 common distfit, X, Y, r_init, v_init, sw_speed
@@ -53,7 +50,7 @@ speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
 yrmax=max(s+speed_errhi)
 
 if keyword_set(nightly) ne 1 then begin
-	loadct, 0
+    loadct, 0
 
 	white_bg=1
 	if (white_bg eq 1) and (!p.background eq 0) then begin
@@ -67,40 +64,38 @@ if keyword_set(nightly) ne 1 then begin
 	endelse
 endif
 
-
 !P.MULTI=0
 
 ;manually define starting point of fit if needed (-> cut off area where Lorentz force is still dominant)
 if n_elements(startcut) eq 0 then begin
-window, 1
+    window, 1
+    plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
+    errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
 
-  plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
-  errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
+    print, 'Klick on starting point of DBM fit!'
+    cursor, rin, vin, /data, /down
 
-  print, 'Klick on starting point of DBM fit!'
-  cursor, rin, vin, /data, /down
+    ;Find closest data point:
+    c=where(r_apex_sun lt rin, count)
 
-  ;Find closest data point:
-  c=where(r_apex_sun lt rin, count)
-
-  if count ne 0 then begin
+    if count ne 0 then begin
     cnear=rin-r_apex_sun[c[n_elements(c)-1]]
-  endif else begin
+    endif else begin
     j=0
     scut=r_apex_sun[j]
-  endelse
+    endelse
 
-  c1=where(r_apex_sun gt rin, count1)
+    c1=where(r_apex_sun gt rin, count1)
 
-  if count1 ne 0 then begin
+    if count1 ne 0 then begin
     c1near=r_apex_sun[c1[0]]-rin
-  endif else begin
+    endif else begin
     j=n_elements(r_apex_sun)-1
     scut=r_apex_sun[j]
-  endelse
+    endelse
 
 
-  if count ne 0 and count1 ne 0 then begin
+    if count ne 0 and count1 ne 0 then begin
     if cnear lt c1near then begin
      scut=r_apex[c[n_elements(c)-1]]*au/r_sun
      j=c[n_elements(c)-1]
@@ -109,31 +104,27 @@ window, 1
       scut=r_apex[c1[0]]*au/r_sun
       j=c1[0]
     endif
-  endif
+    endif
 
-  a = findgen(17) * (!pi*2/16.)
-  usersym, cos(A), sin(A)
+    a = findgen(17) * (!pi*2/16.)
+    usersym, cos(A), sin(A)
 
-  oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
+    oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
 
-  cut=j
+    cut=j
 
-  r_init=scut*r_sun
-  v_init=s[cut]
+    r_init=scut*r_sun
+    v_init=s[cut]
 
 endif else begin
-  cut=startcut
-  scut=r_apex[cut]*au/r_sun
-  r_init=scut*r_sun
-  v_init=s[cut]
+    cut=startcut
+    scut=r_apex[cut]*au/r_sun
+    r_init=scut*r_sun
+    v_init=s[cut]
 endelse
-
-
 
 print, 'Initial heliocentric distance for DBM fit in Rsun: ', scut
 print, 'Initial speed for DBM fit in km/s: ', v_init
-
-
 
 undefine, rout
 undefine, vout
@@ -142,40 +133,39 @@ undefine, vout
 
 ;manually define end point of fit if needed (-> cut off where measurements get unreliable, i.e. high acceleration or deceleration at the end of the track!)
 if n_elements(endcut) eq 0 then begin
-window, 1
-  ti = (anytim(time)-anytim(time[0]))
-  s = DERIV(ti, r_apex*au)
-  speed_errhi = DERIVSIG(ti, r_apex*au, 0.0, r_error[0,*]*au)
-  speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
+    window, 1
+    ti = (anytim(time)-anytim(time[0]))
+    s = DERIV(ti, r_apex*au)
+    speed_errhi = DERIVSIG(ti, r_apex*au, 0.0, r_error[0,*]*au)
+    speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
 
-  r_apex_sun=r_apex*au/r_sun
-  plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
-  errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
+    r_apex_sun=r_apex*au/r_sun
+    plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
+    errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
 
-  oplot, [r_apex_sun[cut],r_apex_sun[cut]], [s[cut],s[cut]], psym=8, symsize=3
+    oplot, [r_apex_sun[cut],r_apex_sun[cut]], [s[cut],s[cut]], psym=8, symsize=3
 
-  print, 'Klick on end point of DBM fit!'
-  cursor, rout, vout, /data, /down
+    print, 'Klick on end point of DBM fit!'
+    cursor, rout, vout, /data, /down
 
-  ;find closest data point:
-  c=where(r_apex_sun lt rout, count)
-  if count ne 0 then begin
+    ;find closest data point:
+    c=where(r_apex_sun lt rout, count)
+    if count ne 0 then begin
     cnear=rout-r_apex_sun[c[n_elements(c)-1]]
-  endif else begin
+    endif else begin
     j=0
     ecut=r_apex_sun[j]
-  endelse
+    endelse
 
-  c1=where(r_apex_sun gt rout, count1)
-  if count1 ne 0 then begin
+    c1=where(r_apex_sun gt rout, count1)
+    if count1 ne 0 then begin
     c1near=r_apex_sun[c1[0]]-rout
-  endif else begin
+    endif else begin
     j=n_elements(r_apex_sun)-1
     ecut=r_apex_sun[j]
-  endelse
+    endelse
 
-
-  if count ne 0 and count1 ne 0 then begin
+    if count ne 0 and count1 ne 0 then begin
     if cnear lt c1near then begin
      ecut=r_apex[c[n_elements(c)-1]]*au/r_sun
      j=c[n_elements(c)-1]
@@ -184,27 +174,41 @@ window, 1
       ecut=r_apex[c1[0]]*au/r_sun
       j=c1[0]
     endif
-  endif
+    endif
 
-  a = findgen(17) * (!pi*2/16.)
-  usersym, cos(A), sin(A)
+    a = findgen(17) * (!pi*2/16.)
+    usersym, cos(A), sin(A)
 
-  oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
+    oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
 
-  x2jpeg, dir+'ELEvoHI/Dbmfit_cuts.jpg'
+    ecut=j
 
-
-ecut=j
-
-ecuts=r_apex[ecut]*au/r_sun
-print, 'Cut-off of DBM fit in Rsun: ', ecuts
-
+    ecuts=r_apex[ecut]*au/r_sun
+    print, 'Cut-off of DBM fit in Rsun: ', ecuts
 endif else begin
     ecuts=r_apex[ecut]*au/r_sun
     print, 'Cut-off of DBM fit in Rsun: ', ecuts
 endelse
 
-stop
+if runnumber eq 1 then begin
+    a = findgen(17) * (!pi*2/16.)
+    usersym, cos(A), sin(A)
+
+    window, 2
+    ti = (anytim(time)-anytim(time[0]))
+    s = DERIV(ti, r_apex*au)
+    speed_errhi = DERIVSIG(ti, r_apex*au, 0.0, r_error[0,*]*au)
+    speed_errlo = DERIVSIG(ti, r_apex*au, 0.0, r_error[1,*]*au)
+
+    r_apex_sun=r_apex*au/r_sun
+    plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
+    errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
+
+    oplot, [r_apex_sun[startcut],r_apex_sun[startcut]], [s[startcut],s[startcut]], psym=8, symsize=3
+    oplot, [r_apex_sun[endcut],r_apex_sun[endcut]], [s[endcut],s[endcut]], psym=8, symsize=3
+
+    x2jpeg, dir+'/Dbmfit_cuts.jpg'
+endif
 
 ;**********************
 
@@ -248,7 +252,6 @@ if bgsw eq 3 then begin
 	winds[4] = max_bg_speed
 endif
 
-
 if bgsw eq 2 then begin
 	; run ELEvoHI with the data from the modeled background solar wind
 	datadir=getenv('DATA_DIR')
@@ -282,7 +285,7 @@ for i=0, n_elements(winds)-1 do begin
 	   print, 'Initial speed smaller then background solar wind speed!'
     endif
 
-;	print, 'STOP 2'
+	;print, 'STOP 2'
 	;stop
 
 	A=[gasi*1.0e-07]
@@ -303,9 +306,6 @@ for i=0, n_elements(winds)-1 do begin
 	;  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbmneg',FUNCTION_VALUE=values,P0=A,scale=[0,1e-9])
 	;  print, 'gamma sign negative!'
 	;endif
-
-
-
 
 	fitres=fltarr(2)
 	fitres[0]=res[0]
@@ -328,8 +328,6 @@ for i=0, n_elements(winds)-1 do begin
 ;	  ;fitpara=fltarr(n_elements(winds),3)
 ;	;endelse
 
-
-
 	;calculate function values
 	;if gasi gt 0 then begin
 	fit = (1/fitres[0])*alog(1 + fitres[0]*(v_init - fitres[1])*X) + fitres[1]*X + r_init
@@ -348,7 +346,6 @@ for i=0, n_elements(winds)-1 do begin
 	;if fit is not converging (e.g. because of improper bg solar wind speed) resi should be NaN.
 
 	resi = mean(abs(y-fit))
-
 
     ;mean residual of last three points fitted
     ;resi = mean(abs([y[n_elements(y)-3], y[n_elements(y)-2], y[n_elements(y)-1]]-[fit[n_elements(y)-3], fit[n_elements(y)-2], fit[n_elements(y)-1]]))
@@ -444,7 +441,6 @@ for i=0, n_elements(winds)-1 do begin
 
     		;sw=strtrim(string(fix(sw_speed)),2)
 
-
     		c=strtrim(string(cut),2)
 
     		set_plot, 'ps'
@@ -457,11 +453,9 @@ for i=0, n_elements(winds)-1 do begin
     		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
     		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
 
-
     		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], timerange=[time[0],time[n_elements(time)-1]], psym=1, yr=[0,yrmax], charsize=1.4, thick=2, symsize=2, ytit='CME Apex Speed [km s!E-1!N]'
     		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2], skip=2
     		outplot, time[cut:*], fitspeed, thick=2
-
 
     		DEVICE, /CLOSE
     		SET_PLOT, 'X'
@@ -472,8 +466,6 @@ for i=0, n_elements(winds)-1 do begin
     endif
 
 endfor
-
-
 
 if isa(fitpara) eq 0 then begin
  print,  '****************************************************'
@@ -490,8 +482,6 @@ if isa(fitpara) eq 0 then begin
 endif
 
 counti=0
-
-
 
 cu=where(fitpara eq 0., count)
 if count gt 0 then fitpara[cu]=NaN
@@ -554,10 +544,7 @@ if index eq -1 then begin
 	return
 endif
 
-
-
 counti=fix(counti)
-
 
 if counti ne 0 then begin
 	print, '------------best result:------------'
@@ -567,8 +554,6 @@ if counti ne 0 then begin
 	print, 'Mean residual [solar radii]: ', fitpara[index,2], format='(A,8x,F4.2)'
 	print, '------------------------------------'
 	print, '------------------------------------'
-
-
 
 	tinit=time[cut]
 

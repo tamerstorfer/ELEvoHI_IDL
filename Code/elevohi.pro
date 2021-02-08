@@ -397,11 +397,7 @@ endif else begin
 
 endelse
 
-
-
 if n_elements(fstr) eq 3 or n_elements(phistr) eq 3 or n_elements(lambdastr) eq 3 then ensemble=1
-
-
 
 if keyword_set(save_results) then begin
 
@@ -443,8 +439,6 @@ endif else begin
 
 endelse
 
-
-
 if n_elements(fstr) eq 3 then begin
 
   fstart=float(fstr[0])
@@ -463,13 +457,11 @@ endif else begin
 
 endelse
 
-
 if n_elements(lambdastr) eq 3 then begin
 
   lambdastart=float(lambdastr[0])
   lambdaend=float(lambdastr[1])
   deltalambda=float(lambdastr[2])
-
   n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
   lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
 
@@ -494,259 +486,241 @@ if ensemble eq 1 then begin
 endif
 
 for k=0, n_phi-1 do begin
-    for l=0, n_f-1 do begin
-            for m=0, n_lambda-1 do begin
+  for l=0, n_f-1 do begin
+    for m=0, n_lambda-1 do begin
 
-            	if n_elements(phi_arr) ne 1 then begin
-	            	phi=phi_arr[k]
-					;print, phi
-				endif else phi=phistart
+      if n_elements(phi_arr) ne 1 then begin
+	     	phi=phi_arr[k]
+				;print, phi
+			endif else phi=phistart
 
-				if n_elements(f_arr) ne 1 then begin
-		        	f=f_arr[l]
-					;print, f
-				endif else f=fstart
+			if n_elements(f_arr) ne 1 then begin
+		    f=f_arr[l]
+				;print, f
+			endif else f=fstart
 
-				if n_elements(lambda_arr) ne 1 then begin
-                	lambda=lambda_arr[m]
-                	;print, lambda
-				endif else lambda=lambdastart
+			if n_elements(lambda_arr) ne 1 then begin
+        lambda=lambda_arr[m]
+        ;print, lambda
+			endif else lambda=lambdastart
 
+    	; use for the first iteration the values in the middle of the parameter range
+    	; change the values from the first run with those from the "middle" run
+      if ensemble eq 1 then begin
+      	if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
+      		f = fstart
+      		phi = phistart
+      		lambda = lambdaStart
+      	endif
 
-              	; use for the first iteration the values in the middle of the parameter range
-              	; change the values from the first run with those from the "middle" run
-                if ensemble eq 1 then begin
-                  	if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
-                  		f = fstart
-                  		phi = phistart
-                  		lambda = lambdaStart
-                  	endif
+  			if k eq 0 and l eq 0 and m eq 0 then begin
+  				f = fCenter
+  				phi = phiCenter
+  				lambda = lambdaCenter
+  			endif
+      endif
 
-    				if k eq 0 and l eq 0 and m eq 0 then begin
-    					f = fCenter
-    					phi = phiCenter
-    					lambda = lambdaCenter
-    				endif
-                endif
+      runnumber = runnumber + 1
 
+			print, '*****'
+			print, 'f=', f
+			print, 'phi=', phi
+			print, 'lambda=', lambda
+			print, '*****'
+      print, 'runnumber=', runnumber
 
-				print, '*****'
-				print, 'f=', f
-				print, 'phi=', phi
-				print, 'lambda=', lambda
-				print, '*****'
+      elon_err=fltarr(n_elements(elon))
 
-				runnumber = runnumber + 1
+    	;produce elongation measurement errors with values err_HI1=+/-0.1 deg, err_HI2=+/-0.4 deg (see Rollett et al. 2013)
 
-	elon_err=fltarr(n_elements(elon))
+    	for i=0, n_elements(elon)-1 do begin
+    	  if elon[i] lt 24. then elon_err[i]=0.1 else elon_err[i]=0.4
+    	endfor
 
+    	;Here, the time-elongation track is converted in a time-distance track.
+    	;An elliptical shape for the CME front is assumed, as well as constant
+    	;direction of motion and a fixed (pre-defined) half width and ellipse aspect ratio.
+    	;for more information please see Rollett et al. (2016, ApJ)
 
-	;produce elongation measurement errors with values err_HI1=+/-0.1 deg, err_HI2=+/-0.4 deg (see Rollett et al. 2013)
+    	;apex heliocentric distance in AU
+    	elcon, elon, d, phi, lambda, f, r_ell
 
-	for i=0, n_elements(elon)-1 do begin
-	  if elon[i] lt 24. then elon_err[i]=0.1 else elon_err[i]=0.4
-	endfor
+    	;error in AU
+    	elcon, elon+elon_err, d, phi, lambda, f, r_errhi
+    	elcon, elon-elon_err, d, phi, lambda, f, r_errlo
 
-	;Here, the time-elongation track is converted in a time-distance track.
-	;An elliptical shape for the CME front is assumed, as well as constant
-	;direction of motion and a fixed (pre-defined) half width and ellipse aspect ratio.
-	;for more information please see Rollett et al. (2016, ApJ)
+    	r_err=fltarr(2,n_elements(r_ell))
 
+    	r_err[0,*]=r_errhi-r_ell
+    	r_err[1,*]=r_ell-r_errlo
 
+    	print, r_ell[2]
 
-	;apex heliocentric distance in AU
-	elcon, elon, d, phi, lambda, f, r_ell
+    	save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
 
-	;error in AU
-	elcon, elon+elon_err, d, phi, lambda, f, r_errhi
-	elcon, elon-elon_err, d, phi, lambda, f, r_errlo
+    	;next step is fitting the time-distance profile using the DBM
 
-	r_err=fltarr(2,n_elements(r_ell))
+    	dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
 
-	r_err[0,*]=r_errhi-r_ell
-	r_err[1,*]=r_ell-r_errlo
+    	if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
+    		startmin = r_ell[startcut]*au/r_sun
+    		endmax = r_ell[endcut]*au/r_sun
 
-	print, r_ell[2]
+    		if r_start_min gt startmin then r_start_min = startmin
+    		if r_end_max lt endmax then r_end_max = endmax
+    		if phi_min gt phi then phi_min = phi
+    		if phi_max lt phi then phi_max = phi
+    		if lam_max lt lambda then lam_max = lambda
+    		if finite(tinit) ne 0 then eventTime = tinit
+    	endif
 
-	save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
+    	print, 'Gamma after fitting:'
+    	print, drag_parameter
 
+    	;count and save number of converging and non-converging fits
 
-	;next step is fitting the time-distance profile using the DBM
+    	a=[phi, f, lambda]
 
-	dbmfit, time, r_ell, r_err, sw, dir, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
+    	if drag_parameter eq 0 or finite(drag_parameter) eq 0 then begin
+    		if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
+    		nofit=nofit+1
+    	    continue
+    	endif else begin
+    	   fitworks=fitworks+1
+    	endelse
 
-	if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
-		startmin = r_ell[startcut]*au/r_sun
-		endmax = r_ell[endcut]*au/r_sun
+    	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
+    	elevo, dir, pred, elevo_kin
 
-		if r_start_min gt startmin then r_start_min = startmin
-		if r_end_max lt endmax then r_end_max = endmax
-		if phi_min gt phi then phi_min = phi
-		if phi_max lt phi then phi_max = phi
-		if lam_max lt lambda then lam_max = lambda
-		if finite(tinit) ne 0 then eventTime = tinit
-	endif
+    	if keyword_set(forMovie) then begin
+    		elevo_kin.all_apex_s = sc
+    		save, elevo_kin, startcut, endcut, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
+    	endif
 
-	print, 'Gamma after fitting:'
-	print, drag_parameter
+    	if n_elements(arr) ne 0 then begin
+    	  print, '------------------------------------'
+    	  print, '*****************************************************'
+    	  print, '*Differences of predicted and detected arrival times*'
+    	  print, '*"-" means predicted to arrive earlier than detected*'
+    	  print, '*****************************************************'
 
+    	  j=n_elements(arr[0,*])
 
-	;count and save number of converging and non-converging fits
+    		for i=0, j-1 do begin
 
-	a=[phi, f, lambda]
+    		  case arr[0,i] of
+    			'MES': begin
+    					 da_mes=!VALUES.F_NAN
+    					 if finite(pred.mes_time) then begin
+    					  da_mes = (anytim(pred.mes_time) - anytim(arr[1,i]))/3600.
+    						print, '**********MESSENGER***********'
+    						print, '*', round(da_mes*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+    						print, '******************************'
+    					 endif else print, 'No arrival predicted at MESSENGER!'
+    			end
+    			'VEX': begin
+    					 da_mvex=!VALUES.F_NAN
+    					 if finite(pred.vex_time) then begin
+    					  da_vex = (anytim(pred.vex_time) - anytim(arr[1,i]))/3600.
+    						print, '*********Venus Express********'
+    						print, '*', round(da_vex*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+    						print, '******************************'
+    					 endif else print, 'No arrival predicted at Venus Express!'
+    			end
+    			'Earth': begin
+    					   da_earth=!VALUES.F_NAN
+    					   if finite(pred.wind_time) then begin
+    						da_earth = (anytim(pred.wind_time) - anytim(arr[1,i]))/3600.
+    						print, '************Earth*************'
+    						print, '*', round(da_earth*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+    						print, '******************************'
+    					   endif else print, 'No arrival predicted at Wind!'
+    			end
+    			'A': begin
+    					 da_sta=!VALUES.F_NAN
+    					 if finite(pred.sta_time) then begin
+    						da_sta = (anytim(pred.sta_time) - anytim(arr[1,i]))/3600.
+    						print, '***********STEREO-A***********'
+    						print, '*', round(da_sta*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+    						print, '******************************'
+    					 endif else print, 'No arrival predicted at STEREO-A!'
+    			end
+    			'B': begin
+    				   da_stb=!VALUES.F_NAN
+    				   if finite(pred.stb_time) then begin
+    					  da_stb = (anytim(pred.stb_time) - anytim(arr[1,i]))/3600.
+    						print, '***********STEREO-B***********'
+    						print, '*', round(da_stb*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+    						print, '******************************'
+    				   endif else print, 'No arrival predicted at STEREO-B!'
+    			end
+          'SOLO': begin
+               da_solo=!VALUES.F_NAN
+               if finite(pred.solo_time) then begin
+                da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
+                print, '***********Solar Orbiter***********'
+                print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                print, '******************************'
+               endif else print, 'No arrival predicted at Solar Orbiter!'
+          end
+          'PSP': begin
+               da_psp=!VALUES.F_NAN
+               if finite(pred.psp_time) then begin
+                da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
+                print, '***********Parker Solar Probe***********'
+                print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                print, '******************************'
+               endif else print, 'No arrival predicted at Parker Solar Probe!'
+          end
+    			else: begin
+    					  print, 'Check in situ s/c in input file!'
+    			end
+    		  endcase
+		    endfor
+	     endif
 
-	if drag_parameter eq 0 or finite(drag_parameter) eq 0 then begin
-		if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
-		nofit=nofit+1
-	    continue
-	endif else begin
-	   fitworks=fitworks+1
-	endelse
+    	if not isa(da_mes) then da_mes=!VALUES.F_NAN
+    	if not isa(da_vex) then da_vex=!VALUES.F_NAN
+    	if not isa(da_earth) then da_earth=!VALUES.F_NAN
+    	if not isa(da_sta) then da_sta=!VALUES.F_NAN
+    	if not isa(da_stb) then da_stb=!VALUES.F_NAN
+      if not isa(da_solo) then da_solo=!VALUES.F_NAN
+      if not isa(da_psp) then da_psp=!VALUES.F_NAN
 
+    	dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp]
 
+    	if ensemble eq 1 and keyword_set(save_results) then begin
+    	  save_elevohi_e, fnam, dir, pred, dt_all
+    	endif
 
-	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
-	elevo, dir, pred, elevo_kin
-
-
-	if keyword_set(forMovie) then begin
-		elevo_kin.all_apex_s = sc
-		save, elevo_kin, startcut, endcut, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
-	endif
-
-	if n_elements(arr) ne 0 then begin
-	  print, '------------------------------------'
-	  print, '*****************************************************'
-	  print, '*Differences of predicted and detected arrival times*'
-	  print, '*"-" means predicted to arrive earlier than detected*'
-	  print, '*****************************************************'
-
-	  j=n_elements(arr[0,*])
-
-
-
-		for i=0, j-1 do begin
-
-		  case arr[0,i] of
-			'MES': begin
-					 da_mes=!VALUES.F_NAN
-					 if finite(pred.mes_time) then begin
-					  da_mes = (anytim(pred.mes_time) - anytim(arr[1,i]))/3600.
-						print, '**********MESSENGER***********'
-						print, '*', round(da_mes*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					 endif else print, 'No arrival predicted at MESSENGER!'
-			end
-			'VEX': begin
-					 da_mvex=!VALUES.F_NAN
-					 if finite(pred.vex_time) then begin
-					  da_vex = (anytim(pred.vex_time) - anytim(arr[1,i]))/3600.
-						print, '*********Venus Express********'
-						print, '*', round(da_vex*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					 endif else print, 'No arrival predicted at Venus Express!'
-			end
-			'Earth': begin
-					   da_earth=!VALUES.F_NAN
-					   if finite(pred.wind_time) then begin
-						da_earth = (anytim(pred.wind_time) - anytim(arr[1,i]))/3600.
-						print, '************Earth*************'
-						print, '*', round(da_earth*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					   endif else print, 'No arrival predicted at Wind!'
-			end
-			'A': begin
-					 da_sta=!VALUES.F_NAN
-					 if finite(pred.sta_time) then begin
-						da_sta = (anytim(pred.sta_time) - anytim(arr[1,i]))/3600.
-						print, '***********STEREO-A***********'
-						print, '*', round(da_sta*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					 endif else print, 'No arrival predicted at STEREO-A!'
-			end
-			'B': begin
-				   da_stb=!VALUES.F_NAN
-				   if finite(pred.stb_time) then begin
-					  da_stb = (anytim(pred.stb_time) - anytim(arr[1,i]))/3600.
-						print, '***********STEREO-B***********'
-						print, '*', round(da_stb*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-				   endif else print, 'No arrival predicted at STEREO-B!'
-			end
-      'SOLO': begin
-           da_solo=!VALUES.F_NAN
-           if finite(pred.solo_time) then begin
-            da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
-            print, '***********Solar Orbiter***********'
-            print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-            print, '******************************'
-           endif else print, 'No arrival predicted at Solar Orbiter!'
-      end
-      'PSP': begin
-           da_psp=!VALUES.F_NAN
-           if finite(pred.psp_time) then begin
-            da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
-            print, '***********Parker Solar Probe***********'
-            print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-            print, '******************************'
-           endif else print, 'No arrival predicted at Parker Solar Probe!'
-      end
-			else: begin
-					  print, 'Check in situ s/c in input file!'
-			end
-		  endcase
-
-
-		endfor
-
-	endif
-
-
-
-	if not isa(da_mes) then da_mes=!VALUES.F_NAN
-	if not isa(da_vex) then da_vex=!VALUES.F_NAN
-	if not isa(da_earth) then da_earth=!VALUES.F_NAN
-	if not isa(da_sta) then da_sta=!VALUES.F_NAN
-	if not isa(da_stb) then da_stb=!VALUES.F_NAN
-  if not isa(da_solo) then da_solo=!VALUES.F_NAN
-  if not isa(da_psp) then da_psp=!VALUES.F_NAN
-
-	dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp]
-
-	if ensemble eq 1 and keyword_set(save_results) then begin
-	  save_elevohi_e, fnam, dir, pred, dt_all
-	endif
-
-
-			if lambda eq lambdaend then break
-
-		  endfor
-
-		if f eq fend then break
+    	if lambda eq lambdaend then break
 
     endfor
 
-    if phi eq phiend then break
+    if f eq fend then break
+
+  endfor
+
+  if phi eq phiend then break
 
 endfor
 
 ;iteration of runs end here
 
 if fitworks eq 0 then begin
-   print, 'For this CME with the chosen parameters no prediction is possible.'
-   journal
-   if keyword_set(nightly) ne 1 then stop
+  print, 'For this CME with the chosen parameters no prediction is possible.'
+  journal
+  if keyword_set(nightly) ne 1 then stop
 endif
 
 if ensemble eq 1 and keyword_set(save_results) then begin
   print, 'Ensemble results saved at '+dir+'eELEvoHI_results.txt'
 endif
 
-
 if keyword_set(statistics) and ensemble eq 1 then begin
   elevohi2sav, dir, path=path
   if ensemble eq 1 then begin
-      print, 'Ensemble results prepared for Python statistics.'
+    print, 'Ensemble results prepared for Python statistics.'
   endif else print, 'No statistics for single run.'
 endif
 
@@ -757,23 +731,17 @@ print, 'number of runs without result:'
 print, '(no DBM fit possible)'
 print, nofit
 
-
-
 ;insert number of runs into results file
 ;insert_line, dir, fitworks, nofit
 if keyword_set(statistics) and ensemble eq 1 then begin
-
 	file=dir+'eELEvoHI_results.txt'
 	linenumber1=38
 	data_insert1='# '+trim(fitworks+nofit)
 	linenumber2=41
 	data_insert2='# '+trim(nofit)
-
 	insert_line, file, linenumber1, data_insert1
 	insert_line, file, linenumber2, data_insert2
-
 	save, nofit_para, filename=dir+'invalidFits.sav'
-
 endif
 
 duration_end=systime(/seconds)
@@ -782,15 +750,11 @@ print, nofit+fitworks, ' runs needed ', (duration_end-duration_start)/60., ' min
 
 if ensemble ne 1 then print, 'No estimation of uncertainty in single run mode!'
 
-
 journal
 
-
 if keyword_set(save_results) then begin
-
   ;copy log-file in event directory
   spawn, 'cp '+path+'logfile.log ' +dir
-
 endif
 
 if bgsw eq 2 then begin
