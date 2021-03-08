@@ -71,7 +71,6 @@ path=getenv('ELEvoHI_DIR')
 data=getenv('DATA_DIR')
 gcs_path=getenv('EAGEL_DIR')
 
-
 au=149597870.
 r_sun=695700.
 
@@ -82,11 +81,9 @@ phi_max = 0
 lam_max = 0
 eventTime = '0'
 
-
 set_plot, 'x'
 
 duration_start=systime(/seconds)
-
 
 fnam=path+'Code/elevohi_input.txt'
 
@@ -112,12 +109,12 @@ if n_elements(evstr) eq 2 then begin
 endif else begin
     GCS=0
 endelse
+
 eventdate=evstr[0]
 eventdateSC = eventdate+'_'+sc
 
 ;produce name for event directory
 dir=path+'PredictedEvents/'+eventdateSC+'/'
-
 
 ;file_delete, dir, /allow_n, /recursive
 
@@ -128,7 +125,6 @@ if keyword_set(forMovie) then begin
 	forMovieDir = dir+'ForMovie/'
 	if FILE_TEST(forMovieDir, /dir) ne 1 then file_mkdir, forMovieDir
 endif
-
 
 gcsdone=0
 
@@ -142,12 +138,12 @@ if GCS eq 1 then begin
   filetest = FILE_TEST(gcsresdir, /dir)
   GCSFiles=['']
   if filetest eq 1 then begin
-      GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
+    GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
   endif else begin
-      spawn, 'mkdir '+gcsresdir
-      gsdone=1
-      print, 'Initializing GCS fitting tool...'
-      EAGEL, eventdateSC, datetime=datetime
+    spawn, 'mkdir '+gcsresdir
+    gsdone=1
+    print, 'Initializing GCS fitting tool...'
+    EAGEL, eventdateSC, datetime=datetime
 	  parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
 	  if n_elements(parafile) gt 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
@@ -161,10 +157,10 @@ if GCS eq 1 then begin
   endelse
 
   if filetest eq 1 and nfiles eq 0 then begin
-      gsdone=1
-      print, 'Initializing GCS fitting tool...'
-      EAGEL, eventdatesc, datetime=datetime
-      parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+    gsdone=1
+    print, 'Initializing GCS fitting tool...'
+    EAGEL, eventdatesc, datetime=datetime
+    parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
 	  if n_elements(parafile) gt 1 then begin
 			for p=0, n_elements(parafile)-1 do begin
 				print, p+1, ': ', parafile[p]
@@ -208,70 +204,68 @@ if GCS eq 1 then begin
 endif
 
 if GCS eq 0 then begin
-   if str[14] eq '' or str[18] eq '' or str[21] eq '' then begin
-      print, 'CME front shape parameters not properly set.'
+    if str[14] eq '' or str[18] eq '' or str[21] eq '' then begin
+    print, 'CME front shape parameters not properly set.'
 
-      ;check if GCSCut-directory already exists
-      gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdatesc+'/'
-      filetest = FILE_TEST(gcsresdir, /dir)
-      GCSFiles=['']
-      if filetest eq 1 then begin
-          GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
+    ;check if GCSCut-directory already exists
+    gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdatesc+'/'
+    filetest = FILE_TEST(gcsresdir, /dir)
+    GCSFiles=['']
+    if filetest eq 1 then begin
+        GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
+    endif else begin
+        spawn, 'mkdir '+gcsresdir
+    endelse
+
+    if GCSFiles[0] ne '' then begin
+    print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
+    for p=0, nfiles-1 do begin
+  	 print, p+1, ': ', GCSFiles[p]
+    endfor
+
+    fnum=''
+    read, fnum
+
+    if fnum eq 'n' then begin
+        gcsdone=1
+    	print, 'Initializing GCS fitting tool...'
+    	EAGEL, eventdatesc, datetime=datetime
+    	parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+    		if n_elements(parafile) gt 1 then begin
+    		for p=0, n_elements(parafile)-1 do begin
+    			print, p+1, ': ', parafile[p]
+    		endfor
+
+    		fnum=''
+    		read, fnum
+    		parafile = parafile[fnum-1]
+        endif
+    endif else begin
+    	parafile=GCSFiles[fnum-1]
+    	gcsdone=1
+    endelse
       endif else begin
-          spawn, 'mkdir '+gcsresdir
-      endelse
+      print, 'Do you want to do GCS fitting? (y/n)'
+      b=''
+      read, b
 
-      if GCSFiles[0] ne '' then begin
-		 print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
-		 for p=0, nfiles-1 do begin
-			 print, p+1, ': ', GCSFiles[p]
-		 endfor
-
-		 fnum=''
-		 read, fnum
-
-		 if fnum eq 'n' then begin
-		    gcsdone=1
-			print, 'Initializing GCS fitting tool...'
-			EAGEL, eventdatesc, datetime=datetime
-			parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-	 		if n_elements(parafile) gt 1 then begin
-				for p=0, n_elements(parafile)-1 do begin
-					print, p+1, ': ', parafile[p]
-				endfor
-
-				fnum=''
-				read, fnum
-				parafile = parafile[fnum-1]
-		    endif
-		 endif else begin
-			parafile=GCSFiles[fnum-1]
-			gcsdone=1
-		 endelse
-      endif else begin
-		  print, 'Do you want to do GCS fitting? (y/n)'
-		  b=''
-		  read, b
-
-		  if b eq 'y' then begin
-		     gcsdone=1
-			 print, 'Initializing GCS fitting tool...'
-			 EAGEL, eventdatesc, datetime=datetime
-			 parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-	  		 if n_elements(parafile) gt 1 then begin
-				for p=0, n_elements(parafile)-1 do begin
-					print, p+1, ': ', parafile[p]
-				endfor
-
-				fnum=''
-				read, fnum
-				parafile = parafile[fnum-1]
-	   		 endif
-		  endif else print, 'Aborting ELEvoHI...'
-	   endelse
-	endif
+      if b eq 'y' then begin
+         gcsdone=1
+    	 print, 'Initializing GCS fitting tool...'
+    	 EAGEL, eventdatesc, datetime=datetime
+    	 parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+    		if n_elements(parafile) gt 1 then begin
+      		for p=0, n_elements(parafile)-1 do begin
+      			print, p+1, ': ', parafile[p]
+      		endfor
+      		fnum=''
+      		read, fnum
+      		parafile = parafile[fnum-1]
+     		endif
+      endif else print, 'Aborting ELEvoHI...'
+    endelse
+  endif
 endif
-
 
 sourcestring=strsplit(str[10], '/', /extract)
 source=sourcestring[0]
@@ -310,7 +304,7 @@ case source of
              time=track.track_date
              elon=track.elon
              elon_err=track.elon_stdd
-             sc=track.sc
+             ;sc=track.sc
 
              track.track_date = anytim(track.track_date, /ccsds)
              save, track, filename = dir+eventdateSC+'_ccsds.sav'
@@ -318,20 +312,8 @@ case source of
     else: print, 'Define HI input file!'
 endcase
 
-;if source eq 'helcats' then begin
-;	print, 'Source file from HELCATS'
-;	read_hi, eventdate, sc, time, ymean, ystdd, filen, /silent
-;	restore, filen, /verb
-;	elon=ymean
-;	elon_err=ystdd
-;endif else begin
-;    restore, data+'STEREO/HItracks/'+eventdate+'.sav', /verb
-;endelse
-
 res=stereo_rsun(time[0],sc,distance=distance)
 d=distance[0]/au ; Sun-s/c distance in AU
-
-
 
 if bgsw eq 3 then begin
   case insitu of
@@ -358,43 +340,40 @@ ensemble=0
 ;check if ELEvoHI is in ensemble mode:
 
 if gcsdone eq 0 then begin
-
-   fstr=strsplit(str[14], '/', /extract)
-   phistr=strsplit(str[18], '/', /extract)
-   lambdastr=strsplit(str[21], '/', /extract)
-
+  fstr=strsplit(str[14], '/', /extract)
+  phistr=strsplit(str[18], '/', /extract)
+  lambdastr=strsplit(str[21], '/', /extract)
 endif else begin
+  restore, parafile, /verb
 
-   restore, parafile, /verb
+  ;define parameter ranges
 
-   ;define parameter ranges
+  ;halfangle - lambda
+  lgcs=round(halfangle/10.)*10
+  lstart=string(lgcs-10., format='(I2)')
+  lend=string(lgcs+10., format='(I2)')
+  lambdastr=[lstart,lend,'5']
 
-   ;halfangle - lambda
-   lgcs=round(halfangle/10.)*10
-   lstart=string(lgcs-10., format='(I2)')
-   lend=string(lgcs+10., format='(I2)')
-   lambdastr=[lstart,lend,'5']
+  insert_line, fnam, 21, lstart+'/'+lend+'/5'
 
-   insert_line, fnam, 21, lstart+'/'+lend+'/5'
+  ;phi
+  case sc of
+  	; only get even number for the apex direction
+    'A': angle=(floor(apexsta)+1)/2*2
+    'B': angle=(floor(apexstb)+1)/2*2
+  endcase
 
-   ;phi
-   case sc of
-   	 ; only get even number for the apex direction
-     'A': angle=(floor(apexsta)+1)/2*2
-     'B': angle=(floor(apexstb)+1)/2*2
-   endcase
+  if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')
 
-   if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')
-   angleend=string(angle+10, format='(I3)')
-   phistr=[anglestart,angleend,'2']
+  angleend=string(angle+10, format='(I3)')
+  phistr=[anglestart,angleend,'2']
 
-   insert_line, fnam, 18, anglestart+'/'+angleend+'/2'
+  insert_line, fnam, 18, anglestart+'/'+angleend+'/2'
 
-   ;f - is fixed and not read from GCS ecliptic cut
-   fstr=['0.7','1','0.1']
+  ;f - is read in from input file and not used from GCS ecliptic cut
+  fstr=strsplit(str[14], '/', /extract)
 
-   insert_line, fnam, 14, fstr[0]+'/'+fstr[1]+'/'+fstr[2]
-
+  insert_line, fnam, 14, fstr[0]+'/'+fstr[1]+'/'+fstr[2]
 endelse
 
 if n_elements(fstr) eq 3 or n_elements(phistr) eq 3 or n_elements(lambdastr) eq 3 then ensemble=1
@@ -413,7 +392,6 @@ if keyword_set(save_results) then begin
   if ensemble eq 1 then save_elevohi_e, fnam, dir, '0', '0', /new
 
 endif
-
 
 if ensemble eq 1 then begin
   print, '========================'
@@ -574,8 +552,8 @@ for k=0, n_phi-1 do begin
     		if finite(tinit) ne 0 then eventTime = tinit
     	endif
 
-    	print, 'Gamma after fitting:'
-    	print, drag_parameter
+    	;print, 'Gamma after fitting:'
+    	;print, drag_parameter
 
     	;count and save number of converging and non-converging fits
 
@@ -590,7 +568,7 @@ for k=0, n_phi-1 do begin
     	endelse
 
     	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
-    	elevo, dir, pred, elevo_kin
+    	elevo, dir, pred, elevo_kin, runnumber
 
     	if keyword_set(forMovie) then begin
     		elevo_kin.all_apex_s = sc
@@ -767,7 +745,6 @@ endif
 if keyword_set(forMovie) then begin
 	combine_movie_files, forMovieDir
 endif
-
 
 if keyword_set(nightly) ne 1 then stop
 

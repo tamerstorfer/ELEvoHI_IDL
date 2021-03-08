@@ -8,6 +8,7 @@ from datetime import datetime
 import matplotlib.dates as mdates
 import os
 from astropy.time import Time
+import matplotlib.font_manager
 
 
 # ############################################################################
@@ -42,7 +43,7 @@ def main(scriptPath):
 
     scs = next(os.walk(path + eventdate[0] + '/results/'))[1]
     scs.sort()
-    
+
     for sc in scs:
         sc_folder = path + eventdate[0] + '/results/'+sc+'/'
 
@@ -420,9 +421,9 @@ def main(scriptPath):
                 if sc == 'STB':
                     arrtime_sc = elevohi_results.eelevohi.arrtime_stb[0]
                 if sc == 'SOLO':
-                    arrtime_sc = elevohi_results.eelevohi.arrtime_solo[0] 
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_solo[0]
                 if sc == 'PSP':
-                    arrtime_sc = elevohi_results.eelevohi.arrtime_psp[0] 
+                    arrtime_sc = elevohi_results.eelevohi.arrtime_psp[0]
                 NrRuns = np.size(arrtime_sc)
                 for i in range(0, NrRuns):
                     if 'NaN' in str(arrtime_sc[i]):

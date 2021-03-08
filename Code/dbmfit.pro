@@ -94,7 +94,6 @@ if n_elements(startcut) eq 0 then begin
     scut=r_apex_sun[j]
     endelse
 
-
     if count ne 0 and count1 ne 0 then begin
     if cnear lt c1near then begin
      scut=r_apex[c[n_elements(c)-1]]*au/r_sun
@@ -190,7 +189,7 @@ endif else begin
     print, 'Cut-off of DBM fit in Rsun: ', ecuts
 endelse
 
-if runnumber eq 1 then begin
+if runnumber eq 1 and keyword_set(nightly) eq 0 then begin
     a = findgen(17) * (!pi*2/16.)
     usersym, cos(A), sin(A)
 
@@ -218,20 +217,15 @@ Y = r_apex[cut:ecut]*au
 
 fitend=r_apex[ecut]
 
-
-;print, 'STOP 1'
-;stop
 ;calculate fit for a range of background solar wind speeds
 
 winds = findgen(19)*25+250
-
 
 if bgsw eq 3 then begin
 	;chose background solar wind speed from L1 (or STEREO) data
 
 	startt=where(anytim(sw.time) le anytim(time[0]))
 	endt=where(anytim(sw.time) gt anytim(time[n_elements(time)-1]))
-
 
 	bg_speed=mean(sw[startt[n_elements(startt)-1]:endt[0]].vtot, /NaN)
 	bg_speed_std=stddev(sw[startt[n_elements(startt)-1]:endt[0]].vtot, /NaN)
@@ -293,19 +287,8 @@ for i=0, n_elements(winds)-1 do begin
 	;do the fitting
 
 	;if gasi gt 0 then begin
-	  RES = 0
-	  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-8,1e-8])
-
-	  ;stop
-
-	  ;print, 'gamma sign positive!'
-	;endif
-
-	;if gasi lt 0 then begin
-	;  RES = 0
-	;  RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbmneg',FUNCTION_VALUE=values,P0=A,scale=[0,1e-9])
-	;  print, 'gamma sign negative!'
-	;endif
+	RES = 0
+	RES = AMOEBA(1.0e-05,FUNCTION_NAME='fitdbm',FUNCTION_VALUE=values,P0=A,scale=[-1e-8,1e-8])
 
 	fitres=fltarr(2)
 	fitres[0]=res[0]
@@ -351,10 +334,9 @@ for i=0, n_elements(winds)-1 do begin
     ;resi = mean(abs([y[n_elements(y)-3], y[n_elements(y)-2], y[n_elements(y)-1]]-[fit[n_elements(y)-3], fit[n_elements(y)-2], fit[n_elements(y)-1]]))
 
 	if resi gt 2*r_sun then begin
-		print, 'Mean residual greater 2R_sun'
-		resi = NaN
+	   print, 'Mean residual greater 2R_sun'
+	   resi = NaN
 	endif
-
 
 	;if i eq 0 then fitpara=fltarr(n_elements(winds),3)
 	if signum(gasi) ne signum(res[0]) then begin
@@ -375,9 +357,6 @@ for i=0, n_elements(winds)-1 do begin
 	fitspeedall[i,*]=fitspeed
 
 	fit_au=fit/au
-
-	;print, 'STOP 3'
-	;stop
 
 	if keyword_set(silent) ne 1 then begin
 
@@ -408,9 +387,6 @@ for i=0, n_elements(winds)-1 do begin
 		cleanplot, /silent
 
 	endif
-
-	;print, 'STOP 4'
-	;stop
 
 	!P.MULTI=0
 
@@ -489,39 +465,7 @@ if count gt 0 then fitpara[cu]=NaN
 index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
 dragrangepos=3d-7
-dragrangeneg=-3d-7 ;allows the drag parameter to be valid within a range of -1.5d-7 and 2d-7 1/km
-
-;if finite(res[0]) eq 0 then begin
-
-;if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-;  inxex = sort(fitpara[*,2])
-;  index = inxex[1]
-;  print, 'Minimum residual has no valid drag-parameter: '
-;  print, '...looking at next value.'
-;  if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-;    index = inxex[2]
-;    print, 'Second smallest residual has no valid drag-parameter: '
-;    print, '...looking at next value.'
-;    if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-;      index = inxex[3]
-;      print, 'Third smallest residual has no valid drag-parameter: '
-;      print, '...looking at next value.'
-;      if fitpara[index,0] lt dragrangeneg or abs(fitpara[index,0]) gt dragrangepos then begin
-;        index = inxex[4]
-;        print, 'Fourth smallest residual has no valid drag-parameter: '
-;        print, 'No DBM fit possible!'
-;         tinit=NaN
-;         rinit=NaN
-;         vinit=NaN
-;         swspeed=NaN
-;         drag_parameter=NaN
-;        return
-;      endif
-;    endif
-;  endif
-;endif
-
-;endif
+dragrangeneg=-3d-7 ;allows the drag parameter to be valid within a range of -3d-7 and 3d-7 1/km
 
 bestIndex = -1
 smallestResidual = 100.
@@ -572,62 +516,56 @@ if counti ne 0 then begin
 
 	dbmfile=dir+'dbmfit_results.sav'
 	save, tinit, rinit, vinit, drag_parameter, solarwind_speed, mean_residual, cut, ecut, filename=dbmfile
-	print, 'Best result saved under ', dir, 'dbmfit_results.sav'
+	;print, 'Best result saved under ', dir, 'dbmfit_results.sav'
 
 	;plot result
 	if finite(fitpara[index, 0]) then begin
 
-	if keyword_set(nightly) ne 1 then begin
-		loadct, 0
+    	if keyword_set(nightly) ne 1 then begin
+    		loadct, 0
 
-				drag=0
-		if gasi eq -1 then begin
-			drag=strmid(string(fitpara[index,0]),1,4)
-		endif else begin
-			drag=strmid(string(fitpara[index,0]),2,3)
-		endelse
+    		drag=0
+    		if gasi eq -1 then begin
+    			drag=strmid(string(fitpara[index,0]),1,4)
+    		endif else begin
+    			drag=strmid(string(fitpara[index,0]),2,3)
+    		endelse
 
-		dragexp=strmid(string(fitpara[index,0]),10,3)
-		bgspeed=strmid(string(fitpara[index,1]),6,3)
-		meanresi=strmid(string(fitpara[index,2]),5,4)
+    		dragexp=strmid(string(fitpara[index,0]),10,3)
+    		bgspeed=strmid(string(fitpara[index,1]),6,3)
+    		meanresi=strmid(string(fitpara[index,2]),5,4)
 
-		;white_bg=1
-		;if (white_bg eq 1) and (!p.background eq 0) then begin
-		if !p.background eq 0 then begin
-			background_save = !p.background
-			color_save = !p.color
-			!p.color = background_save
-			!p.background = color_save
-		endif else begin
-			 !p.background = 0
-			 !p.color = long(16777215)
-		endelse
+    		;white_bg=1
+    		;if (white_bg eq 1) and (!p.background eq 0) then begin
+    		if !p.background eq 0 then begin
+    			background_save = !p.background
+    			color_save = !p.color
+    			!p.color = background_save
+    			!p.background = color_save
+    		endif else begin
+    			 !p.background = 0
+    			 !p.color = long(16777215)
+    		endelse
 
-		!P.MULTI=[0,1,2]
+    		!P.MULTI=[0,1,2]
 
-		utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]], ytit='Heliocentric Distance [R!D!9n!N!X]', charsize=1.4
-		uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
-		outplot, time[cut:*], fitauall[index,*]*au/r_sun
-		xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
-		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
-		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
+    		utplot, time, r_apex_sun, psym=1, timerange=[time[0],time[n_elements(time)-1]], ytit='Heliocentric Distance [R!D!9n!N!X]', charsize=1.4
+    		uterrplot, time, r_apex_sun+r_error[0,*]*au/r_sun, r_apex_sun-r_error[1,*]*au/r_sun
+    		outplot, time[cut:*], fitauall[index,*]*au/r_sun
+    		xyouts, 0.68, 0.745, '!4c!X: '+drag+'x10!U'+dragexp+'!N'+' km!U-1!N', /norm, charsize=1.6
+    		xyouts, 0.68, 0.7, 'sw speed: '+bgspeed+' km s!E-1!N', /norm, charsize=1.6
+    		xyouts, 0.68, 0.655, 'mean residual: '+meanresi+' R!D!9n!N!X', /norm, charsize=1.6
 
-		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]], ytit='CME Apex Speed [km s!E-1!N]', charsize=1.4
-		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
-		outplot, time[cut:*], fitspeedall[index,*]
+    		utplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2], psym=1, yr=[0,yrmax], timerange=[time[0],time[n_elements(time)-1]], ytit='CME Apex Speed [km s!E-1!N]', charsize=1.4
+    		uterrplot, time[1:n_elements(time)-2], s[1:n_elements(time)-2]+speed_errhi[1:n_elements(time)-2], s[1:n_elements(time)-2]-speed_errlo[1:n_elements(time)-2]
+    		outplot, time[cut:*], fitspeedall[index,*]
 
-		!P.MULTI=0
-	endif
-
+    		!P.MULTI=0
+    	endif
 	endif
 endif
 
 startcut=cut
 endcut=ecut
-
-print, '======='
-print, 'fitpara'
-print, fitpara
-print, '======='
 
 end
