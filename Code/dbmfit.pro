@@ -24,7 +24,7 @@
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 
-PRO dbmfit, time, r_apex, r_error, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
+PRO dbmfit, time, r_apex, r_error, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw, spEndCut=spEndCut
 
 au=149597870.
 r_sun=695700.
@@ -564,6 +564,8 @@ if counti ne 0 then begin
     	endif
 	endif
 endif
+
+spEndCut = fitspeedall[index,n_elements(y)-1]
 
 startcut=cut
 endcut=ecut

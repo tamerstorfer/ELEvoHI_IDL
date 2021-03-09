@@ -61,7 +61,6 @@ for w=0, j-1 do begin
       ;make directory for analyzed event
       if filetest eq 0 then file_mkdir, dir+'results/'+arr[0,w]+'/'
 
-
       case arr[0,w] of
         'MES': begin
                   mnan = where(finite(eELEvoHI.arrtime_mes), mcount)
@@ -73,6 +72,7 @@ for w=0, j-1 do begin
         'B': tt = (anytim(eELEvoHI.arrtime_stb) - anytim(eELEvoHI.tinit))/3600.
         'SOLO': tt = (anytim(eELEvoHI.arrtime_solo) - anytim(eELEvoHI.tinit))/3600.
         'PSP': tt = (anytim(eELEvoHI.arrtime_psp) - anytim(eELEvoHI.tinit))/3600.
+        'BEPI': tt = (anytim(eELEvoHI.arrtime_bepi) - anytim(eELEvoHI.tinit))/3600.
         else: print, 'In situ spacecraft name not valid.'
       endcase
 
@@ -117,6 +117,12 @@ for w=0, j-1 do begin
                  psp_nan = where(finite(eelevohi.arrtime_psp), countpsp, /null)
                  if countpsp ne 0 then begin
                      tt = (anytim(eELEvoHI.arrtime_psp[psp_nan]) - anytim(eELEvoHI.tinit[psp_nan]))/3600.
+                 endif
+             end
+    	'BEPI': begin
+                 bepi_nan = where(finite(eelevohi.arrtime_bepi), countbepi, /null)
+                 if countbepi ne 0 then begin
+                     tt = (anytim(eELEvoHI.arrtime_bepi[bepi_nan]) - anytim(eELEvoHI.tinit[bepi_nan]))/3600.
                  endif
              end
         else: print, 'In situ spacecraft name not valid.'
@@ -339,6 +345,22 @@ for w=0, j-1 do begin
                      print, '-------------------------'
                  endif else begin
                      print, 'No arrival predicted at Parker Solar Probe!'
+                     print, '-------------------------'
+                 endelse
+             end
+         'BEPI': begin
+                 bepi_nan = where(finite(eelevohi.arrtime_bepi), countbepi, /null)
+                 if countbepi ne 0 then begin
+                     arrtime_mean = anytim(mean(anytim(eELEvoHI.arrtime_bepi[bepi_nan]), /nan), /ccsds)
+                     arrstdd = stddev(anytim(eELEvoHI.arrtime_bepi[bepi_nan]))/3600.
+                     arrtime_median = anytim(median(anytim(eELEvoHI.arrtime_bepi[bepi_nan])), /ccsds)
+                     arrivaltimes = eELEvoHI.arrtime_bepi
+                     insitu_sc='BEPI'
+                     save, arrivaltimes, insitu_sc, filename=dir+'results/'+arr[0,w]+'/arrivaltimes.sav'
+                     print, 'Arrival time at BEPI'
+                     print, '-------------------------'
+                 endif else begin
+                     print, 'No arrival predicted at BEPI!'
                      print, '-------------------------'
                  endelse
              end

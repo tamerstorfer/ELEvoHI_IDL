@@ -79,6 +79,10 @@ pro combine_movie_files, dir
 	elevo_kin.colorflag = colorflag
 
 	save, elevo_kin, startcut, endcut, filename=dir+'formovie_all_flag.sav'
+	
+	for i = 0, n_elements(files)-1 do begin
+		file_delete, files[i]
+	endfor
 	print, 'formovie_all saved'
 
 

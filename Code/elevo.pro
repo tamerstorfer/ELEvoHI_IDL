@@ -70,10 +70,17 @@ vexp=get_stereo_lonlat(suntime, 'Venus', system='HEE')
 
 soloAvailable = 0
 pspAvailable = 0
+bepiAvailable = 0
 if anytim(suntime) gt anytim('01-Mar-2020 00:00:00') then soloAvailable = 1
 if anytim(suntime) gt anytim('01-Jan-2019 00:00:00') then pspAvailable = 1
+if anytim(suntime) gt anytim('21-Oct_2018 00:00:00') and anytim(suntime) lt anytim('01-Nov-2025 00:00:00') then bepiAvailable = 1
 if soloAvailable eq 1 then solop=get_stereo_lonlat(suntime, 'solo', system='HEE')
 if pspAvailable eq 1 then pspp=get_stereo_lonlat(suntime, 'psp', system='HEE')
+if bepiAvailable eq 1 then begin
+	krnl = concat_dir( getenv('STEREO_SPICE_OTHER'), 'bc_mpo_fcp_00094_20181020_20251101_v01.bsp')
+	cspice_furnsh, krnl
+	bepip = get_stereo_lonlat(suntime, '-121', system='HEE') 
+endif
 
 if anytim(suntime) gt anytim('2004-08-03T00:00:00') and anytim(suntime) lt anytim('2012-04-01T00:00:00') then begin
 	;messtime='2010-Nov-05T11:46:00'
@@ -138,6 +145,11 @@ endif
 if pspAvailable eq 1 then begin 
 	if direction lt pspp[1]/!dtor then delta_PSP=abs(direction)+pspp[1]/!dtor
 	if direction gt pspp[1]/!dtor then delta_PSP=direction-pspp[1]/!dtor
+endif
+
+if bepiAvailable eq 1 then begin
+	if direction lt bepip[1]/!dtor then delta_BEPI=abs(direction)+bepip[1]/!dtor
+	if direction gt bepip[1]/!dtor then delta_BEPI=direction-bepip[1]/!dtor
 endif
 
 ;delta_B=direction-(360+stbp[1]/!dtor) ;...STEREO-B
@@ -265,6 +277,7 @@ endif
   
   if soloAvailable eq 1 then pos_solo=get_stereo_lonlat(t_plot[0], 'solo', system='HEE')
   if pspAvailable eq 1 then pos_psp=get_stereo_lonlat(t_plot[0], 'psp', system='HEE')
+  if bepiAvailable eq 1 then pos_bepi=get_stereo_lonlat(t_plot[0], '-121', system='HEE')
 
 
   pos_mes=fltarr(3)
@@ -338,6 +351,12 @@ endif
 if pspAvailable eq 1 then begin
   psp_angle=pos_psp[1]/!dtor
   psp_dist=pos_psp[0]/AU
+endif
+
+;Bepi distance in AU#
+if bepiAvailable eq 1 then begin
+  bepi_angle=pos_bepi[1]/!dtor
+  bepi_dist=pos_bepi[0]/AU
 endif
 
 ;---------------------------------
@@ -491,6 +510,15 @@ for i=0,s[1]-1  do begin
 
     if finite(dvalue) then begin
       deltaspeed_PSP=dvalue/R_plot[i]*V_plot[i]
+    endif
+  endif
+  
+  if bepiAvailable eq 1 then begin
+    ;get distance and speed of point along delta of BEPI:
+    dvalue=elevo_analytic(R_plot[i], aspectratio, halfwidth, delta_BEPI)
+
+    if finite(dvalue) then begin
+      deltaspeed_BEPI=dvalue/R_plot[i]*V_plot[i]
     endif
   endif
 
@@ -704,6 +732,33 @@ if pspAvailable eq 1 then begin
 	  arrival_speed_PSP=!Values.F_nan
 	endelse
 endif
+
+;same for Parker Solar Probe
+if bepiAvailable eq 1 then begin
+	d_BEPI=elevo_analytic(rdrag, aspectratio, halfwidth, delta_BEPI)
+
+	v_BEPI=deriv(tars, d_BEPI*au)
+
+	;check where the heliocentric distance of VEX is less than the ellipse distance
+	index_hit_BEPI=where(bepip[0]/AU lt d_BEPI)
+	;take first value of these indices = arrival time at VEX within drag time resolution (10 minutes)
+	arrival_BEPI=anytim(tdrag[index_hit_BEPI[0]], /ccsds)
+	arrival_speed_BEPI=v_BEPI[index_hit_BEPI[0]]
+
+	if finite(d_BEPI[0]) then begin
+
+	  print, '---------------------------------------------'
+	  print, 'Arrival at BEPI [UT]: ', anytim(arrival_BEPI, /vms), format='(A, 4x, A17)'
+	  print, 'Arrival speed at BEPI [km/s]: ', arrival_speed_BEPI, format='(A, 1x, I4)'
+	endif else begin
+	  print, '---------------------------------------------'
+	  print, '---------------------------------------------'
+	  print, 'BEPI: No hit!'
+	  print, '---------------------------------------------'
+	  arrival_BEPI=!Values.F_nan
+	  arrival_speed_BEPI=!Values.F_nan
+	endelse
+endif
 ;times
 
 if runnumber eq 1 then begin
@@ -766,19 +821,21 @@ if runnumber eq 1 then begin
 endif
 
 pred = {Wind_time:string(0),  $
-	     Wind_speed:float(0.), $
-	     STA_time:string(0),	  $
+	    Wind_speed:float(0.), $
+	    STA_time:string(0),	  $
         STA_speed:float(0.),  $
         STB_time:string(0),   $
         STB_speed:float(0.),  $
-        MES_time:string(0),   $
-		  MES_speed:float(0.),   $
-		  VEX_time:string(0),  $
-		  VEX_speed:float(0.), $
-      SOLO_time:string(0),  $
-      SOLO_speed:float(0.),$
-      PSP_time:string(0),  $
-      PSP_speed:float(0.)}
+		MES_time:string(0),   $
+		MES_speed:float(0.),   $
+		VEX_time:string(0),  $
+		VEX_speed:float(0.), $
+		SOLO_time:string(0),  $
+		SOLO_speed:float(0.),$
+		PSP_time:string(0),  $
+		PSP_speed:float(0.), $
+		BEPI_time:string(0),  $
+		BEPI_speed:float(0.)}
 
 
 pred.Wind_time = arrival_W
@@ -792,6 +849,13 @@ pred.MES_speed= arrival_speed_MES
 pred.VEX_time = arrival_VEX
 pred.VEX_speed= arrival_speed_VEX
 
+pred.SOLO_time=!Values.F_nan
+pred.SOLO_speed=!Values.F_nan
+pred.PSP_time=!Values.F_nan
+pred.PSP_speed=!Values.F_nan
+pred.BEPI_time=!Values.F_nan
+pred.BEPI_speed=!Values.F_nan
+
 if soloAvailable eq 1 then begin 
   pred.SOLO_time = arrival_SOLO
   pred.SOLO_speed= arrival_speed_SOLO
@@ -800,8 +864,11 @@ if pspAvailable eq 1 then begin
   pred.PSP_time = arrival_PSP
   pred.PSP_speed= arrival_speed_PSP
 endif
+if bepiAvailable eq 1 then begin
+  pred.BEPI_time = arrival_BEPI
+  pred.BEPI_speed= arrival_speed_BEPI
+endif
 
-;print, arrival_SOLO
 
 elevo_kin = {all_apex_r:dblarr(n_elements(rdrag)),    $
       all_apex_t:strarr(n_elements(rdrag)),   $

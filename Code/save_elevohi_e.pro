@@ -58,7 +58,7 @@ if str[27] ne '' and str[29] ne '' and str[31] ne '' then arr=[[str[27], str[28]
 
 if keyword_set(new) then begin
 
-d=strarr(45)
+d=strarr(47)
 
 d[0]='####################################################'
 d[1]='#      Results of ELEvoHI ensemble prediction      #'
@@ -88,23 +88,25 @@ d[24]='# Solar Orbiter'
 d[25]='#'
 d[26]='# Parker Solar Probe'
 d[27]='#'
-d[28]='#'
-d[29]='# range of parameters of CME front shape'
-d[30]='# phi'
-d[31]='# '+strtrim(string(phi_in),2)
-d[32]='# f'
-d[33]='# '+strtrim(string(f_in),2)
-d[34]='# lamda'
-d[35]='# '+strtrim(string(lambda_in),2)
-d[36]='#'
-d[37]='# number of runs (total)'
+d[28]='# BEPI'
+d[29]='#'
+d[30]='#'
+d[31]='# range of parameters of CME front shape'
+d[32]='# phi'
+d[33]='# '+strtrim(string(phi_in),2)
+d[34]='# f'
+d[35]='# '+strtrim(string(f_in),2)
+d[36]='# lamda'
+d[37]='# '+strtrim(string(lambda_in),2)
 d[38]='#'
-d[39]='# number of runs without result'
-d[40]='# (no DBM fit possible)'
-d[41]='#'
-d[42]='####################################################'
-d[43]='phi[deg] f lambda[deg] elongation_min[deg] elongation_max[deg] startcut endcut bg_sw_speed[km/s] drag-parameter[e-7/km] t_init[UT] r_init[solar radii] v_init[km/s] mean_residual[r_sun] arr_time(MES) arr_speed(MES) arr_time(VEX) arr_speed(VEX)'
-d[44]='arr_time(Earth) arr_speed(Earth) arr_time(STEREO-A) arr_speed(STEREO-A) arr_time(STEREO-B) arr_speed(STEREO-B) arr_time(SolO) arr_speed(SolO) arr_time(PSP) arr_speed(PSP) dt(MES) dt(VEX) dt(Earth) dt(STEREO-A) dt(STEREO-B) dt(SolO) dt(PSP)'
+d[39]='# number of runs (total)'
+d[40]='#'
+d[41]='# number of runs without result'
+d[42]='# (no DBM fit possible)'
+d[43]='#'
+d[44]='####################################################'
+d[45]='phi[deg] f lambda[deg] elongation_min[deg] elongation_max[deg] startcut endcut bg_sw_speed[km/s] drag-parameter[e-7/km] t_init[UT] r_init[solar radii] v_init[km/s] mean_residual[r_sun] arr_time(MES) arr_speed(MES) arr_time(VEX) arr_speed(VEX)'
+d[46]='arr_time(Earth) arr_speed(Earth) arr_time(STEREO-A) arr_speed(STEREO-A) arr_time(STEREO-B) arr_speed(STEREO-B) arr_time(SolO) arr_speed(SolO) arr_time(PSP) arr_speed(PSP) arr_time(BEPI) arr_speed(BEPI) dt(MES) dt(VEX) dt(Earth) dt(STEREO-A) dt(STEREO-B) dt(SolO) dt(PSP) dt(BEPI)'
 
 
 
@@ -122,6 +124,7 @@ if n_elements(arr) ne 0 then begin
         'B': d[23]='# '+arr[1,i]
         'SOLO': d[25]='# '+arr[1,i]
         'PSP': d[27]='# '+arr[1,i]
+        'BEPI': d[29]='# '+arr[1,i]
         else: print, 'In situ spacecraft name not valid.'
       endcase
 
@@ -180,7 +183,7 @@ restore, dir+'elcon_results.sav'
 
 restore, dir+'dbmfit_results.sav'
 
-data=strarr(34)
+data=strarr(37)
 data[0]=string(phi, format='(I3)')
 data[1]=string(f, format='(F3.1)')
 data[2]=string(lambda, format='(I3)')
@@ -201,6 +204,8 @@ data[19]=strtrim(strmid(pred.sta_time,0,16), 2)
 data[21]=strtrim(strmid(pred.stb_time,0,16), 2)
 data[23]=strtrim(strmid(pred.solo_time,0,16), 2)
 data[25]=strtrim(strmid(pred.psp_time,0,16), 2)
+data[27]=strtrim(strmid(pred.bepi_time,0,16), 2)
+
 
 if finite(pred.mes_speed) then data[14]=trim(round(pred.mes_speed)) else data[14]=strtrim(string(pred.mes_speed),2)
 if finite(pred.vex_speed) then data[16]=trim(round(pred.vex_speed)) else data[16]=strtrim(string(pred.vex_speed),2)
@@ -209,15 +214,16 @@ if finite(pred.sta_speed) then data[20]=trim(round(pred.sta_speed)) else data[20
 if finite(pred.stb_speed) then data[22]=trim(round(pred.stb_speed)) else data[22]=strtrim(string(pred.stb_speed),2)
 if finite(pred.solo_speed) then data[24]=trim(round(pred.solo_speed)) else data[24]=strtrim(string(pred.solo_speed),2)
 if finite(pred.psp_speed) then data[26]=trim(round(pred.psp_speed)) else data[26]=strtrim(string(pred.psp_speed),2)
+if finite(pred.bepi_speed) then data[28]=trim(round(pred.bepi_speed)) else data[28]=strtrim(string(pred.bepi_speed),2)
 
-for l=0, 6 do begin
+for l=0, n_elements(dt_all)-1 do begin
 
-  if finite(dt_all[l]) then data[l+27]=trim(round(dt_all[l]*100)/100.) else data[l+27]=strtrim(string(dt_all[l]),2)
+  if finite(dt_all[l]) then data[l+29]=trim(round(dt_all[l]*100)/100.) else data[l+29]=strtrim(string(dt_all[l]),2)
 
 endfor
 
 
-form='(I3, " ", F3.1, " ", I3, " ", F5.2, " ", F6.2, " ", I2, " ", I3, " ", I4, " ", F5.2, " ", A17, " ", F6.2, " ", I4, " ", F4.1, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2)'
+form='(I3, " ", F3.1, " ", I3, " ", F5.2, " ", F6.2, " ", I2, " ", I3, " ", I4, " ", F5.2, " ", A17, " ", F6.2, " ", I4, " ", F4.1, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", A17, " ", A4, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2, " ", F6.2)'
 
 
 OPENW, lun, dir+'eELEvoHI_results.txt', /GET_LUN, /APPEND

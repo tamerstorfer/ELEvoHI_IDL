@@ -28,11 +28,12 @@
 ;						    The prediction results are additionally displayed in the terminal; if set, also the validation is displayed.
 ;
 ; Keywords:
-;							save_results...set TRUE to produce an IDL save file containing the model parameters and the prediction
-;							statistics.....set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
-;							silent.........set TRUE to avoid plotting of every iteration of DBMfit
-;							nightly........set TRUE to avoid plotting of the DBMfit
-;							forMovie.......set TRUE to save the CME parameters (.sav-files can then be used to create a movie)
+;							save_results......set TRUE to produce an IDL save file containing the model parameters and the prediction
+;							statistics........set TRUE to prepare results for usage of Python visualization (only possible for ensemble run)
+;							silent............set TRUE to avoid plotting of every iteration of DBMfit
+;							nightly...........set TRUE to avoid plotting of the DBMfit
+;							forMovie..........set TRUE to save the CME parameters (.sav-files can then be used to create a movie)
+;							deformableFront...set TRUE to additionally create .sav-files with the information of the deformed CME front
 ;             realtime.......set TRUO to get the correct angle for STEREO-A
 ;             bgsw...........set to 1 for range of background solar wind (250 - 700 km/s (25 km/s steps))
 ;                            set to 2 for to use background solar wind from model
@@ -62,7 +63,8 @@
 ;		  Please add in the acknowledgements section of your article, where the ELEvoHI package can be obtained (figshare doi, github-link).
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
-PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly, forMovie=forMovie, realtime=realtime, bgsw=bgsw
+PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly, forMovie=forMovie, realtime=realtime, bgsw=bgsw, deformableFront=deformableFront
+
 
 if ~keyword_set(bgsw) then bgsw = 1
 read_config_file
@@ -71,8 +73,8 @@ path=getenv('ELEvoHI_DIR')
 data=getenv('DATA_DIR')
 gcs_path=getenv('EAGEL_DIR')
 
-au=149597870.
-r_sun=695700.
+au=double(149597870.)
+r_sun=double(695700.)
 
 r_start_min = 200
 r_end_max = 0
@@ -376,7 +378,7 @@ endif else begin
   insert_line, fnam, 14, fstr[0]+'/'+fstr[1]+'/'+fstr[2]
 endelse
 
-if n_elements(fstr) eq 3 or n_elements(phistr) eq 3 or n_elements(lambdastr) eq 3 then ensemble=1
+if n_elements(fstr) eq 3 or n_elements(phistr) eq 3 or n_elements(lambdastr) ge 3 then ensemble=1
 
 if keyword_set(save_results) then begin
 
@@ -442,15 +444,36 @@ if n_elements(lambdastr) eq 3 then begin
   deltalambda=float(lambdastr[2])
   n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
   lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
+endif 
 
-endif else begin
-  lambdastart=float(lambdastr[0])
-  lambdaend=lambdastart
-  deltalambda=0
-  n_lambda=1
-  lambda_arr=1
+if n_elements(lambdastr) eq 1 then begin
+   lambdastart=float(lambdastr[0])
+   lambdaend=lambdastart
+   deltalambda=0
+   n_lambda=1
+   lambda_arr=1
+endif
 
-endelse
+kappa = -1
+if n_elements(lambdastr) eq 4 then begin
+	lambdastart=float(lambdastr[0])
+	lambdaend=float(lambdastr[1])
+	deltalambda=float(lambdastr[2])
+	kappa=float(lambdastr[3])
+
+	n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
+	lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
+endif
+
+if n_elements(lambdastr) eq 2 then begin
+	lambdastart=float(lambdastr[0])
+	lambdaend=lambdastart
+	deltalambda=0
+	n_lambda=1
+	lambda_arr=1
+	kappa=float(lambdastr[1])
+endif
+
 
 ;iterating runs starts here
 
@@ -461,6 +484,18 @@ if ensemble eq 1 then begin
     lambdaCenter = (lambdastart+lambdaend)/2
     ; fCenter fixed set
     fCenter = 0.7
+endif
+
+
+if bgsw eq 2 then begin
+	event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+	bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
+	sc = strmid(event, 9, 1)
+	load_bgsw_data, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
+	bgsw_data = bgswData
+	bgswStartTime = bgswTime
+	bgswTimeNum = anytim(bgswTime)
+	save, bgsw_data, bgswStartTime, filename = resdir + 'bgsw_Data.sav'
 endif
 
 for k=0, n_phi-1 do begin
@@ -537,8 +572,46 @@ for k=0, n_phi-1 do begin
     	save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
 
     	;next step is fitting the time-distance profile using the DBM
+    	ec = endcut
 
-    	dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw
+;		ec = (fix(startcut) + fix(endcut))/2
+	
+		print, 'SC: ', startcut
+		print, 'EC: ', endCut
+		print, 'EC: ', ec
+
+    	dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=ec, silent=silent, nightly=nightly, bgsw, spEndCut=spEndCut
+
+
+		if keyword_set(deformableFront) then begin
+			if bgsw ne 2 then begin
+				print, 'Ambient solar wind must be used from model'
+				print, 'set bgsw=2'
+				stop
+			endif
+			if finite(tinit) ne 0 and tinit ne 0 then begin
+				if kappa eq -1 then begin
+					print, 'Latitudinal extent of the CME not defined!!!'
+					print, 'Check elevohi_input.txt!'
+					stop
+				endif
+				print, 'Calculate deformable front: '
+		
+				print, 'kappa: ', kappa
+				
+				deformable_front, lambda, f, phi, kappa, tinit, fitend, swspeed, drag_parameter, anytim(time[eC]), spEndcut, sc, bgsw_data, bgswTimeNum, runnumber, resdir, realtime=realtime
+
+;				dragEstimate = get_drag_parameter_estimate(drag_parameter, kappa, f, lambda, fitend, swspeed)
+;				absDP = abs(drag_parameter)
+;				if absDP le dragEstimate[0] or absDP ge dragEstimate[1] then begin
+;					print, 'run number: ', runnumber
+;					print, 'Drag Parameter is not in the correct range!'
+;					print, 'Drag parameter: ', drag_parameter
+;					print, 'Range: ', dragEstimate
+;					save, runnumber, drag_paramter, dragEstimate, f, lambda, phi, swspeed, kappa, fitend, filename = resdir + 'wrongDragParamter_'+string(runnumber, format='(I003)')+'.sav'
+				endif
+			endif
+		endif
 
     	if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
     		startmin = r_ell[startcut]*au/r_sun
@@ -632,24 +705,33 @@ for k=0, n_phi-1 do begin
     						print, '******************************'
     				   endif else print, 'No arrival predicted at STEREO-B!'
     			end
-          'SOLO': begin
-               da_solo=!VALUES.F_NAN
-               if finite(pred.solo_time) then begin
-                da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
-                print, '***********Solar Orbiter***********'
-                print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-                print, '******************************'
-               endif else print, 'No arrival predicted at Solar Orbiter!'
-          end
-          'PSP': begin
-               da_psp=!VALUES.F_NAN
-               if finite(pred.psp_time) then begin
-                da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
-                print, '***********Parker Solar Probe***********'
-                print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-                print, '******************************'
-               endif else print, 'No arrival predicted at Parker Solar Probe!'
-          end
+				'SOLO': begin
+					da_solo=!VALUES.F_NAN
+					if finite(pred.solo_time) then begin
+						da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
+						print, '***********Solar Orbiter***********'
+						print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+						print, '******************************'
+					endif else print, 'No arrival predicted at Solar Orbiter!'
+				end
+				'PSP': begin
+					da_psp=!VALUES.F_NAN
+					if finite(pred.psp_time) then begin
+						da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
+						print, '***********Parker Solar Probe***********'
+						print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+						print, '******************************'
+					endif else print, 'No arrival predicted at Parker Solar Probe!'
+				end
+				'BEPI': begin
+					da_bepi=!VALUES.F_NAN
+					if finite(pred.bepi_time) then begin
+						da_bepi = (anytim(pred.bepi_time) - anytim(arr[1,i]))/3600.
+						print, '***********BEPI***********'
+						print, '*', round(da_bepi*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+						print, '******************************'
+					endif else print, 'No arrival predicted at BEPI!'
+				end
     			else: begin
     					  print, 'Check in situ s/c in input file!'
     			end
@@ -662,10 +744,12 @@ for k=0, n_phi-1 do begin
     	if not isa(da_earth) then da_earth=!VALUES.F_NAN
     	if not isa(da_sta) then da_sta=!VALUES.F_NAN
     	if not isa(da_stb) then da_stb=!VALUES.F_NAN
-      if not isa(da_solo) then da_solo=!VALUES.F_NAN
-      if not isa(da_psp) then da_psp=!VALUES.F_NAN
+		if not isa(da_solo) then da_solo=!VALUES.F_NAN
+		if not isa(da_psp) then da_psp=!VALUES.F_NAN
+		if not isa(da_bepi) then da_bepi=!VALUES.F_NAN
 
-    	dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp]
+    	dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp, da_bepi]
+
 
     	if ensemble eq 1 and keyword_set(save_results) then begin
     	  save_elevohi_e, fnam, dir, pred, dt_all
@@ -713,18 +797,15 @@ print, nofit
 ;insert_line, dir, fitworks, nofit
 if keyword_set(statistics) and ensemble eq 1 then begin
 	file=dir+'eELEvoHI_results.txt'
-	linenumber1=38
+	linenumber1=40
 	data_insert1='# '+trim(fitworks+nofit)
-	linenumber2=41
+	linenumber2=43
 	data_insert2='# '+trim(nofit)
 	insert_line, file, linenumber1, data_insert1
 	insert_line, file, linenumber2, data_insert2
 	save, nofit_para, filename=dir+'invalidFits.sav'
 endif
 
-duration_end=systime(/seconds)
-
-print, nofit+fitworks, ' runs needed ', (duration_end-duration_start)/60., ' minutes.', format='(I4, A13, F5.1, A9)'
 
 if ensemble ne 1 then print, 'No estimation of uncertainty in single run mode!'
 
@@ -745,6 +826,13 @@ endif
 if keyword_set(forMovie) then begin
 	combine_movie_files, forMovieDir
 endif
+
+if keyword_set(deformableFront) then begin
+	combine_front_files, resdir
+endif
+
+duration_end=systime(/seconds)
+print, nofit+fitworks, ' runs needed ', (duration_end-duration_start)/60., ' minutes.', format='(I4, A13, F5.1, A9)'
 
 if keyword_set(nightly) ne 1 then stop
 
