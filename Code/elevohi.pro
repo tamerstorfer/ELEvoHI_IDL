@@ -91,13 +91,13 @@ fnam=path+'Code/elevohi_input.txt'
 
 str = STRARR(200)
 OPENR, 10, fnam
-   dummy = ''
-   i = 0L
-   WHILE NOT(EOF(10)) DO BEGIN
+    dummy = ''
+    i = 0L
+    WHILE NOT(EOF(10)) DO BEGIN
       READF, 10, dummy
       str[i] = dummy
       i = i + 1
-   ENDWHILE
+    ENDWHILE
 CLOSE, 10
 
 sc=str[4]
@@ -124,8 +124,8 @@ resdir=dir+'results/'
 if FILE_TEST(resdir, /dir) ne 1 then file_mkdir, resdir
 
 if keyword_set(forMovie) then begin
-	forMovieDir = dir+'ForMovie/'
-	if FILE_TEST(forMovieDir, /dir) ne 1 then file_mkdir, forMovieDir
+    forMovieDir = dir+'ForMovie/'
+    if FILE_TEST(forMovieDir, /dir) ne 1 then file_mkdir, forMovieDir
 endif
 
 gcsdone=0
@@ -135,138 +135,138 @@ datetime=eventdate+'T00:00:00'
 nfiles=0
 
 if GCS eq 1 then begin
-  ;check if directory already exists
-  gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdateSC+'/'
-  filetest = FILE_TEST(gcsresdir, /dir)
-  GCSFiles=['']
-  if filetest eq 1 then begin
-    GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
-  endif else begin
-    spawn, 'mkdir '+gcsresdir
-    gsdone=1
-    print, 'Initializing GCS fitting tool...'
-    EAGEL, eventdateSC, datetime=datetime
-	  parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-	  if n_elements(parafile) gt 1 then begin
-			for p=0, n_elements(parafile)-1 do begin
-				print, p+1, ': ', parafile[p]
-			endfor
-
-			fnum=''
-			read, fnum
-			parafile = parafile[fnum-1]
-	   endif
-  endelse
-
-  if filetest eq 1 and nfiles eq 0 then begin
-    gsdone=1
-    print, 'Initializing GCS fitting tool...'
-    EAGEL, eventdatesc, datetime=datetime
-    parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-	  if n_elements(parafile) gt 1 then begin
-			for p=0, n_elements(parafile)-1 do begin
-				print, p+1, ': ', parafile[p]
-			endfor
-
-			fnum=''
-			read, fnum
-			parafile = parafile[fnum-1]
-	   endif
-  endif
-
-  if GCSFiles[0] ne '' then begin
-     print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
-     for p=0, nfiles-1 do begin
-         print, p+1, ': ', GCSFiles[p]
-     endfor
-
-     fnum=''
-     read, fnum
-
-     if fnum eq 'n' then begin
-        gcsdone=1
-        print, 'Initializing GCS fitting tool...'
-        EAGEL, eventdatesc, datetime=datetime
-        parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-        stop
-		if n_elements(parafile) gt 1 then begin
-			for p=0, n_elements(parafile)-1 do begin
-				print, p+1, ': ', parafile[p]
-			endfor
-
-			fnum=''
-			read, fnum
-			parafile = parafile[fnum-1]
-		endif
-     endif else begin
-        parafile=GCSFiles[fnum-1]
-        gcsdone=1
-     endelse
-  endif
-endif
-
-if GCS eq 0 then begin
-    if str[14] eq '' or str[18] eq '' or str[21] eq '' then begin
-    print, 'CME front shape parameters not properly set.'
-
-    ;check if GCSCut-directory already exists
-    gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdatesc+'/'
+    ;check if directory already exists
+    gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdateSC+'/'
     filetest = FILE_TEST(gcsresdir, /dir)
     GCSFiles=['']
     if filetest eq 1 then begin
         GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
     endif else begin
         spawn, 'mkdir '+gcsresdir
+        gsdone=1
+        print, 'Initializing GCS fitting tool...'
+        EAGEL, eventdateSC, datetime=datetime
+        parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+    	  if n_elements(parafile) gt 1 then begin
+    		    for p=0, n_elements(parafile)-1 do begin
+    				    print, p+1, ': ', parafile[p]
+    		    endfor
+
+            fnum=''
+            read, fnum
+            parafile = parafile[fnum-1]
+        endif
     endelse
+
+    if filetest eq 1 and nfiles eq 0 then begin
+        gsdone=1
+        print, 'Initializing GCS fitting tool...'
+        EAGEL, eventdatesc, datetime=datetime
+        parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+    	  if n_elements(parafile) gt 1 then begin
+      			for p=0, n_elements(parafile)-1 do begin
+      				  print, p+1, ': ', parafile[p]
+      			endfor
+
+      			fnum=''
+      			read, fnum
+      			parafile = parafile[fnum-1]
+        endif
+    endif
 
     if GCSFiles[0] ne '' then begin
-    print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
-    for p=0, nfiles-1 do begin
-  	 print, p+1, ': ', GCSFiles[p]
-    endfor
+        print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
+        for p=0, nfiles-1 do begin
+            print, p+1, ': ', GCSFiles[p]
+        endfor
 
-    fnum=''
-    read, fnum
+        fnum=''
+        read, fnum
 
-    if fnum eq 'n' then begin
-        gcsdone=1
-    	print, 'Initializing GCS fitting tool...'
-    	EAGEL, eventdatesc, datetime=datetime
-    	parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-    		if n_elements(parafile) gt 1 then begin
-    		for p=0, n_elements(parafile)-1 do begin
-    			print, p+1, ': ', parafile[p]
-    		endfor
+        if fnum eq 'n' then begin
+            gcsdone=1
+            print, 'Initializing GCS fitting tool...'
+            EAGEL, eventdatesc, datetime=datetime
+            parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+            stop
+        		if n_elements(parafile) gt 1 then begin
+          			for p=0, n_elements(parafile)-1 do begin
+          				  print, p+1, ': ', parafile[p]
+          			endfor
 
-    		fnum=''
-    		read, fnum
-    		parafile = parafile[fnum-1]
-        endif
-    endif else begin
-    	parafile=GCSFiles[fnum-1]
-    	gcsdone=1
-    endelse
-      endif else begin
-      print, 'Do you want to do GCS fitting? (y/n)'
-      b=''
-      read, b
+          			fnum=''
+          			read, fnum
+          			parafile = parafile[fnum-1]
+        		endif
+        endif else begin
+            parafile=GCSFiles[fnum-1]
+            gcsdone=1
+        endelse
+    endif
+endif
 
-      if b eq 'y' then begin
-         gcsdone=1
-    	 print, 'Initializing GCS fitting tool...'
-    	 EAGEL, eventdatesc, datetime=datetime
-    	 parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
-    		if n_elements(parafile) gt 1 then begin
-      		for p=0, n_elements(parafile)-1 do begin
-      			print, p+1, ': ', parafile[p]
-      		endfor
-      		fnum=''
-      		read, fnum
-      		parafile = parafile[fnum-1]
-     		endif
-      endif else print, 'Aborting ELEvoHI...'
-    endelse
-  endif
+if GCS eq 0 then begin
+    if str[14] eq '' or str[18] eq '' or str[21] eq '' then begin
+        print, 'CME front shape parameters not properly set.'
+
+        ;check if GCSCut-directory already exists
+        gcsresdir=gcs_path+'results/EAGEL4ELEvoHI/'+eventdatesc+'/'
+        filetest = FILE_TEST(gcsresdir, /dir)
+        GCSFiles=['']
+        if filetest eq 1 then begin
+            GCSFiles=file_search(gcsresdir, '*.sav', count=nfiles)
+        endif else begin
+            spawn, 'mkdir '+gcsresdir
+        endelse
+
+        if GCSFiles[0] ne '' then begin
+            print, 'Do you want to restore existing GCS results? Please type number of file or "n".'
+            for p=0, nfiles-1 do begin
+                print, p+1, ': ', GCSFiles[p]
+            endfor
+
+            fnum=''
+            read, fnum
+
+            if fnum eq 'n' then begin
+                gcsdone=1
+              	print, 'Initializing GCS fitting tool...'
+              	EAGEL, eventdatesc, datetime=datetime
+              	parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+            		if n_elements(parafile) gt 1 then begin
+                		for p=0, n_elements(parafile)-1 do begin
+                		    print, p+1, ': ', parafile[p]
+                		endfor
+
+                		fnum=''
+                		read, fnum
+                		parafile = parafile[fnum-1]
+                endif
+            endif else begin
+              	parafile=GCSFiles[fnum-1]
+              	gcsdone=1
+            endelse
+        endif else begin
+            print, 'Do you want to do GCS fitting? (y/n)'
+            b=''
+            read, b
+
+            if b eq 'y' then begin
+                gcsdone=1
+                print, 'Initializing GCS fitting tool...'
+                EAGEL, eventdatesc, datetime=datetime
+                parafile=file_search(gcsresdir+'EAGEL_results_*.sav')
+                if n_elements(parafile) gt 1 then begin
+                		for p=0, n_elements(parafile)-1 do begin
+                        print, p+1, ': ', parafile[p]
+                		endfor
+                		fnum=''
+                		read, fnum
+                		parafile = parafile[fnum-1]
+                endif
+            endif else print, 'Aborting ELEvoHI...'
+        endelse
+    endif
 endif
 
 sourcestring=strsplit(str[10], '/', /extract)
@@ -274,8 +274,8 @@ source=sourcestring[0]
 
 ;start and end of dbmfit
 if n_elements(sourcestring) eq 3 then begin
-  startcut=sourcestring[1]
-  endcut=sourcestring[2]
+    startcut=sourcestring[1]
+    endcut=sourcestring[2]
 endif
 
 insitu=str[24]
@@ -292,24 +292,24 @@ fitworks=0
 journal, path+'logfile.log'
 
 case source of
-   'helcats': begin
-          print, 'Source file from HELCATS'
-          read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
-          restore, filen, /verb
+    'helcats': begin
+        print, 'Source file from HELCATS'
+        read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
+        restore, filen, /verb
 
-          track = {track_date: time, elon: elon, elon_std: elon_err, sc: sc}
-          save, track, filename = dir+eventdateSC+'_ccsds.sav'
+        track = {track_date: time, elon: elon, elon_std: elon_err, sc: sc}
+        save, track, filename = dir+eventdateSC+'_ccsds.sav'
         end
-   'user-defined': begin
-             print, 'User-defined HI input file'
-             restore, str[11], /verb
-             time=track.track_date
-             elon=track.elon
-             elon_err=track.elon_stdd
-             ;sc=track.sc
+    'user-defined': begin
+        print, 'User-defined HI input file'
+        restore, str[11], /verb
+        time=track.track_date
+        elon=track.elon
+        elon_err=track.elon_stdd
+        ;sc=track.sc
 
-             track.track_date = anytim(track.track_date, /ccsds)
-             save, track, filename = dir+eventdateSC+'_ccsds.sav'
+        track.track_date = anytim(track.track_date, /ccsds)
+        save, track, filename = dir+eventdateSC+'_ccsds.sav'
         end
     else: print, 'Define HI input file!'
 endcase
@@ -318,22 +318,22 @@ res=stereo_rsun(time[0],sc,distance=distance)
 d=distance[0]/au ; Sun-s/c distance in AU
 
 if bgsw eq 3 then begin
-  case insitu of
-  	'Earth': begin
-  			 insitu_file=data+'DATACAT/WIND_2007to2018_HEEQ.sav'
-  			 restore, insitu_file, /verb
-  			 sw=wind
-  	end
-  	'A':     begin
-  			 insitu_file=data+'DATACAT/STA_2007to2015_SCEQ.sav'
-  			 restore, insitu_file, /verb
-  			 sw=sta
-  	end
-  	'B':     begin
-  			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'
-  			 restore, insitu_file, /verb
-  			 sw=stb
-  	end
+    case insitu of
+        'Earth': begin
+        		 insitu_file=data+'DATACAT/WIND_2007to2018_HEEQ.sav'
+        		 restore, insitu_file, /verb
+        		 sw=wind
+        end
+      	'A':     begin
+      			 insitu_file=data+'DATACAT/STA_2007to2015_SCEQ.sav'
+      			 restore, insitu_file, /verb
+      			 sw=sta
+      	end
+      	'B':     begin
+      			 insitu_file=data+'DATACAT/STB_2007to2014_SCEQ.sav'
+      			 restore, insitu_file, /verb
+      			 sw=stb
+      	end
   	else: print, 'In situ spacecraft not defined!'
   endcase
 endif
@@ -342,138 +342,128 @@ ensemble=0
 ;check if ELEvoHI is in ensemble mode:
 
 if gcsdone eq 0 then begin
-  fstr=strsplit(str[14], '/', /extract)
-  phistr=strsplit(str[18], '/', /extract)
-  lambdastr=strsplit(str[21], '/', /extract)
+    fstr=strsplit(str[14], '/', /extract)
+    phistr=strsplit(str[18], '/', /extract)
+    lambdastr=strsplit(str[21], '/', /extract)
 endif else begin
-  restore, parafile, /verb
+    restore, parafile, /verb
 
-  ;define parameter ranges
+    ;define parameter ranges
 
-  ;halfangle - lambda
-  lgcs=round(halfangle/10.)*10
-  lstart=string(lgcs-10., format='(I2)')
-  lend=string(lgcs+10., format='(I2)')
-  lambdastr=[lstart,lend,'5']
+    ;halfangle - lambda
+    lgcs=round(halfangle/10.)*10
+    lstart=string(lgcs-10., format='(I2)')
+    lend=string(lgcs+10., format='(I2)')
+    lambdastr=[lstart,lend,'5']
 
-  insert_line, fnam, 21, lstart+'/'+lend+'/5'
+    insert_line, fnam, 21, lstart+'/'+lend+'/5'
 
-  ;phi
-  case sc of
-  	; only get even number for the apex direction
-    'A': angle=(floor(apexsta)+1)/2*2
-    'B': angle=(floor(apexstb)+1)/2*2
-  endcase
+    ;phi
+    case sc of
+      	; only get even number for the apex direction
+        'A': angle=(floor(apexsta)+1)/2*2
+        'B': angle=(floor(apexstb)+1)/2*2
+    endcase
 
-  if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')
+    if angle le 10 then anglestart='1' else anglestart=string(angle-10, format='(I3)')
 
-  angleend=string(angle+10, format='(I3)')
-  phistr=[anglestart,angleend,'2']
+    angleend=string(angle+10, format='(I3)')
+    phistr=[anglestart,angleend,'2']
 
-  insert_line, fnam, 18, anglestart+'/'+angleend+'/2'
+    insert_line, fnam, 18, anglestart+'/'+angleend+'/2'
 
-  ;f - is read in from input file and not used from GCS ecliptic cut
-  fstr=strsplit(str[14], '/', /extract)
+    ;f - is read in from input file and not used from GCS ecliptic cut
+    fstr=strsplit(str[14], '/', /extract)
 
-  insert_line, fnam, 14, fstr[0]+'/'+fstr[1]+'/'+fstr[2]
+    insert_line, fnam, 14, fstr[0]+'/'+fstr[1]+'/'+fstr[2]
 endelse
 
 if n_elements(fstr) eq 3 or n_elements(phistr) eq 3 or n_elements(lambdastr) ge 3 then ensemble=1
 
 if keyword_set(save_results) then begin
+    ;check if directory already exists
+    filetest = FILE_TEST(dir, /dir)
 
-  ;check if directory already exists
-  filetest = FILE_TEST(dir, /dir)
+    ;make directory for analyzed event
+    if filetest eq 0 then spawn, 'mkdir '+dir
 
-  ;make directory for analyzed event
-  if filetest eq 0 then spawn, 'mkdir '+dir
+    ;copy elevohi input file in event directory
+    spawn, 'cp '+fnam+' '+dir
 
-  ;copy elevohi input file in event directory
-  spawn, 'cp '+fnam+' '+dir
-
-  if ensemble eq 1 then save_elevohi_e, fnam, dir, '0', '0', /new
-
+    if ensemble eq 1 then save_elevohi_e, fnam, dir, '0', '0', /new
 endif
 
 if ensemble eq 1 then begin
-  print, '========================'
-  print, 'ELEvoHI in ensemble mode'
-  print, '========================'
+    print, '========================'
+    print, 'ELEvoHI in ensemble mode'
+    print, '========================'
 endif
 
 if n_elements(phistr) eq 3 then begin
+    phistart=float(phistr[0])
+    phiend=float(phistr[1])
+    deltaphi=float(phistr[2])
 
-  phistart=float(phistr[0])
-  phiend=float(phistr[1])
-  deltaphi=float(phistr[2])
-
-  n_phi=fix((phiend-phistart)/deltaphi+1)
-  phi_arr=findgen(n_phi, start=phistart, increment=deltaphi)
-
+    n_phi=fix((phiend-phistart)/deltaphi+1)
+    phi_arr=findgen(n_phi, start=phistart, increment=deltaphi)
 endif else begin
-  phistart=float(phistr[0])
-  phiend=phistart
-  deltaphi=0
-  n_phi=1
-  phi_arr=1
-
+    phistart=float(phistr[0])
+    phiend=phistart
+    deltaphi=0
+    n_phi=1
+    phi_arr=1
 endelse
 
 if n_elements(fstr) eq 3 then begin
+    fstart=float(fstr[0])
+    fend=float(fstr[1])
+    deltaf=float(fstr[2])
 
-  fstart=float(fstr[0])
-  fend=float(fstr[1])
-  deltaf=float(fstr[2])
-
-  n_f=fix((fend-fstart)/deltaf+1)
-  f_arr=findgen(n_f, start=fstart, increment=deltaf)
-
+    n_f=fix((fend-fstart)/deltaf+1)
+    f_arr=findgen(n_f, start=fstart, increment=deltaf)
 endif else begin
-  fstart=float(fstr[0])
-  fend=fstart
-  deltaf=0
-  n_f=1
-  f_arr=1
-
+    fstart=float(fstr[0])
+    fend=fstart
+    deltaf=0
+    n_f=1
+    f_arr=1
 endelse
 
 if n_elements(lambdastr) eq 3 then begin
-
-  lambdastart=float(lambdastr[0])
-  lambdaend=float(lambdastr[1])
-  deltalambda=float(lambdastr[2])
-  n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
-  lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
-endif 
+    lambdastart=float(lambdastr[0])
+    lambdaend=float(lambdastr[1])
+    deltalambda=float(lambdastr[2])
+    n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
+    lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
+endif
 
 if n_elements(lambdastr) eq 1 then begin
-   lambdastart=float(lambdastr[0])
-   lambdaend=lambdastart
-   deltalambda=0
-   n_lambda=1
-   lambda_arr=1
+    lambdastart=float(lambdastr[0])
+    lambdaend=lambdastart
+    deltalambda=0
+    n_lambda=1
+    lambda_arr=1
 endif
 
 kappa = -1
 if n_elements(lambdastr) eq 4 then begin
-	lambdastart=float(lambdastr[0])
-	lambdaend=float(lambdastr[1])
-	deltalambda=float(lambdastr[2])
-	kappa=float(lambdastr[3])
+    lambdastart=float(lambdastr[0])
+    lambdaend=float(lambdastr[1])
+    deltalambda=float(lambdastr[2])
+    kappa=float(lambdastr[3])
 
-	n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
-	lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
+    n_lambda=fix((lambdaend-lambdastart)/deltalambda+1)
+    lambda_arr=findgen(n_lambda, start=lambdastart, increment=deltalambda)
 endif
 
 if n_elements(lambdastr) eq 2 then begin
-	lambdastart=float(lambdastr[0])
-	lambdaend=lambdastart
-	deltalambda=0
-	n_lambda=1
-	lambda_arr=1
-	kappa=float(lambdastr[1])
+    lambdastart=float(lambdastr[0])
+    lambdaend=lambdastart
+    deltalambda=0
+    n_lambda=1
+    lambda_arr=1
+    kappa=float(lambdastr[1])
 endif
-
 
 ;iterating runs starts here
 
@@ -488,302 +478,300 @@ endif
 
 
 if bgsw eq 2 then begin
-	event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
-	bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
-	sc = strmid(event, 9, 1)
-	load_bgsw_data, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
-	bgsw_data = bgswData
-	bgswStartTime = bgswTime
-	bgswTimeNum = anytim(bgswTime)
-	save, bgsw_data, bgswStartTime, filename = resdir + 'bgsw_Data.sav'
+    event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+    bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
+    sc = strmid(event, 9, 1)
+    load_bgsw_data, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
+    bgsw_data = bgswData
+    bgswStartTime = bgswTime
+    bgswTimeNum = anytim(bgswTime)
+    save, bgsw_data, bgswStartTime, filename = resdir + 'bgsw_Data.sav'
 endif
 
 for k=0, n_phi-1 do begin
-  for l=0, n_f-1 do begin
-    for m=0, n_lambda-1 do begin
+    for l=0, n_f-1 do begin
+        for m=0, n_lambda-1 do begin
 
-      if n_elements(phi_arr) ne 1 then begin
-	     	phi=phi_arr[k]
-				;print, phi
-			endif else phi=phistart
+            if n_elements(phi_arr) ne 1 then begin
+                phi = phi_arr[k]
+                ;print, phi
+            endif else phi = phistart
 
-			if n_elements(f_arr) ne 1 then begin
-		    f=f_arr[l]
-				;print, f
-			endif else f=fstart
+            if n_elements(f_arr) ne 1 then begin
+                f = f_arr[l]
+                ;print, f
+            endif else f = fstart
 
-			if n_elements(lambda_arr) ne 1 then begin
-        lambda=lambda_arr[m]
-        ;print, lambda
-			endif else lambda=lambdastart
+            if n_elements(lambda_arr) ne 1 then begin
+                lambda=lambda_arr[m]
+                ;print, lambda
+            endif else lambda=lambdastart
 
-    	; use for the first iteration the values in the middle of the parameter range
-    	; change the values from the first run with those from the "middle" run
-      if ensemble eq 1 then begin
-      	if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
-      		f = fstart
-      		phi = phistart
-      		lambda = lambdaStart
-      	endif
+            ;use for the first iteration the values in the middle of the parameter range
+            ;change the values from the first run with those from the "middle" run
+            if ensemble eq 1 then begin
+                if f eq fCenter and phi eq phiCenter and lambda eq lambdaCenter then begin
+                    f = fstart
+                    phi = phistart
+                    lambda = lambdaStart
+                endif
 
-  			if k eq 0 and l eq 0 and m eq 0 then begin
-  				f = fCenter
-  				phi = phiCenter
-  				lambda = lambdaCenter
-  			endif
-      endif
+                if k eq 0 and l eq 0 and m eq 0 then begin
+                    f = fCenter
+                    phi = phiCenter
+                    lambda = lambdaCenter
+                endif
+            endif
 
-      runnumber = runnumber + 1
+            runnumber = runnumber + 1
 
-			print, '*****'
-			print, 'f=', f
-			print, 'phi=', phi
-			print, 'lambda=', lambda
-			print, '*****'
-      print, 'runnumber=', runnumber
+            print, '*****'
+            print, 'f=', f
+            print, 'phi=', phi
+            print, 'lambda=', lambda
+            print, '*****'
+            print, 'runnumber=', runnumber
 
-      elon_err=fltarr(n_elements(elon))
+            elon_err=fltarr(n_elements(elon))
 
-    	;produce elongation measurement errors with values err_HI1=+/-0.1 deg, err_HI2=+/-0.4 deg (see Rollett et al. 2013)
+            ;produce elongation measurement errors with values err_HI1=+/-0.1 deg, err_HI2=+/-0.4 deg (see Rollett et al. 2013)
 
-    	for i=0, n_elements(elon)-1 do begin
-    	  if elon[i] lt 24. then elon_err[i]=0.1 else elon_err[i]=0.4
-    	endfor
+            for i=0, n_elements(elon)-1 do begin
+                if elon[i] lt 24. then elon_err[i]=0.1 else elon_err[i]=0.4
+            endfor
 
-    	;Here, the time-elongation track is converted in a time-distance track.
-    	;An elliptical shape for the CME front is assumed, as well as constant
-    	;direction of motion and a fixed (pre-defined) half width and ellipse aspect ratio.
-    	;for more information please see Rollett et al. (2016, ApJ)
+            ;Here, the time-elongation track is converted in a time-distance track.
+            ;An elliptical shape for the CME front is assumed, as well as constant
+            ;direction of motion and a fixed (pre-defined) half width and ellipse aspect ratio.
+            ;for more information please see Rollett et al. (2016, ApJ)
 
-    	;apex heliocentric distance in AU
-    	elcon, elon, d, phi, lambda, f, r_ell
+            ;apex heliocentric distance in AU
+            elcon, elon, d, phi, lambda, f, r_ell
 
-    	;error in AU
-    	elcon, elon+elon_err, d, phi, lambda, f, r_errhi
-    	elcon, elon-elon_err, d, phi, lambda, f, r_errlo
+            ;error in AU
+            elcon, elon+elon_err, d, phi, lambda, f, r_errhi
+            elcon, elon-elon_err, d, phi, lambda, f, r_errlo
 
-    	r_err=fltarr(2,n_elements(r_ell))
+            r_err=fltarr(2,n_elements(r_ell))
 
-    	r_err[0,*]=r_errhi-r_ell
-    	r_err[1,*]=r_ell-r_errlo
+            r_err[0,*]=r_errhi-r_ell
+            r_err[1,*]=r_ell-r_errlo
 
-    	print, r_ell[2]
+            print, r_ell[2]
 
-    	save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
+            save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
 
-    	;next step is fitting the time-distance profile using the DBM
-    	ec = endcut
+            ;next step is fitting the time-distance profile using the DBM
+            ec = endcut
 
-;		ec = (fix(startcut) + fix(endcut))/2
-	
-		print, 'SC: ', startcut
-		print, 'EC: ', endCut
-		print, 'EC: ', ec
+            ;		ec = (fix(startcut) + fix(endcut))/2
 
-    	dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=ec, silent=silent, nightly=nightly, bgsw, spEndCut=spEndCut
+            print, 'SC: ', startcut
+            print, 'EC: ', endCut
+            print, 'EC: ', ec
 
-
-		if keyword_set(deformableFront) then begin
-			if bgsw ne 2 then begin
-				print, 'Ambient solar wind must be used from model'
-				print, 'set bgsw=2'
-				stop
-			endif
-			if finite(tinit) ne 0 and tinit ne 0 then begin
-				if kappa eq -1 then begin
-					print, 'Latitudinal extent of the CME not defined!!!'
-					print, 'Check elevohi_input.txt!'
-					stop
-				endif
-				print, 'Calculate deformable front: '
-		
-				print, 'kappa: ', kappa
-				
-				deformable_front, lambda, f, phi, kappa, tinit, fitend, swspeed, drag_parameter, anytim(time[eC]), spEndcut, sc, bgsw_data, bgswTimeNum, runnumber, resdir, realtime=realtime
-
-;				dragEstimate = get_drag_parameter_estimate(drag_parameter, kappa, f, lambda, fitend, swspeed)
-;				absDP = abs(drag_parameter)
-;				if absDP le dragEstimate[0] or absDP ge dragEstimate[1] then begin
-;					print, 'run number: ', runnumber
-;					print, 'Drag Parameter is not in the correct range!'
-;					print, 'Drag parameter: ', drag_parameter
-;					print, 'Range: ', dragEstimate
-;					save, runnumber, drag_paramter, dragEstimate, f, lambda, phi, swspeed, kappa, fitend, filename = resdir + 'wrongDragParamter_'+string(runnumber, format='(I003)')+'.sav'
-				endif
-			endif
-		endif
-
-    	if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
-    		startmin = r_ell[startcut]*au/r_sun
-    		endmax = r_ell[endcut]*au/r_sun
-
-    		if r_start_min gt startmin then r_start_min = startmin
-    		if r_end_max lt endmax then r_end_max = endmax
-    		if phi_min gt phi then phi_min = phi
-    		if phi_max lt phi then phi_max = phi
-    		if lam_max lt lambda then lam_max = lambda
-    		if finite(tinit) ne 0 then eventTime = tinit
-    	endif
-
-    	;print, 'Gamma after fitting:'
-    	;print, drag_parameter
-
-    	;count and save number of converging and non-converging fits
-
-    	a=[phi, f, lambda]
-
-    	if drag_parameter eq 0 or finite(drag_parameter) eq 0 then begin
-    		if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
-    		nofit=nofit+1
-    	    continue
-    	endif else begin
-    	   fitworks=fitworks+1
-    	endelse
-
-    	elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
-    	elevo, dir, pred, elevo_kin, runnumber
-
-    	if keyword_set(forMovie) then begin
-    		elevo_kin.all_apex_s = sc
-    		save, elevo_kin, startcut, endcut, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
-    	endif
-
-    	if n_elements(arr) ne 0 then begin
-    	  print, '------------------------------------'
-    	  print, '*****************************************************'
-    	  print, '*Differences of predicted and detected arrival times*'
-    	  print, '*"-" means predicted to arrive earlier than detected*'
-    	  print, '*****************************************************'
-
-    	  j=n_elements(arr[0,*])
-
-    		for i=0, j-1 do begin
-
-    		  case arr[0,i] of
-    			'MES': begin
-    					 da_mes=!VALUES.F_NAN
-    					 if finite(pred.mes_time) then begin
-    					  da_mes = (anytim(pred.mes_time) - anytim(arr[1,i]))/3600.
-    						print, '**********MESSENGER***********'
-    						print, '*', round(da_mes*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-    						print, '******************************'
-    					 endif else print, 'No arrival predicted at MESSENGER!'
-    			end
-    			'VEX': begin
-    					 da_mvex=!VALUES.F_NAN
-    					 if finite(pred.vex_time) then begin
-    					  da_vex = (anytim(pred.vex_time) - anytim(arr[1,i]))/3600.
-    						print, '*********Venus Express********'
-    						print, '*', round(da_vex*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-    						print, '******************************'
-    					 endif else print, 'No arrival predicted at Venus Express!'
-    			end
-    			'Earth': begin
-    					   da_earth=!VALUES.F_NAN
-    					   if finite(pred.wind_time) then begin
-    						da_earth = (anytim(pred.wind_time) - anytim(arr[1,i]))/3600.
-    						print, '************Earth*************'
-    						print, '*', round(da_earth*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-    						print, '******************************'
-    					   endif else print, 'No arrival predicted at Wind!'
-    			end
-    			'A': begin
-    					 da_sta=!VALUES.F_NAN
-    					 if finite(pred.sta_time) then begin
-    						da_sta = (anytim(pred.sta_time) - anytim(arr[1,i]))/3600.
-    						print, '***********STEREO-A***********'
-    						print, '*', round(da_sta*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-    						print, '******************************'
-    					 endif else print, 'No arrival predicted at STEREO-A!'
-    			end
-    			'B': begin
-    				   da_stb=!VALUES.F_NAN
-    				   if finite(pred.stb_time) then begin
-    					  da_stb = (anytim(pred.stb_time) - anytim(arr[1,i]))/3600.
-    						print, '***********STEREO-B***********'
-    						print, '*', round(da_stb*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-    						print, '******************************'
-    				   endif else print, 'No arrival predicted at STEREO-B!'
-    			end
-				'SOLO': begin
-					da_solo=!VALUES.F_NAN
-					if finite(pred.solo_time) then begin
-						da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
-						print, '***********Solar Orbiter***********'
-						print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					endif else print, 'No arrival predicted at Solar Orbiter!'
-				end
-				'PSP': begin
-					da_psp=!VALUES.F_NAN
-					if finite(pred.psp_time) then begin
-						da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
-						print, '***********Parker Solar Probe***********'
-						print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					endif else print, 'No arrival predicted at Parker Solar Probe!'
-				end
-				'BEPI': begin
-					da_bepi=!VALUES.F_NAN
-					if finite(pred.bepi_time) then begin
-						da_bepi = (anytim(pred.bepi_time) - anytim(arr[1,i]))/3600.
-						print, '***********BEPI***********'
-						print, '*', round(da_bepi*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
-						print, '******************************'
-					endif else print, 'No arrival predicted at BEPI!'
-				end
-    			else: begin
-    					  print, 'Check in situ s/c in input file!'
-    			end
-    		  endcase
-		    endfor
-	     endif
-
-    	if not isa(da_mes) then da_mes=!VALUES.F_NAN
-    	if not isa(da_vex) then da_vex=!VALUES.F_NAN
-    	if not isa(da_earth) then da_earth=!VALUES.F_NAN
-    	if not isa(da_sta) then da_sta=!VALUES.F_NAN
-    	if not isa(da_stb) then da_stb=!VALUES.F_NAN
-		if not isa(da_solo) then da_solo=!VALUES.F_NAN
-		if not isa(da_psp) then da_psp=!VALUES.F_NAN
-		if not isa(da_bepi) then da_bepi=!VALUES.F_NAN
-
-    	dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp, da_bepi]
+            dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=ec, silent=silent, nightly=nightly, bgsw, spEndCut=spEndCut
 
 
-    	if ensemble eq 1 and keyword_set(save_results) then begin
-    	  save_elevohi_e, fnam, dir, pred, dt_all
-    	endif
+            if keyword_set(deformableFront) then begin
+              	if bgsw ne 2 then begin
+                    print, 'Ambient solar wind must be used from model'
+                    print, 'set bgsw=2'
+                    stop
+              	endif
+              	if finite(tinit) ne 0 and tinit ne 0 then begin
+                    if kappa eq -1 then begin
+                        print, 'Latitudinal extent of the CME not defined!!!'
+                        print, 'Check elevohi_input.txt!'
+                        stop
+                    endif
+                    print, 'Calculate deformable front: '
 
-    	if lambda eq lambdaend then break
+                    print, 'kappa: ', kappa
+
+                    deformable_front, lambda, f, phi, kappa, tinit, fitend, swspeed, drag_parameter, anytim(time[eC]), spEndcut, sc, bgsw_data, bgswTimeNum, runnumber, resdir, realtime=realtime
+
+                      ; dragEstimate = get_drag_parameter_estimate(drag_parameter, kappa, f, lambda, fitend, swspeed)
+                      ; absDP = abs(drag_parameter)
+                      ; if absDP le dragEstimate[0] or absDP ge dragEstimate[1] then begin
+                      ;     print, 'run number: ', runnumber
+                      ;     print, 'Drag Parameter is not in the correct range!'
+                      ;     print, 'Drag parameter: ', drag_parameter
+                      ;     print, 'Range: ', dragEstimate
+                      ;     save, runnumber, drag_paramter, dragEstimate, f, lambda, phi, swspeed, kappa, fitend, filename = resdir + 'wrongDragParamter_'+string(runnumber, format='(I003)')+'.sav'
+                      ; endif
+                endif
+            endif
+
+            if isa(startcut) eq 1 and isa(endcut) eq 1 then begin
+                startmin = r_ell[startcut]*au/r_sun
+                endmax = r_ell[endcut]*au/r_sun
+
+                if r_start_min gt startmin then r_start_min = startmin
+                if r_end_max lt endmax then r_end_max = endmax
+                if phi_min gt phi then phi_min = phi
+                if phi_max lt phi then phi_max = phi
+                if lam_max lt lambda then lam_max = lambda
+                if finite(tinit) ne 0 then eventTime = tinit
+            endif
+
+            ;print, 'Gamma after fitting:'
+            ;print, drag_parameter
+
+            ;count and save number of converging and non-converging fits
+
+            a=[phi, f, lambda]
+
+            if drag_parameter eq 0 or finite(drag_parameter) eq 0 then begin
+                if nofit eq 0 then nofit_para=a else nofit_para=[[nofit_para],[a]]
+                nofit=nofit+1
+                continue
+            endif else begin
+                fitworks=fitworks+1
+            endelse
+
+            elevo_input, sc, lambda, 1./f, phi, tinit, rinit, vinit, swspeed, drag_parameter, dir, realtime=realtime
+            elevo, dir, pred, elevo_kin, runnumber
+
+            if keyword_set(forMovie) then begin
+                elevo_kin.all_apex_s = sc
+                save, elevo_kin, startcut, endcut, filename=forMovieDir+'formovie'+string(runnumber, format='(I0004)')+'.sav'
+            endif
+
+            if n_elements(arr) ne 0 then begin
+                print, '------------------------------------'
+                print, '*****************************************************'
+                print, '*Differences of predicted and detected arrival times*'
+                print, '*"-" means predicted to arrive earlier than detected*'
+                print, '*****************************************************'
+
+                j = n_elements(arr[0,*])
+
+                for i=0, j-1 do begin
+                    case arr[0,i] of
+                    'MES': begin
+                        da_mes=!VALUES.F_NAN
+                        if finite(pred.mes_time) then begin
+                            da_mes = (anytim(pred.mes_time) - anytim(arr[1,i]))/3600.
+                            print, '**********MESSENGER***********'
+                            print, '*', round(da_mes*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at MESSENGER!'
+                        end
+                    'VEX': begin
+                        da_mvex=!VALUES.F_NAN
+                        if finite(pred.vex_time) then begin
+                            da_vex = (anytim(pred.vex_time) - anytim(arr[1,i]))/3600.
+                            print, '*********Venus Express********'
+                            print, '*', round(da_vex*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at Venus Express!'
+                        end
+                    'Earth': begin
+                        da_earth=!VALUES.F_NAN
+                        if finite(pred.wind_time) then begin
+                            da_earth = (anytim(pred.wind_time) - anytim(arr[1,i]))/3600.
+                            print, '************Earth*************'
+                            print, '*', round(da_earth*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at Wind!'
+                        end
+                    'A': begin
+                        da_sta=!VALUES.F_NAN
+                        if finite(pred.sta_time) then begin
+                            da_sta = (anytim(pred.sta_time) - anytim(arr[1,i]))/3600.
+                            print, '***********STEREO-A***********'
+                            print, '*', round(da_sta*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at STEREO-A!'
+                        end
+                    'B': begin
+                        da_stb=!VALUES.F_NAN
+                        if finite(pred.stb_time) then begin
+                            da_stb = (anytim(pred.stb_time) - anytim(arr[1,i]))/3600.
+                            print, '***********STEREO-B***********'
+                            print, '*', round(da_stb*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at STEREO-B!'
+                        end
+                    'SOLO': begin
+                        da_solo=!VALUES.F_NAN
+                        if finite(pred.solo_time) then begin
+                            da_solo = (anytim(pred.solo_time) - anytim(arr[1,i]))/3600.
+                            print, '***********Solar Orbiter***********'
+                            print, '*', round(da_solo*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at Solar Orbiter!'
+                        end
+                    'PSP': begin
+                        da_psp=!VALUES.F_NAN
+                        if finite(pred.psp_time) then begin
+                            da_psp = (anytim(pred.psp_time) - anytim(arr[1,i]))/3600.
+                            print, '***********Parker Solar Probe***********'
+                            print, '*', round(da_psp*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at Parker Solar Probe!'
+                        end
+                    'BEPI': begin
+                        da_bepi=!VALUES.F_NAN
+                        if finite(pred.bepi_time) then begin
+                            da_bepi = (anytim(pred.bepi_time) - anytim(arr[1,i]))/3600.
+                            print, '***********BEPI***********'
+                            print, '*', round(da_bepi*100)/100., 'hours', '     *', format='(A,5x,F6.2,2x,A,5x,A)'
+                            print, '******************************'
+                        endif else print, 'No arrival predicted at BEPI!'
+                        end
+                        else: begin
+                            print, 'Check in situ s/c in input file!'
+                        end
+                    endcase
+                endfor
+            endif
+
+            if not isa(da_mes) then da_mes=!VALUES.F_NAN
+            if not isa(da_vex) then da_vex=!VALUES.F_NAN
+            if not isa(da_earth) then da_earth=!VALUES.F_NAN
+            if not isa(da_sta) then da_sta=!VALUES.F_NAN
+            if not isa(da_stb) then da_stb=!VALUES.F_NAN
+            if not isa(da_solo) then da_solo=!VALUES.F_NAN
+            if not isa(da_psp) then da_psp=!VALUES.F_NAN
+            if not isa(da_bepi) then da_bepi=!VALUES.F_NAN
+
+            dt_all=[da_mes, da_vex, da_earth, da_sta, da_stb, da_solo, da_psp, da_bepi]
+
+            if ensemble eq 1 and keyword_set(save_results) then begin
+              save_elevohi_e, fnam, dir, pred, dt_all
+            endif
+
+            if lambda eq lambdaend then break
+
+        endfor
+
+        if f eq fend then break
 
     endfor
 
-    if f eq fend then break
-
-  endfor
-
-  if phi eq phiend then break
+    if phi eq phiend then break
 
 endfor
 
 ;iteration of runs end here
 
 if fitworks eq 0 then begin
-  print, 'For this CME with the chosen parameters no prediction is possible.'
-  journal
-  if keyword_set(nightly) ne 1 then stop
+    print, 'For this CME with the chosen parameters no prediction is possible.'
+    journal
+    if keyword_set(nightly) ne 1 then stop
 endif
 
 if ensemble eq 1 and keyword_set(save_results) then begin
-  print, 'Ensemble results saved at '+dir+'eELEvoHI_results.txt'
+    print, 'Ensemble results saved at '+dir+'eELEvoHI_results.txt'
 endif
 
 if keyword_set(statistics) and ensemble eq 1 then begin
-  elevohi2sav, dir, path=path
-  if ensemble eq 1 then begin
-    print, 'Ensemble results prepared for Python statistics.'
-  endif else print, 'No statistics for single run.'
+    elevohi2sav, dir, path=path
+    if ensemble eq 1 then begin
+        print, 'Ensemble results prepared for Python statistics.'
+    endif else print, 'No statistics for single run.'
 endif
 
 print, 'number of runs:'
@@ -796,14 +784,14 @@ print, nofit
 ;insert number of runs into results file
 ;insert_line, dir, fitworks, nofit
 if keyword_set(statistics) and ensemble eq 1 then begin
-	file=dir+'eELEvoHI_results.txt'
-	linenumber1=40
-	data_insert1='# '+trim(fitworks+nofit)
-	linenumber2=43
-	data_insert2='# '+trim(nofit)
-	insert_line, file, linenumber1, data_insert1
-	insert_line, file, linenumber2, data_insert2
-	save, nofit_para, filename=dir+'invalidFits.sav'
+    file=dir+'eELEvoHI_results.txt'
+    linenumber1=40
+    data_insert1='# '+trim(fitworks+nofit)
+    linenumber2=43
+    data_insert2='# '+trim(nofit)
+    insert_line, file, linenumber1, data_insert1
+    insert_line, file, linenumber2, data_insert2
+    save, nofit_para, filename=dir+'invalidFits.sav'
 endif
 
 
@@ -812,23 +800,23 @@ if ensemble ne 1 then print, 'No estimation of uncertainty in single run mode!'
 journal
 
 if keyword_set(save_results) then begin
-  ;copy log-file in event directory
-  spawn, 'cp '+path+'logfile.log ' +dir
+    ;copy log-file in event directory
+    spawn, 'cp '+path+'logfile.log ' + dir
 endif
 
 if bgsw eq 2 then begin
-  event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
-  bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
-  sc = strmid(event, 9, 1)
-  wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
+    event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
+    bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
+    sc = strmid(event, 9, 1)
+    wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
 endif
 
 if keyword_set(forMovie) then begin
-	combine_movie_files, forMovieDir
+    combine_movie_files, forMovieDir
 endif
 
 if keyword_set(deformableFront) then begin
-	combine_front_files, resdir
+    combine_front_files, resdir
 endif
 
 duration_end=systime(/seconds)
