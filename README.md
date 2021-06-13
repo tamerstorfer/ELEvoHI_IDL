@@ -69,11 +69,13 @@ In line 19, the propagation direction relative to the HI-observer (as derived fr
         (angle between HI-observer and CME apex)
         46/66/2
 
-For the angular half width within the ecliptic plane, a range between 30 and 50 degree and a step size of 5 degree seems to be a good choice. Change this value according to your preferences.
+For the angular half width within the ecliptic plane, a range between 30 and 50 degree and a step size of 5 degree seems to be a good choice.
+The last value (kappa) defines the latitudinal extent of the CME. It is also defined as the half width of the CME. It is assumed not to change during propagation
+Change this value according to your preferences.
 
         ________________
-        angular half width, lambda, ensemble: (lambda_min/lambda_max/d_lambda)
-        30/50/5
+        angular half width, lambda, ensemble: (lambda_min/lambda_max/d_lambda/kappa)
+        30/50/5/15
 
 In line 25, the most probable in situ arrival target can be given. This is needed for the version of ELEvoHI, were in situ data from 1 AU is used as an approximation of the ambient solar wind speed that is influencing the CME evolution. It is not recommended to use this option and in the future, it will be deleted.
 
@@ -90,11 +92,19 @@ The last change that can be made in the source file, is the actual in situ arriv
         
 When the parameters needed are changed, save the file and start ELEvoHI as follows:
 
-        elevohi, /save_results, /statistics, /silent, /forMovie, bgsw=1
+        elevohi, /save_results, /statistics, /silent, /forMovie, bgsw='stat'
 
 The only interaction needed is the definition of the start and end points of the DBM fit. This is done by clicking into a figure and should be self-explanatory.
 
 When ELEvoHI has finished, the result of the prediction is given in the terminal.
 
 The Python-codes for the visualization of the prediction result can be found in https://github.com/tamerstorfer/ELEvoHI/tree/master/HI_animate_module.
+
+
+To run ELEvoHI with a deformable front an ambient solar wind for the heliosphere is needed. Start ELEvoHI as follows:
+    
+        elevohi, /save_results, /statistics, /silent, /forMovie, /deformableFront, bgsw='HUX'
+        
+Up to now, three different ambient solar wind models are supported: HUX, HUXt, and EUHFORIA
+For a detailed description of the ambient solar wind model maps see: 'README_AmbientSolarWinds.md'
         

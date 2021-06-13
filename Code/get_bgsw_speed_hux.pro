@@ -1,13 +1,8 @@
-; tinit: time, when speed is needed
-; lon: longitude with respect to Earth (0° is Earth direction, negative values are to the West, positive values to the East)
-; rad: distance to the sun [r_sun]
-
-
-; Name:		get_bgsw_speed
+; Name:		get_bgsw_speed_hux
 ;
 ; Purpose: 	Returns the speed of the ambient solar wind with respect to the radial distance and the given time
 ;
-; Calling sequence:	sw_speed = get_bgsw_speed(bgswdata=bgswdata, bgswTimeNum, tinitnum, lonNew[i], rbefore[i])
+; Calling sequence:	sw_speed = get_bgsw_speed_hux(bgswdata=bgswdata, bgswTimeNum, tinitnum, lonNew[i], rbefore[i])
 ;
 ; Parameters (input):
 ;			bgswdata: ambient solar wind data for a full Carrington rotation
@@ -28,21 +23,31 @@
 ; -
 
 
-function get_bgsw_speed, bgswdata=bgswData, bgswTime, tinit, lonInput, radInput, plotWind=plotWind
+function get_bgsw_speed_hux, bgswdata=data, bgswTime, tinit, lonInput, radInput, rn, earthLon=earthLon
 
-
-    data = bgswData
     lon = lonInput/2.
 
     modelStartDist = 5. ; in R_sun
     earthPos = 30. ; in pixels
+    stLon = 180; in longitude
+    stRad = 425
     rotSun = 27.27
-
+    
     rad = radInput-modelStartDist
-
-    daysLater = rotSun/4
-    daysLater = 1
-
+    
+    
+    dSize = size(data)
+    lonSize = (size(data))[1]
+    radSize = (size(data))[2]
+    if lonSize ne stLon then begin
+        earthPos = lonSize/stLon*earthPos
+        lon = lonSize/stLon*lon
+    endif
+    
+    if radSize ne stRad then begin
+        rad = (radInput-modelStartDist)*radSize/stRad
+    endif
+    
     if keyword_set(earthLon) then earthPos = earthLon
 
     tinitNum = tinit
@@ -50,14 +55,11 @@ function get_bgsw_speed, bgswdata=bgswData, bgswTime, tinit, lonInput, radInput,
     timeDiff = tinitNum - bgswTime
     tDiff = timeDiff/(60.*60.*24.)
 
-    dSize = size(data)
-
-
     shiftVal = dSize[1]/rotSun*tDiff + lon; only shift because of time difference to model output of HUX
-    ; add also shift because of longitude
-;    shiftVal = shiftVal + lon
+    lonnew = earthpos+shiftval  
 
-    posSpeed = data[earthPos + shiftval, rad]
-
+    posSpeedOri = data[lonnew, rad]
+    posSpeed = posSpeedOri
+    
     return, posSpeed
 end

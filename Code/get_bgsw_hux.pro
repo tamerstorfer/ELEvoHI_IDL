@@ -7,23 +7,45 @@ FUNCTION CIRCLE, xcenter, ycenter, radius
    END
 
 
-function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc, stepSize=stepSize, MAE = MAE, savePlot=savePlot, earthLon = earthLon, minSW = minSW, plotPath = plotPath, saveData = saveData
+; Name:		get_bgsw
+;
+; Purpose: 	Returns a range around the median speed of the ambient solar wind from a given region
+;
+; Calling sequence: winds = get_bgsw_hux(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc)
+;
+; Parameters (input):
+;			file: ambient solar wind file
+;			tinit: time for the SC positions
+;           startcut: startcut of the DBM-fit
+;           endcut: endcut of the DBM-fit
+;           minPhi: minimum propagation direction
+;           maxPhi: maximum propagation direction
+;           halfwidth: halfwidth of the CME
+;           sc: spacecraft ('A' or 'B')
+;			lonInput: longitude with respect to Earth (0° is Earth direction, negative values are to the West, positive values to the East)
+;			radInput: distance to the sun [r_sun]
+;			plotWind: keyword to plot the ambient solar wind
+;
+; Parameters (output):
+;			solarWind: returns 9 different ambient solar wind speed for the given area (dependent on lambda, phi, startcut, endcut)
+;
+; Keywords:
+;		    stepSize: step size of the ambient solar wind output (default: 25 km/s)
+;           MAE: mean absolute error (default 100 km/s)
+;           savePlot: set to create plot
+;           earthLon: Longitude of Earth in the Model (default 30 [corresponds to a longitude of 60°])
+;           minSW: minimum solar wind speed which is the lower limit for the output (default 233 km/s)
+;           plotPath: path where to plot when savePlot is set
+;           saveData: save the data also to plotPath
+;
+; History:    2021/03: created (Juergen Hinterreiter)
+;
+; Authors:    Tanja Amerstorfer & Christian Moestl & Juergen Hinterreiter
+;             Space Research Institute, Austrian Academy of Sciences
+;			  Graz, Austria
+; -
 
-  doTest = 0
-  if doTest eq 1 then begin
-    file = '/nas/helio/data/bgsw_WSA/20110907_B/vmap.txt'
-    tinit = '24-May-2010 03:06:06.379'
-    startcut = 24.207689
-    endcut = 103.49942
-    minphi = 56
-    maxphi = 76
-    halfWidth = 50
-    savePlot = 1
-    earthLon = 30
-    saveData = 1
-    sc = 'A'
-    plotPath = '/home/jhinterreiter/'
-  endif
+function get_bgsw_hux, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc, stepSize=stepSize, MAE = MAE, savePlot=savePlot, earthLon = earthLon, minSW = minSW, plotPath = plotPath, saveData = saveData
 
   eventDate = strmid(file, strpos(file, 'vmap')-11, 8)
 
@@ -65,9 +87,6 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
     dir_E=fix(-(sep-phi_mean)/2)
   endif  
 
-  ;print, dir_E
-
-
   array = ''
   line = ''
   i = 0
@@ -99,7 +118,7 @@ function get_bgsw, file, tinit, startcut, endcut, minphi, maxphi, halfWidth, sc,
   newdata = data
   newData = shift(newData, [shiftVal, 0])
 
-  ; divide by 2 becaus it is defined in degree
+  ; divide by 2 because it is defined in degree
   hw = halfWidth/2
 
   newbgsw = newdata[earthPos-hw+shiftVal-dir_E-phiDiff:earthPos+hw+shiftVal-dir_E+phiDiff, startcut:endcut]

@@ -190,8 +190,8 @@ print, '------------------------------------'
 ;create 1-D DBM kinematic for ellipse apex with
 ;constant drag parameter and constant background solar wind speed
 
-;timegrid=1440  ;number of points for 10 days with 10 min resolution
-timegrid=2500
+timegrid=1440  ;number of points for 10 days with 10 min resolution
+;timegrid=2500
 
 ;equidistant grid for DBM times, with 10 min resolution
 ;time

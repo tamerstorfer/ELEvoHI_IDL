@@ -34,10 +34,10 @@
 ;							nightly...........set TRUE to avoid plotting of the DBMfit
 ;							forMovie..........set TRUE to save the CME parameters (.sav-files can then be used to create a movie)
 ;							deformableFront...set TRUE to additionally create .sav-files with the information of the deformed CME front
-;             realtime.......set TRUO to get the correct angle for STEREO-A
-;             bgsw...........set to 1 for range of background solar wind (250 - 700 km/s (25 km/s steps))
-;                            set to 2 for to use background solar wind from model
-;                            set to 3 for in-situ sw
+;             realtime.......set TRUE to get the correct angle for STEREO-A
+;             bgsw...........set to 'stat' for range of background solar wind (250 - 700 km/s (25 km/s steps))
+;                            set to 'HUX', 'HUXt' for to use background solar wind from model from HUX or HUXt
+;                            set to 'insitu' for in-situ sw
 ;
 ; Required functions and procedures:  	see readme
 ;
@@ -66,7 +66,7 @@
 PRO elevohi, save_results=save_results, statistics=statistics, silent=silent, nightly=nightly, forMovie=forMovie, realtime=realtime, bgsw=bgsw, deformableFront=deformableFront
 
 
-if ~keyword_set(bgsw) then bgsw = 1
+if ~keyword_set(bgsw) then bgsw = 'stat'
 read_config_file
 
 path=getenv('ELEvoHI_DIR')
@@ -275,7 +275,7 @@ source=sourcestring[0]
 ;start and end of dbmfit
 if n_elements(sourcestring) eq 3 then begin
     startcut=sourcestring[1]
-    endcut=sourcestring[2]
+    endcut_original=sourcestring[2]
 endif
 
 insitu=str[24]
@@ -317,7 +317,7 @@ endcase
 res=stereo_rsun(time[0],sc,distance=distance)
 d=distance[0]/au ; Sun-s/c distance in AU
 
-if bgsw eq 3 then begin
+if bgsw eq 'insitu' then begin
     case insitu of
         'Earth': begin
         		 insitu_file=data+'DATACAT/WIND_2007to2018_HEEQ.sav'
@@ -477,16 +477,40 @@ if ensemble eq 1 then begin
 endif
 
 
-if bgsw eq 2 then begin
+if strupcase(bgsw) eq 'HUX' then begin
     event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
     bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
     sc = strmid(event, 9, 1)
-    load_bgsw_data, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
+    
+    load_bgsw_hux, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
     bgsw_data = bgswData
     bgswStartTime = bgswTime
     bgswTimeNum = anytim(bgswTime)
+    
+    ;    bgsw_data = congrid(bgswdata, (size(bgswData))[1]*2, (size(bgswData))[2], /interp)
+        ; interpolate the ambient solar wind data: longitude resolution 0.5° radial resoulution 0.5 R_sun
+    ;    bgsw_data = congrid(bgswdata, (size(bgswData))[1]*4, (size(bgswData))[2]*2, /interp)
+
+    print, 'Size bgsw data: ', size(bgsw_data)
+    
     save, bgsw_data, bgswStartTime, filename = resdir + 'bgsw_Data.sav'
 endif
+
+if strupcase(bgsw) eq 'HUXT' then begin
+
+    event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 8)
+    file = data + 'bgsw_HUXt/' + event + '.hdf5'
+    bgswData = load_bgsw_huxt(file)
+endif
+
+if strupcase(bgsw) eq 'EUHFORIA' then begin
+    event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 8)
+    bgswfile = data + 'bgsw_EUHFORIA/' + event + '.h5'
+    
+    bgswData = load_bgsw_euhforia(bgswfile)
+    save, bgswdata, filename = resdir + 'bgswData_EUHFORIA.sav'
+endif
+
 
 for k=0, n_phi-1 do begin
     for l=0, n_f-1 do begin
@@ -562,23 +586,25 @@ for k=0, n_phi-1 do begin
             save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
 
             ;next step is fitting the time-distance profile using the DBM
-            ec = endcut
-
-            ;		ec = (fix(startcut) + fix(endcut))/2
+            endcut = endcut_original
+            
+            ec = endCut
+            ;ec = (fix(startcut) + fix(endcut))/2
 
             print, 'SC: ', startcut
             print, 'EC: ', endCut
             print, 'EC: ', ec
+            endcut = ec
 
-            dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=ec, silent=silent, nightly=nightly, bgsw, spEndCut=spEndCut
-
+            dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=ec, silent=silent, nightly=nightly, bgsw, bgswData = bgswData, spEndCut=spEndCut
 
             if keyword_set(deformableFront) then begin
-              	if bgsw ne 2 then begin
+              	if strupcase(bgsw) ne 'HUX' and strupcase(bgsw) ne 'HUXT' and strupcase(bgsw) ne 'EUHFORIA' then begin
                     print, 'Ambient solar wind must be used from model'
-                    print, 'set bgsw=2'
+                    print, 'set bgsw="HUX" or "HUXt" or "EUHFORIA"'
                     stop
               	endif
+              	
               	if finite(tinit) ne 0 and tinit ne 0 then begin
                     if kappa eq -1 then begin
                         print, 'Latitudinal extent of the CME not defined!!!'
@@ -589,17 +615,8 @@ for k=0, n_phi-1 do begin
 
                     print, 'kappa: ', kappa
 
-                    deformable_front, lambda, f, phi, kappa, tinit, fitend, swspeed, drag_parameter, anytim(time[eC]), spEndcut, sc, bgsw_data, bgswTimeNum, runnumber, resdir, realtime=realtime
+                    deformable_front, bgsw, lambda, f, phi, kappa, tinit, fitend, swspeed, drag_parameter, anytim(time[eC]), spEndcut, sc, bgswdata, bgswTimeNum, runnumber, resdir, realtime=realtime
 
-                      ; dragEstimate = get_drag_parameter_estimate(drag_parameter, kappa, f, lambda, fitend, swspeed)
-                      ; absDP = abs(drag_parameter)
-                      ; if absDP le dragEstimate[0] or absDP ge dragEstimate[1] then begin
-                      ;     print, 'run number: ', runnumber
-                      ;     print, 'Drag Parameter is not in the correct range!'
-                      ;     print, 'Drag parameter: ', drag_parameter
-                      ;     print, 'Range: ', dragEstimate
-                      ;     save, runnumber, drag_paramter, dragEstimate, f, lambda, phi, swspeed, kappa, fitend, filename = resdir + 'wrongDragParamter_'+string(runnumber, format='(I003)')+'.sav'
-                      ; endif
                 endif
             endif
 
@@ -804,11 +821,11 @@ if keyword_set(save_results) then begin
     spawn, 'cp '+path+'logfile.log ' + dir
 endif
 
-if bgsw eq 2 then begin
+if bgsw eq 'HUX' then begin
     event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
     bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
     sc = strmid(event, 9, 1)
-    wind = get_bgsw(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
+    wind = get_bgsw_hux(bgsw_file, eventTime, r_start_min, r_end_max, phi_min, phi_max, lam_max, sc, /savePlot, plotPath = dir, /saveData)
 endif
 
 if keyword_set(forMovie) then begin

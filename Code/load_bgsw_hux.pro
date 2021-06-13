@@ -1,10 +1,10 @@
 ;+
 ;
-; Name:       laod_bgsw_daat
+; Name:       laod_bgsw_hux
 ;
 ; Purpose:    loads the ambient solar wind data from the WSA-HUX model for the given event
 ;
-; Calling sequence: load_bgsw_data, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
+; Calling sequence: load_bgsw_hux, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
 ;
 ; Parameters (input):
 ;			  bgsw_file: Path to the ambient solar wind file
@@ -19,7 +19,7 @@
 ;			  Graz, Austria
 ; -
 
-pro load_bgsw_data, file, bgswData=bgswData, bgswTime=bgswTime
+pro load_bgsw_hux, file, bgswData=bgswData, bgswTime=bgswTime
     
     eventDate = strmid(file, strpos(file, 'vmap')-11, 8)
     array = ''

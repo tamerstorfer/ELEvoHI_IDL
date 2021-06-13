@@ -24,7 +24,7 @@
 ;         We are happy if you could send a copy of the article to tanja.amerstorfer@oeaw.ac.at.
 ; -
 
-PRO dbmfit, time, r_apex, r_error, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw, spendcut=spendcut
+PRO dbmfit, time, r_apex, r_error, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw, bgswData=bgswData, spendcut=spendcut
 
 au=149597870.
 r_sun=695700.
@@ -221,7 +221,7 @@ fitend=r_apex[ecut]
 
 winds = findgen(19)*25+250
 
-if bgsw eq 3 then begin
+if bgsw eq 'insitu' then begin
 	;chose background solar wind speed from L1 (or STEREO) data
 
 	startt=where(anytim(sw.time) le anytim(time[0]))
@@ -246,13 +246,25 @@ if bgsw eq 3 then begin
 	winds[4] = max_bg_speed
 endif
 
-if bgsw eq 2 then begin
+
+if strupcase(bgsw) eq 'HUX' then begin
 	; run ELEvoHI with the data from the modeled background solar wind
 	datadir=getenv('DATA_DIR')
 	event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
-	bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
-	sc = strmid(event, 9, 1)
-	winds = get_bgsw(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /saveData, plotPath = dir)
+    bgsw_file = datadir + 'bgsw_WSA/' + event + 'vmap.txt'
+    sc = strmid(event, 9, 1)
+	winds = get_bgsw_hux(bgsw_file, time[cut], scut, r_apex_sun[ecut], phi, phi, lambda, sc);, /saveData, plotPath = dir)
+endif
+
+if strupcase(bgsw) eq 'HUXT' then begin
+	; run ELEvoHI with the data from the modeled background solar wind
+	sc = strmid(dir, strpos(dir, '/', /reverse_search)-1, 1)
+    winds = get_bgsw_huxt(bgswData, time[cut], time[ecut], scut, r_apex_sun[ecut], phi, lambda, sc)
+endif
+
+if strupcase(bgsw) eq 'EUHFORIA' then begin
+    sc = strmid(dir, strpos(dir, '/', /reverse_search)-1, 1)
+    winds = get_bgsw_euhforia(bgswData, time[cut], scut, r_apex_sun[ecut], phi, lambda, sc)
 endif
 
 fitauall=fltarr(n_elements(winds),n_elements(y))
@@ -466,11 +478,15 @@ index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
 dragrangepos=3d-7
 dragrangeneg=-3d-7 ;allows the drag parameter to be valid within a range of -3d-7 and 3d-7 1/km
+dragrangemin = 0.2d-8
+dragrangemax = 2d-7
+
 
 bestIndex = -1
 smallestResidual = 100.
 for i = 0, n_elements(winds)-1 do begin
-	if (fitpara[i,2] lt smallestResidual) and (fitpara[i,0] ge dragrangeneg and fitpara[i,0] le dragrangepos) then begin
+;	if (fitpara[i,2] lt smallestResidual) and (fitpara[i,0] ge dragrangeneg and fitpara[i,0] le dragrangepos) then begin
+	if (fitpara[i,2] lt smallestResidual) and (abs(fitpara[i,0]) ge dragrangemin and abs(fitpara[i,0]) le dragrangemax) then begin
 		smallestResidual = fitpara[i,2]
 		bestIndex = i
 	endif
@@ -564,6 +580,8 @@ if counti ne 0 then begin
     	endif
 	endif
 endif
+
+spEndCut = fitspeedall[index,n_elements(y)-1]
 
 startcut=cut
 endcut=ecut

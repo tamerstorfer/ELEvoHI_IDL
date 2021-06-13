@@ -31,9 +31,10 @@ pro combine_front_files, dir
 		frontKin = {runnumber:run,    $
 				timearr:timearr,		$
 				frontarr:frontarr,		$
-				vrr:varr,		$
+				varr:varr,		$
 				dragarr:dragarr,		$
 				densarr:densarr,		$
+				swarr:swarr,		$
 				longitude:longitude,	$
 				indEarthDirection:indEarthdirection[0], $
 				distEarth:distEarth[0], $
@@ -56,9 +57,10 @@ pro combine_front_files, dir
 			frontKin = {runnumber:run,    $
 				timearr:timearr,		$
 				frontarr:frontarr,		$
-				vrr:varr,		$
+				varr:varr,		$
 				dragarr:dragarr,		$
 				densarr:densarr,		$
+				swarr:swarr,		$
 				longitude:longitude,	$
 				indEarthDirection:long(indEarthdirection[0]), $
 				distEarth:distEarth[0], $
