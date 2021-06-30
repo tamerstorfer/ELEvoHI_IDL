@@ -29,9 +29,7 @@ Create movie example (ffmpeg is required):
 	# define events list (events for which the movie should be created)
     eventslist = ['20100523']
     # run the program (please make sure to set the correct paths)
-    em.main(eventslist, spaceCraft='AB', scriptPath='/ELEvoHI/PredictedEvents/',
-         catPath='/ELEvoHI/HI_animate_module/cats/', readData=1,
-         plotBGSW=True)
+    em.main(eventslist, spaceCraft='A', scriptPath='/home/jhinterreiter/ELEvoHI/PredictedEvents/', catPath='/nas/helio/ELEvoHI_plotting/HI_animate_module/cats/', readData=1, plotBGSW=True)
 
 	# complete list of keywords:
 	#            eventsList: List with the events for which the movies should be generated
@@ -52,6 +50,15 @@ Create histograms and plots for the individual events:
 	# import module
 	from HI_animate_module import ELEvoHIVisualize_allRuns_module as ev
 	# run the program with the path to the ELEvoHI runs
+	ev.main('/ELEvoHI/PredictedEvents/')
+	
+	
+For the movies and plot of the deformable front use
+    
+    from HI_animate_module import ELEvoHIMovie_DefFront as em
+    em.main(['20100203'], spaceCraft='A', scriptPath='/home/jhinterreiter/ELEvoHI/PredictedEvents/', catPath='/nas/helio/ELEvoHI_plotting/HI_animate_module/cats/', readData=1, bgswModel='HUX')
+    
+    from HI_animate_module import ELEvoHIVisualize_DefFront as ev
 	ev.main('/ELEvoHI/PredictedEvents/')
 
 
