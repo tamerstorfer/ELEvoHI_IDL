@@ -1,4 +1,4 @@
-pillow==8.2.0
+pillow==9.1.0
 cdflib==0.3.17
 heliosat==0.3.1
 pysftp==0.2.8
@@ -7,4 +7,5 @@ heliopy==0.9.0
 aacgmv2==2.6.0
 openpyxl==3.0.3
 xlrd==1.2.0
-
+sympy==1.10.1
+h5py==3.6.0
