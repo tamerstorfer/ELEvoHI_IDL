@@ -114,6 +114,7 @@ if n_elements(startcut) eq 0 then begin
 
     r_init=scut*r_sun
     v_init=s[cut]
+    startcut=cut
 
 endif else begin
     cut=startcut
@@ -181,6 +182,7 @@ if n_elements(endcut) eq 0 then begin
     oplot, [r_apex_sun[j],r_apex_sun[j]], [s[j],s[j]], psym=8, symsize=3
 
     ecut=j
+    endcut=ecut
 
     ecuts=r_apex[ecut]*au/r_sun
     print, 'Cut-off of DBM fit in Rsun: ', ecuts
@@ -188,7 +190,8 @@ endif else begin
     ecuts=r_apex[ecut]*au/r_sun
     print, 'Cut-off of DBM fit in Rsun: ', ecuts
 endelse
-
+;print, cut, '-', ecut
+;stop
 if runnumber eq 1 and keyword_set(nightly) eq 0 then begin
     a = findgen(17) * (!pi*2/16.)
     usersym, cos(A), sin(A)
@@ -203,14 +206,17 @@ if runnumber eq 1 and keyword_set(nightly) eq 0 then begin
     plot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2], psym=1, symsize=1.2, yr=[0,yrmax], title='ElCon distance-speed profile', xtit='Heliocentric distance [Rsun]', ytit='Speed [km s!E-1!N]', charsize=1.5
     errplot, r_apex_sun[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]-speed_errlo[1:n_elements(r_apex_sun)-2], s[1:n_elements(r_apex_sun)-2]+speed_errhi[1:n_elements(r_apex_sun)-2]
 
-    oplot, [r_apex_sun[startcut],r_apex_sun[startcut]], [s[startcut],s[startcut]], psym=8, symsize=3
-    oplot, [r_apex_sun[endcut],r_apex_sun[endcut]], [s[endcut],s[endcut]], psym=8, symsize=3
+    oplot, [r_apex_sun[cut],r_apex_sun[cut]], [s[cut],s[cut]], psym=8, symsize=3
+    oplot, [r_apex_sun[ecut],r_apex_sun[ecut]], [s[ecut],s[ecut]], psym=8, symsize=3
 
     x2jpeg, dir+'/Dbmfit_cuts.jpg'
 endif
 
+;print, 'cut: ', cut
+;print, 'ecut: ', ecut
+;print, time[0]
 ;**********************
-
+;stop
 t = (anytim(time[cut:ecut])-anytim(time[cut])) ;resolution in seconds
 X = t
 Y = r_apex[cut:ecut]*au
@@ -478,8 +484,8 @@ index = WHERE(fitpara[*,2] eq min(fitpara[*,2], /NaN), counti)
 
 dragrangepos=3d-7
 dragrangeneg=-3d-7 ;allows the drag parameter to be valid within a range of -3d-7 and 3d-7 1/km
-dragrangemin = 0.2d-8
-dragrangemax = 2d-7
+dragrangemin = -3d-7
+dragrangemax = 3d-7
 
 
 bestIndex = -1

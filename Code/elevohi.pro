@@ -82,6 +82,8 @@ phi_min = 200
 phi_max = 0
 lam_max = 0
 eventTime = '0'
+hits = 0
+misses = 0
 
 set_plot, 'x'
 
@@ -275,8 +277,12 @@ source=sourcestring[0]
 ;start and end of dbmfit
 if n_elements(sourcestring) eq 3 then begin
     startcut=sourcestring[1]
-    endcut_original=sourcestring[2]
-endif
+    endcut=sourcestring[2]
+endif else begin
+    startcut=[]
+    endcut=[]
+endelse
+
 
 insitu=str[24]
 if str[27] ne '' and str[29] eq '' then arr=[[str[27], strmid(str[28], 0, 17)]]
@@ -293,6 +299,12 @@ journal, path+'logfile.log'
 
 case source of
     'helcats': begin
+
+        if (sc ne 'A') or (sc ne 'B') then begin
+            print, 'Invalid spacecraft, choose either A or B.'
+            exit
+        endif
+
         print, 'Source file from HELCATS'
         read_hi, eventdate, sc, time, elon, elon_err, filen, /save_file, /silent
         restore, filen, /verb
@@ -314,7 +326,15 @@ case source of
     else: print, 'Define HI input file!'
 endcase
 
-res=stereo_rsun(time[0],sc,distance=distance)
+if sc eq 'A' or sc eq 'B' then begin
+    res=stereo_rsun(time[0],sc,distance=distance)
+endif
+
+
+if sc eq 'Solar Orbiter' then begin
+    res=get_sunspice_lonlat(time[0],sc,distance=distance)
+endif
+
 d=distance[0]/au ; Sun-s/c distance in AU
 
 if bgsw eq 'insitu' then begin
@@ -481,18 +501,18 @@ if strupcase(bgsw) eq 'HUX' then begin
     event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 11)
     bgsw_file = data + 'bgsw_WSA/' + event + 'vmap.txt'
     sc = strmid(event, 9, 1)
-    
+
     load_bgsw_hux, bgsw_file, bgswData=bgswData, bgswTime=bgswTime
     bgsw_data = bgswData
     bgswStartTime = bgswTime
     bgswTimeNum = anytim(bgswTime)
-    
+
     ;    bgsw_data = congrid(bgswdata, (size(bgswData))[1]*2, (size(bgswData))[2], /interp)
         ; interpolate the ambient solar wind data: longitude resolution 0.5° radial resoulution 0.5 R_sun
     ;    bgsw_data = congrid(bgswdata, (size(bgswData))[1]*4, (size(bgswData))[2]*2, /interp)
 
     print, 'Size bgsw data: ', size(bgsw_data)
-    
+
     save, bgsw_data, bgswStartTime, filename = resdir + 'bgsw_Data.sav'
 endif
 
@@ -506,7 +526,7 @@ endif
 if strupcase(bgsw) eq 'EUHFORIA' then begin
     event = strmid(dir, strpos(dir, '/', /reverse_search)-10, 8)
     bgswfile = data + 'bgsw_EUHFORIA/' + event + '.h5'
-    
+
     bgswData = load_bgsw_euhforia(bgswfile)
     save, bgswdata, filename = resdir + 'bgswData_EUHFORIA.sav'
 endif
@@ -586,17 +606,18 @@ for k=0, n_phi-1 do begin
             save, time, r_ell, r_err, phi, lambda, f, filename=dir+'elcon_results.sav'
 
             ;next step is fitting the time-distance profile using the DBM
-            endcut = endcut_original
-            
-            ec = endCut
+            ;endcut = endcut_original
+
+            ;;ec = endCut ; endCut is undefined?
             ;ec = (fix(startcut) + fix(endcut))/2
 
             print, 'SC: ', startcut
-            print, 'EC: ', endCut
-            print, 'EC: ', ec
-            endcut = ec
+            print, 'EC: ', endcut
+            ;;print, 'EC: ', endCut
+            ;;print, 'EC: ', ec
+            ;;endcut = ec
 
-            dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=ec, silent=silent, nightly=nightly, bgsw, bgswData = bgswData, spEndCut=spEndCut
+            dbmfit, time, r_ell, r_err, sw, dir, runnumber, tinit, rinit, vinit, swspeed, drag_parameter, fitend, lambda, phi, startcut=startcut, endcut=endcut, silent=silent, nightly=nightly, bgsw, bgswData = bgswData, spEndCut=spEndCut
 
             if keyword_set(deformableFront) then begin
               	if strupcase(bgsw) ne 'HUX' and strupcase(bgsw) ne 'HUXT' and strupcase(bgsw) ne 'EUHFORIA' then begin
@@ -604,7 +625,7 @@ for k=0, n_phi-1 do begin
                     print, 'set bgsw="HUX" or "HUXt" or "EUHFORIA"'
                     stop
               	endif
-              	
+
               	if finite(tinit) ne 0 and tinit ne 0 then begin
                     if kappa eq -1 then begin
                         print, 'Latitudinal extent of the CME not defined!!!'
@@ -760,6 +781,8 @@ for k=0, n_phi-1 do begin
               save_elevohi_e, fnam, dir, pred, dt_all
             endif
 
+            if finite(da_earth) then hits=hits+1 else misses=misses+1
+
             if lambda eq lambdaend then break
 
         endfor
@@ -812,7 +835,35 @@ if keyword_set(statistics) and ensemble eq 1 then begin
 endif
 
 
-if ensemble ne 1 then print, 'No estimation of uncertainty in single run mode!'
+if ensemble ne 1 then begin
+    print, 'No estimation of uncertainty in single run mode!'
+ endif else begin
+    ;Probability of arrival:
+    likely = hits/((hits+misses)*0.01)
+
+    print, 'Number of hits: ', hits
+    print, 'Number of misses: ', misses
+    print, 'Likelihood of arrival: ', string(round(likely))+' %'
+
+    ;speed prediction:
+    restore, dir+'eELEvoHI_results.sav'
+    nonans=where(eelevohi.arrspeed_earth gt 0.)
+    arrival_speed_mean = round(mean(eelevohi.arrspeed_earth(nonans)))
+    arrival_speed_std = round(stddev(eelevohi.arrspeed_earth(nonans)))
+
+    print, 'predicted arrival speed: ', strtrim(string(arrival_speed_mean), 2), ' +/- ', strtrim(string(arrival_speed_std), 2), ' km/s'
+
+    ;ambient wind speed
+    print, 'background solar wind speed: ', strtrim(string(round(mean(eelevohi.bg_sw_speed))), 2), ' +/-', strtrim(string(round(stddev(eelevohi.bg_sw_speed))), 2), ' km/s'
+
+    ;gamma
+    print, 'gamma: ', strtrim(string(mean(eelevohi.gamma)), 2), ' +/- ', stddev(eelevohi.gamma), ' /km'
+
+    ;elongation used for fitting
+    print, 'Elongation range used: ', mean(eelevohi.elongation_min), '-', mean(eelevohi.elongation_max)
+
+    print, 'realtime = ', realtime
+endelse
 
 journal
 
