@@ -2,7 +2,8 @@
 # IMPORTANT!
 # This version of ELEvoHI is mainly written in IDL.
 # It is not maintained anymore.
-# Please use the current version coded in Python.
+# Please use the current version coded in Python:
+https://github.com/tamerstorfer/ELEvoHI
 
 # ELEvoHI
 ELlipse Evolution model based on Heliospheric Imager observations. ELEvoHI predicts arrival times and speeds of coronal mass ejections at any target in the inner heliosphere. Detailed information on the model can be found in T. Rollett et al. (2016, single-run version) and T. Amerstorfer et al. (2018, ensemble version).
